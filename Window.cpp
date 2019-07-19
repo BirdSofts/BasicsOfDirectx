@@ -2,43 +2,21 @@
 /// <summary>
 /// 
 /// </summary>
-/// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,17.07.2019</changed>
+/// <created>ʆϒʅ,19.07.2019</created>
+/// <changed>ʆϒʅ,20.07.2019</changed>
 // ********************************************************************************
 
-#include "Main.h"
+#include "LearningDirectX.h"
+#include "Window.h"
 
-
-// reference: https://www.braynzarsoft.net/
 
 LPCTSTR MainWindow { L"windowOne" }; // window name
 HWND handle { NULL }; // window handle
 const int Width { 800 }; // window size
 const int Height { 600 }; // window size
 
-// functions declaration
-bool initialization ( HINSTANCE hInstance, int nShowCmd, int w, int h, bool windowed ); // window initialization
-int loop (); // main part (game engine)
-LRESULT CALLBACK winProcedure ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm ); // window callback procedure
 
-// main function (main window)
-int WINAPI WinMain ( _In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPSTR lpCmdLine,
-                     _In_ int nShowCmd )
-{
-  if ( !initialization ( hInstance, nShowCmd, Width, Height, true ) )
-  {
-    MessageBox ( 0, L"Window initialization failed.", L"Error", MB_OK | MB_ICONERROR );
-    return 1;
-  }
-
-  loop ();
-
-  return 0;
-}
-
-bool initialization ( HINSTANCE hInstance, int nShowCmd, int w, int h, bool windowed )
+bool initializeWindow ( HINSTANCE hInstance, int nShowCmd, int w, int h, bool windowed )
 {
   WNDCLASSEX winClass; // instantiation from extended version of window class
   winClass.cbSize = sizeof ( WNDCLASSEX ); // setting the exact object size from the class itself
@@ -87,29 +65,6 @@ bool initialization ( HINSTANCE hInstance, int nShowCmd, int w, int h, bool wind
   return true;
 }
 
-int loop ()
-{
-  MSG msg; // a new message structure
-  ZeroMemory ( &msg, sizeof ( MSG ) ); // clear the structure to zero
-
-  while ( true ) // continuous loop
-  {
-    // check and peek window messages
-    if ( PeekMessage ( &msg, NULL, 0, 0, PM_REMOVE ) )
-    {
-      if ( msg.message == WM_QUIT ) // exit
-        break;
-
-      TranslateMessage ( &msg ); // translation of the massage
-
-      DispatchMessage ( &msg ); // sending to default window procedure
-    } else
-    {
-      // the continuous flow
-    }
-  }
-  return ( int) msg.wParam; // return the message
-}
 
 LRESULT CALLBACK winProcedure ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 {
