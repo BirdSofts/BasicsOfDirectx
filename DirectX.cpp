@@ -64,16 +64,51 @@ bool InitializeD3dApp ( HINSTANCE hInstance )
   // to introduce probable needed extra flags
   swapChainD.Flags = 0;
 
-  // 
-  D3D10CreateDeviceAndSwapChain ( 0, D3D10_DRIVER_TYPE_HARDWARE, 0, 0, D3D10_SDK_VERSION, &swapChainD, &swapChain, &d3dDevice );
+  // the actual device creation and swap chain by filling the structure
+  D3D10CreateDeviceAndSwapChain (
+    0, // the display adapter to be represented by created device (0 or NULL uses the primary display driver)
+    // the driver type, accepting two usable options (HARDWARE and REFERENCE)
+    // -- hardware is the actual graphic card
+    // -- reference is slow, uses software implementation and is for testing purposes
+    // note that the reference option is under consideration, if the graphics card can't use certain code.
+    D3D10_DRIVER_TYPE_HARDWARE,
+    // using hardware rasterizing, the software is set to zero,
+    // therefore for being able to use software rasterizer, one needs to be already available.
+    0,
+    0, // optional device creation flags, and to be passed zero for release builds
+    D3D10_SDK_VERSION, // SDKVersion and is always set to this value
+    &swapChainD, // pointer to filled out swap chain structure type, representing the swap chain under process
+    &swapChain, // returns the created swap chain (ppSwapChain)
+    &d3dDevice ); // returns the created device (ppDevice)
 
+  // a 2d texture for back buffer, onto which the scene will be rendered
   ID3D10Texture2D* backBuffer;
+
+  // passing the back buffer to swap chain
+  // note that the back buffer is a COM object, therefore it is to be released at the end of the code.
+  // __uuidof operator is a Microsoft language extension, using it the compiler extracts the GUID value from the header,
+  // therefore no library export is necessary.
   swapChain->GetBuffer ( 0, __uuidof( ID3D10Texture2D ), reinterpret_cast<void**>( &backBuffer ) );
-  d3dDevice->CreateRenderTargetView ( backBuffer, 0, &renderTargetView );
+
+  // creating render target view:
+  d3dDevice->CreateRenderTargetView (
+    backBuffer, // the resource to be used as the render target
+    // a pointer to a render target view DESC structure:
+    // note that, in case the resource is created with a typed format, this parameter can be passed zero,
+    // in all other cases the format type of the render target needs to be specified here
+    0,
+    &renderTargetView ); // a pointer to the created render target view object
+
+  // back buffer and depth-stencil buffer are created and filled, therefore releasing the back buffer COM object
   backBuffer->Release ();
 
-  d3dDevice->OMSetRenderTargets ( 1, &renderTargetView, NULL );
-
+  // this method bind one or more render targets to the output merger stage of the pipeline
+  d3dDevice->OMSetRenderTargets ( 
+    // the number of the render targets passed to the pipeline
+    // using advanced techniques, it is possible to simultaneously bind more than one to several render targets
+    1,
+    &renderTargetView, // a pointer to an array of render target view pointers to be bound to the pipeline
+    NULL ); // a pointer to the depth-stencil view to be bound to the pipeline
   D3D10_VIEWPORT viewPort;
   viewPort.TopLeftX = 0;
   viewPort.TopLeftY = 0;

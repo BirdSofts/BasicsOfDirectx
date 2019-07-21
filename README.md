@@ -50,8 +50,11 @@ cmake --build build-path
 # Contribute
 I appreciate any contribution from anyone, who sees that the project deserves his precious time.
 
-#References
+# References
+https://bell0bytes.eu/
+https://docs.microsoft.com/
 https://www.braynzarsoft.net/
+http://www.rastertek.com/
 
 # Copyright
 This is not a freeware and the source code and the literature within is copyrighted. Most of the code is from the online references and the addition to them can just be used as teaching materials. For any other uses the written acknowledgement and permission is needed.
