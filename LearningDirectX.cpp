@@ -3,12 +3,13 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,21.07.2019</changed>
+/// <changed>ʆϒʅ,23.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
 #include "DirectX.h"
+#include "Logging.h"
 
 
 // references:
@@ -16,6 +17,17 @@
 // https://docs.microsoft.com/
 // https://www.braynzarsoft.net/
 // http://www.rastertek.com/
+
+
+theException::theException () : expected ( "null" ) {};
+void theException::set ( const char* prm )
+{
+  expected = prm;
+};
+const char* theException::what () const throw( )
+{
+  return expected;
+};
 
 
 bool running { true };
@@ -26,18 +38,9 @@ float b { 0.0f };
 int colourMod_r { 1 };
 int colourMod_g { 1 };
 int colourMod_b { 1 };
+Log aLog;
 
 theException anException;
-
-
-void theException::set ( const char* prm )
-{
-  expected = prm;
-};
-const char* theException::what () const throw( )
-{
-  return expected;
-};
 
 
 // main function (application entry point)
@@ -51,6 +54,10 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   Window win ( hInstance, nShowCmd );
   if ( !win.initialState () )
     return 1;
+
+  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "test" );
+  Logger<toFile> log ( aLog );
+
 
   if ( !InitializeD3dApp ( hInstance ) )
   {
@@ -100,8 +107,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     }
 #pragma endregion
 
-    r += colourMod_r * 0.00002f;
-    g += colourMod_g * 0.00002f;
+    r += colourMod_r * 0.00001f;
+    g += colourMod_g * 0.00005f;
     b += colourMod_b * 0.00010f;
 
     if ( ( r >= 1.0f ) || ( r <= 0.0f ) )

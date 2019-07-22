@@ -39,7 +39,7 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
     wClass.cbClsExtra = 0; // extra class runtime information
     wClass.cbSize = sizeof ( WNDCLASSEX ); // the size of the structure itself (usable when passed as pointer)
     wClass.cbWndExtra = 0; // extra window runtime information
-    wClass.hbrBackground = ( HBRUSH) GetStockObject ( NULL_BRUSH ); // a handle to a background brush for window
+    wClass.hbrBackground = ( HBRUSH) GetStockObject ( DKGRAY_BRUSH ); // a handle to a background brush for window
     wClass.hCursor = LoadCursor ( 0, IDC_ARROW ); // the cursor for the window
     // ('LoadIcon' and 'LoadCursor' functions retrieve handles to standard common icons)
     wClass.hIcon = LoadIcon ( 0, IDI_APPLICATION ); // title bar icon
