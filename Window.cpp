@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,21.07.2019</changed>
+/// <changed>ʆϒʅ,24.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -151,18 +151,23 @@ LRESULT CALLBACK Window::msgProc (
   switch ( msg )
   {
     case WM_KEYDOWN: // if a key is pressed
-      if ( wPrm == VK_ESCAPE ) // ESC key
+      if ( wPrm == VK_ESCAPE ) // the ESC key
       {
         if ( MessageBox ( 0, L"Exit the program?", L"Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+        {
           //DestroyWindow ( handle ); // release the memory
           // next expression simply indicates to the system the termination intention,
           // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
-          PostQuitMessage ( 0 );
-        return 0; // after despatching quit message, it is advised to return zero.
+          PostQuitMessage ( 0 );  // send the corresponding quite message
+          return EXIT_SUCCESS; // after despatching quit message, it is advised to return zero.
+        }
       }
-    case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
-      PostQuitMessage ( 0 ); // so send the corresponding quite message
-      return 0;
+    case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked),
+      if ( MessageBox ( 0, L"Exit the program?", L"Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+      {
+        PostQuitMessage ( 0 );
+        return EXIT_SUCCESS;
+      }
   }
   // it is very important to let Window handle other for the program irrelevant messages,
   // using below pass through function, preventing the Window losing them all. :)

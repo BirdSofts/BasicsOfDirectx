@@ -51,9 +51,10 @@ cmake --build build-path
 I appreciate any contribution from anyone, who sees that the project deserves his precious time.
 
 # References
+https://www.braynzarsoft.net/
 https://bell0bytes.eu/
 https://docs.microsoft.com/
-https://www.braynzarsoft.net/
+http://www.cplusplus.com/
 http://www.rastertek.com/
 
 # Copyright

@@ -3,21 +3,18 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,23.07.2019</changed>
+/// <changed>ʆϒʅ,24.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LOGGING_H
 #define LOGGING_H
 
 
-// log events warnings messages errors
-// buffer and write it to file
-// consider safety
-
-
+// the severity of the log entity
 enum logType { info = 0, debug, warning, error };
 
 
+// the log entity
 struct Log
 {
   unsigned short id;
@@ -37,6 +34,7 @@ struct Log
 };
 
 
+// file stream policy
 class toFile
 {
 private:
@@ -45,28 +43,37 @@ private:
 public:
   toFile ();
   ~toFile ();
-  void write ( std::list<Log>& );
+  const bool& state ();
+  int write ( const Log& );
 };
 
 
+// screen stream policy
 //class toScreen {};
 
 
+// log engine
 template<class tType>
 class Logger
 {
 private:
-  std::list<Log> buffer;
-  tType policy;
-  //toFile policy;
+  std::list<Log> buffer; // buffer list container 
+  tType policy; // output stream policy
+  std::timed_mutex writeGuard; // write guard
+  std::thread commit; // write engine thread
+  std::atomic_flag operating { ATOMIC_FLAG_INIT }; // lock-free atomic flag (checking the running state)
 public:
-  Logger ( const Log& );
+  Logger ();
   ~Logger ();
+  void push ( const Log& );
+
+  template<class tType>
+  friend void loggerEngine ( Logger<tType>* ); // write engine
 };
 
 
 // don't call this function: solution for linker error, when using templates.
-void temp ();
+void problemSolver ();
 
 
 #endif // !LOGGING_H
