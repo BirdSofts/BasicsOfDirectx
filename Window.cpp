@@ -103,12 +103,12 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
   {
     initialized = false;
     if ( ex.what () == "regW" )
-      MessageBox ( 0, L"Window registration failed.", L"Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( 0, "Window registration failed.", "Error", MB_OK | MB_ICONERROR );
     else
       if ( ex.what () == "crW" )
-        MessageBox ( 0, L"Window creation failed.", L"Error", MB_OK | MB_ICONERROR );
+        MessageBoxA ( 0, "Window creation failed.", "Error", MB_OK | MB_ICONERROR );
       else
-        MessageBox ( 0, LPCWCHAR ( ex.what () ), L"Error", MB_OK | MB_ICONERROR );
+        MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
   }
 };
 
@@ -153,7 +153,7 @@ LRESULT CALLBACK Window::msgProc (
     case WM_KEYDOWN: // if a key is pressed
       if ( wPrm == VK_ESCAPE ) // the ESC key
       {
-        if ( MessageBox ( 0, L"Exit the program?", L"Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+        if ( MessageBoxA ( 0, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
         {
           //DestroyWindow ( handle ); // release the memory
           // next expression simply indicates to the system the termination intention,
@@ -163,7 +163,7 @@ LRESULT CALLBACK Window::msgProc (
         }
       }
     case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked),
-      if ( MessageBox ( 0, L"Exit the program?", L"Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+      if ( MessageBoxA ( 0, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
       {
         PostQuitMessage ( 0 );
         return EXIT_SUCCESS;

@@ -7,7 +7,18 @@
 // ********************************************************************************
 
 #include "LearningDirectX.h"
-#include "Logging.h"
+#include "Utilities.h"
+
+
+theException::theException () : expected ( "null" ) {};
+void theException::set ( const char* prm )
+{
+  expected = prm;
+};
+const char* theException::what () const throw( )
+{
+  return expected;
+};
 
 
 Log::Log ()
@@ -36,7 +47,8 @@ void Log::set ( const logType& t,
   std::stringstream current;
   SYSTEMTIME cDateT;
   GetLocalTime ( &cDateT );
-  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << " - "
+  // date and time format: xx/xx/xx xx:xx:xx
+  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << " "
     << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
   cMoment = current.str ();
 };
@@ -63,11 +75,11 @@ toFile::toFile ()
   {
     if ( ex.what () == "fileO" )
     {
-      MessageBox ( 0, L"The log file could not be opened for output operation!", L"Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( 0, "The log file could not be opened for output operation!", "Error", MB_OK | MB_ICONERROR );
       aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The log file could not be opened for output operation!" );
     } else
     {
-      MessageBox ( 0, LPCWCHAR ( ex.what () ), L"Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
       aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
     }
     logEngineToFile.push ( aLog );
@@ -88,28 +100,28 @@ const bool& toFile::state ()
 }
 
 
-int toFile::write ( const Log& entity )
+bool toFile::write ( const Log& entity )
 {
   try
   {
     std::stringstream line;
-    line << entity.id << '\t' << entity.cMoment << '\t';
+    line << "\r\n" << entity.id << "\t\t" << entity.cMoment << '\t';
     switch ( entity.type )
     {
       case 0:
-        line << "INFO:\t";
+        line << "INFO:    ";
         break;
       case 1:
-        line << "DEBUG:\t";
+        line << "DEBUG:   ";
         break;
       case 2:
-        line << "WARNING:\t";
+        line << "WARNING: ";
         break;
       case 3:
-        line << "ERROR:\t";
+        line << "ERROR:   ";
         break;
     }
-    line << entity.threadId << '\t' << entity.threadName << '\t' << entity.message << "\n\n";
+    line << entity.threadId << '\t' << entity.threadName << '\t' << entity.message;
     if ( ready )
       fileStream << line.str ();
     else
@@ -117,21 +129,21 @@ int toFile::write ( const Log& entity )
       anException.set ( "logW" );
       throw anException;
     }
-    return EXIT_SUCCESS;
+    return true;
   }
   catch ( const std::exception& ex )
   {
     if ( ex.what () == "logW" )
     {
-      MessageBox ( 0, L"File output stream was not ready!", L"Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( 0, "File output stream was not ready!", "Error", MB_OK | MB_ICONERROR );
       aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "File output stream was not ready!" );
     } else
     {
-      MessageBox ( 0, LPCWCHAR ( ex.what () ), L"Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
       aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
     }
     logEngineToFile.push ( aLog );
-    return EXIT_FAILURE;
+    return false;
   }
 };
 
@@ -173,7 +185,7 @@ void loggerEngine ( Logger<tType>* engine )
   {
     // dump engine: write the present logs' data
     std::this_thread::sleep_for ( std::chrono::milliseconds { 20 } );
-    aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started: Full feature surveillance is the utter most goal in a digital world, and to be frank, it is well justified! ^,^" );
+    aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started: Full-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^" );
     logEngineToFile.push ( aLog );
 
     // initializing and not locking the mutex object (mark as not owing a lock)
@@ -188,6 +200,8 @@ void loggerEngine ( Logger<tType>* engine )
           continue;
         for ( auto& element : engine->buffer )
           engine->policy.write ( element );
+        //if (!engine->policy.write ( element ))
+
         engine->buffer.clear ();
         lock.unlock ();
       }
@@ -195,7 +209,7 @@ void loggerEngine ( Logger<tType>* engine )
   }
   catch ( const std::exception& ex )
   {
-    MessageBox ( 0, LPCWCHAR ( ex.what () ), L"Error", MB_OK | MB_ICONERROR );
+    MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
     aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
     logEngineToFile.push ( aLog );
   }

@@ -6,8 +6,20 @@
 /// <changed>ʆϒʅ,24.07.2019</changed>
 // ********************************************************************************
 
-#ifndef LOGGING_H
-#define LOGGING_H
+#ifndef UTILITIES_H
+#define UTILITIES_H
+
+
+// the special exception container
+class theException : public std::exception
+{
+private:
+  const char* expected;
+public:
+  theException ();
+  void set ( const char* );
+  const char* what () const throw( );
+};
 
 
 // the severity of the log entity
@@ -44,7 +56,7 @@ public:
   toFile ();
   ~toFile ();
   const bool& state ();
-  int write ( const Log& );
+  bool write ( const Log& );
 };
 
 
@@ -76,4 +88,4 @@ public:
 void problemSolver ();
 
 
-#endif // !LOGGING_H
+#endif // !UTILITIES_H

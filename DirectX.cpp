@@ -3,35 +3,19 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,20.07.2019</changed>
+/// <changed>ʆϒʅ,24.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "DirectX.h"
 
 
-// Direct3D interface, in charge of controlling the hardware device,
-// the structure type is basically the software controller to the graphic device
-ID3D10Device* d3dDevice;
-
-// swap chain interface, a structure type to hold the front and back buffer,
-// which are 2d textures to draw the scenes on, while the front buffer already appears on the screen,
-// the back buffer is waiting to appear on the screen.
-// these two buffers are on the row first calculated as back buffer and then shown as front buffer,
-// this way the flickering effect is avoided, with other words,
-// the calculation and drawing happen and what is going to be seen is the completed pictures.
-IDXGISwapChain* swapChain;
-
-// render target view interface, a structure type that gets the resource view and sends it to the wished pipeline stage.
-// for the Direct3D to be able to render onto back buffer, it needs to be bound to the output merger stage,
-// therefore a render target view is created for the back buffer.
-ID3D10RenderTargetView* renderTargetView;
-
-
-// Direct3D initialization
-bool InitializeD3dApp ( HINSTANCE hInstance )
+DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
 {
   // the structure type to declare the swap chain:
+
+  initialized = false;
+  hInstance = h_instance;
 
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
@@ -82,7 +66,7 @@ bool InitializeD3dApp ( HINSTANCE hInstance )
     &d3dDevice ); // returns the created device (ppDevice)
 
   // a 2d texture for back buffer, onto which the scene will be rendered
-  ID3D10Texture2D* backBuffer;
+  ID3D10Texture2D* backBuffer { nullptr };
 
   // passing the back buffer to swap chain
   // note that the back buffer is a COM object, therefore it is to be released at the end of the code.
@@ -103,7 +87,7 @@ bool InitializeD3dApp ( HINSTANCE hInstance )
   backBuffer->Release ();
 
   // this method bind one or more render targets to the output merger stage of the pipeline
-  d3dDevice->OMSetRenderTargets ( 
+  d3dDevice->OMSetRenderTargets (
     // the number of the render targets passed to the pipeline
     // using advanced techniques, it is possible to simultaneously bind more than one to several render targets
     1,
@@ -124,16 +108,19 @@ bool InitializeD3dApp ( HINSTANCE hInstance )
 
   swapChain->Present ( 0, 0 );
 
-  return true;
-}
+  initialized = true;
+  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "DirectX3D is initialized." );
+  logEngineToFile.push ( aLog );
+};
 
-bool InitializeScene ()
-{
-  return true;
-}
 
-bool DrawTheScene ()
+DirectX3dCore::~DirectX3dCore ()
 {
-  // draw the scene here
-  return true;
-}
+
+};
+
+
+const bool& DirectX3dCore::initialState ()
+{
+  return initialized;
+};

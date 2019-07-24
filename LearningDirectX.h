@@ -15,6 +15,7 @@
 #include <iostream> // C++ standard input and output streams
 #include <cstdlib> // C++ standard general utilities
 #include <string.h> // C++ standard string class
+#include <tchar.h> // Microsoft string's differences coverage library
 #include <exception> // C++ standard exception
 #include <sstream> // C++ standard string streams
 #include <fstream> // C++ standard file streams
@@ -24,25 +25,11 @@
 #include <mutex> // C++ standard lockable objects
 #include <d3dcsx.h> // Windows standard DirectX3D API's
 
-#include "Logging.h"
+#include "Utilities.h"
 
 
 // defined and introduced in LearningDirectX.cpp:
 extern bool running;
-
-extern Log aLog;
-extern Logger<toFile> logEngineToFile;
-
-class theException : public std::exception
-{
-private:
-  const char* expected;
-public:
-  theException ();
-  void set ( const char* );
-  const char* what () const throw( );
-};
-extern theException anException;
 
 
 // defined and introduced in Windows.cpp:
@@ -53,10 +40,16 @@ extern int Height;
 extern bool fullScreen;
 
 
+// utilities.h:
+extern theException anException;
+extern Log aLog;
+extern Logger<toFile> logEngineToFile;
+
+
 // defined and introduced in DirectX.cpp:
-extern ID3D10Device* d3dDevice;
-extern IDXGISwapChain* swapChain;
-extern ID3D10RenderTargetView* renderTargetView;
+//extern ID3D10Device* d3dDevice;
+//extern IDXGISwapChain* swapChain;
+//extern ID3D10RenderTargetView* renderTargetView;
 
 
 #endif // !LEARNINGDIRECTX_H

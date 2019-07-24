@@ -9,7 +9,8 @@
 #include "LearningDirectX.h"
 #include "Window.h"
 #include "DirectX.h"
-#include "Logging.h"
+#include "Game.h"
+#include "Utilities.h"
 
 
 // references:
@@ -20,22 +21,11 @@
 // http://www.rastertek.com/
 
 
-theException::theException () : expected ( "null" ) {};
-void theException::set ( const char* prm )
-{
-  expected = prm;
-};
-const char* theException::what () const throw( )
-{
-  return expected;
-};
-
-
 bool running { true };
+
 
 Log aLog;
 Logger<toFile> logEngineToFile;
-
 theException anException;
 
 
@@ -61,7 +51,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   Window win ( hInstance, nShowCmd );
   if ( !win.initialState () )
   {
-    MessageBox ( 0, L"Window initialization failed.", L"Error", MB_OK | MB_ICONERROR );
+    MessageBoxA ( 0, "Window initialization failed.", "Error", MB_OK | MB_ICONERROR );
     aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window initialization failed." );
     logEngineToFile.push ( aLog );
     return EXIT_FAILURE;
@@ -71,29 +61,30 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     logEngineToFile.push ( aLog );
   }
 
+  GameCore theCore ( hInstance );
+  if ( !theCore.initialState () )
+  {
+    MessageBoxA ( 0, "The initialization of core failed.", "Error", MB_OK | MB_ICONERROR );
+    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The initialization of core failed." );
+    logEngineToFile.push ( aLog );
+    return EXIT_FAILURE;
+  } else
+  {
+    aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The core is initialized." );
+    logEngineToFile.push ( aLog );
+  }
 
-  if ( !InitializeD3dApp ( hInstance ) )
-  {
-    MessageBox ( 0, L"Direct3D initialization failed.", L"Error", MB_OK | MB_ICONERROR );
-    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Direct3D initialization failed." );
-    logEngineToFile.push ( aLog );
-    return EXIT_FAILURE;
-  } else
-  {
-    aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "DirectX3D is initialized." );
-    logEngineToFile.push ( aLog );
-  }
-  if ( !InitializeScene () )
-  {
-    MessageBox ( 0, L"Scene initialization failed.", L"Error", MB_OK | MB_ICONERROR );
-    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Scene initialization failed." );
-    logEngineToFile.push ( aLog );
-    return EXIT_FAILURE;
-  } else
-  {
-    aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Scene is initialized." );
-    logEngineToFile.push ( aLog );
-  }
+  //if ( !InitializeScene () )
+  //{
+  //  MessageBoxA ( 0, "Scene initialization failed.", "Error", MB_OK | MB_ICONERROR );
+  //  aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Scene initialization failed." );
+  //  logEngineToFile.push ( aLog );
+  //  return EXIT_FAILURE;
+  //} else
+  //{
+  //  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Scene is initialized." );
+  //  logEngineToFile.push ( aLog );
+  //}
 
   MSG msg { 0 }; // a new message structure
   unsigned short counter { 0 };
@@ -148,9 +139,9 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
     float backColor [4] { r, g, b, 1.0f };
 
-    d3dDevice->ClearRenderTargetView ( renderTargetView, backColor );
+    theCore.d3dDevice->ClearRenderTargetView ( theCore.renderTargetView, backColor );
 
-    swapChain->Present ( 0, 0 );
+    theCore.swapChain->Present ( 0, 0 );
 
     counter++;
     if ( ( counter % 1000 ) == 0 )
