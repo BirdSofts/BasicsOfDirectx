@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,25.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -11,7 +11,7 @@
 
 
 LPCTSTR mainWindowName { L"windowOne" }; // window name
-HWND handle { NULL }; // window handle
+//HWND wndHandle { NULL }; // window handle
 int Width { 800 }; // window size
 int Height { 600 }; // window size
 bool fullScreen { false }; // windowed
@@ -68,7 +68,7 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
 
     // after the properties of a window class is known to Windows, it can finally be created.
     // the below function returns a handle to the newly created window, or NULL in case of failure.
-    handle = mainWindow = CreateWindowEx (
+    mainWindow = CreateWindowEx (
       NULL, // extended window style (for game NULL)
       wClass.lpszClassName, // a long pointer to a constant literal representing the registered window class name
       mainWindowName, // a long pointer to a constant literal representing the name or title of the window
@@ -159,15 +159,14 @@ LRESULT CALLBACK Window::msgProc (
           // next expression simply indicates to the system the termination intention,
           // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
           PostQuitMessage ( 0 );  // send the corresponding quite message
-          return EXIT_SUCCESS; // after despatching quit message, it is advised to return zero.
+          running = false;
+          return 0; // after despatching quit message, it is advised to return zero.
         }
       }
     case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked),
-      if ( MessageBoxA ( 0, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
-      {
-        PostQuitMessage ( 0 );
-        return EXIT_SUCCESS;
-      }
+      PostQuitMessage ( 0 );
+      running = false;
+      return 0;
   }
   // it is very important to let Window handle other for the program irrelevant messages,
   // using below pass through function, preventing the Window losing them all. :)

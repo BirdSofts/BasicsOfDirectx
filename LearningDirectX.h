@@ -3,29 +3,50 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,26.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
 #define LEARNINGDIRECTX_H
 
 
+#include <windows.h> // Windows standard APIs
+#include <d3d11.h> // Windows standard DirectX3D APIs
 #pragma comment (lib, "d3d10.lib") // linkage to the 'd3d10' library
-#include <windows.h> // Windows standard API's
+#pragma comment (lib, "d3d11.lib") // linkage to the 'd3d11' library
+#include <ShlObj.h> // Windows standard control APIs
+#include <Shlwapi.h> // Windows standard lightweight utility APIs
+#include <PathCch.h> // Windows standard shell APIs
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "PathCch.lib")
 #include <iostream> // C++ standard input and output streams
 #include <cstdlib> // C++ standard general utilities
 #include <string.h> // C++ standard string class
 #include <tchar.h> // Microsoft string's differences coverage library
+#include <locale> // C++ standard locals (facets of the below header is declared here)
+#include <codecvt> // C++ standard Unicode conversion facets
 #include <exception> // C++ standard exception
+#include <list> // C++ standard list container
 #include <sstream> // C++ standard string streams
 #include <fstream> // C++ standard file streams
-#include <list> // C++ standard list container
 #include <atomic> // C++ standard atomic objects (no data races)
 #include <thread> // C++ standard threads
 #include <mutex> // C++ standard lockable objects
-#include <d3dcsx.h> // Windows standard DirectX3D API's
+
+// Lua: a powerful, lightweight and embeddable scripting language engine,
+// and additionally the most popular general-purpose one used in games nowadays.
+// --more information: http://luabinaries.sourceforge.net/download.html
+// --documentation: https://www.lua.org/docs.html
+// purposes: write and read configuration files, run scripts and to write code to drive the gameplay.
+// Sol: the go-to framework for high-performance binding between Lua and C++
+// --more information: https://github.com/ThePhD/sol2/releases
+#include <lua.hpp> // Lua scripting language engine header file
+#pragma comment (lib, "liblua53.a") // Lua scripting language engine library
+#define SOL_ALL_SAFETIES_ON 1
+#include <sol.hpp> // Sol binding framework between Lua and C++
 
 #include "Utilities.h"
+#include "Window.h"
 
 
 // defined and introduced in LearningDirectX.cpp:
@@ -34,22 +55,19 @@ extern bool running;
 
 // defined and introduced in Windows.cpp:
 extern LPCTSTR mainWindowName;
-extern HWND handle;
+//extern HWND wndHandle;
 extern int Width;
 extern int Height;
 extern bool fullScreen;
 
 
-// utilities.h:
+// Window.h
+extern Window* win;
+// Utilities.h:
 extern theException anException;
 extern Log aLog;
 extern Logger<toFile> logEngineToFile;
-
-
-// defined and introduced in DirectX.cpp:
-//extern ID3D10Device* d3dDevice;
-//extern IDXGISwapChain* swapChain;
-//extern ID3D10RenderTargetView* renderTargetView;
+extern Configuration config;
 
 
 #endif // !LEARNINGDIRECTX_H

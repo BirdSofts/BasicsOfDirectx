@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,25.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -38,7 +38,7 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
   swapChainD.BufferCount = 1;
 
   // handle to the window and the windowed or full-screen mode
-  swapChainD.OutputWindow = handle;
+  swapChainD.OutputWindow = win->gethHandle ();
   swapChainD.Windowed = true;
 
   // -- SwapEffect: the way to swap the back and front buffers.

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,26.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -24,7 +24,7 @@ const char* theException::what () const throw( )
 Log::Log ()
 {
   id = 0;
-  count++;
+  count = 1;
   type = logType::info;
   threadId = std::this_thread::get_id ();
   threadName = "null";
@@ -52,9 +52,6 @@ void Log::set ( const logType& t,
     << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
   cMoment = current.str ();
 };
-
-
-unsigned short Log::count { 0 };
 
 
 toFile::toFile ()
@@ -184,7 +181,6 @@ void loggerEngine ( Logger<tType>* engine )
   try
   {
     // dump engine: write the present logs' data
-    std::this_thread::sleep_for ( std::chrono::milliseconds { 20 } );
     aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started: Full-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^" );
     logEngineToFile.push ( aLog );
 
@@ -193,17 +189,21 @@ void loggerEngine ( Logger<tType>* engine )
 
     do
     {
-      std::this_thread::sleep_for ( std::chrono::milliseconds { 50 } );
+      //std::this_thread::sleep_for ( std::chrono::milliseconds { 50 } );
       if ( engine->buffer.size () )
       {
-        if ( !lock.try_lock_for ( std::chrono::milliseconds { 50 } ) )
-          continue;
+        //if ( !lock.try_lock_for ( std::chrono::milliseconds { 10 } ) )
+        //  continue;
         for ( auto& element : engine->buffer )
-          engine->policy.write ( element );
-        //if (!engine->policy.write ( element ))
+          //engine->policy.write ( element );
+          if ( !engine->policy.write ( element ) )
+          {
+            aLog.set ( logType::warning, std::this_thread::get_id (), "logThread", "Dumping wasn't possible." );
+            logEngineToFile.push ( aLog );
+          }
 
         engine->buffer.clear ();
-        lock.unlock ();
+        //lock.unlock ();
       }
     } while ( engine->operating.test_and_set () || engine->buffer.size () );
   }
@@ -223,3 +223,83 @@ void problemSolver ()
   tempObj.push ( aLog );
   //loggerEngine ( &tempObj );
 }
+
+
+Configuration::Configuration ()
+{
+  Width = 800;
+  Height = 600;
+};
+
+
+const Configuration& Configuration::set ( void )
+{
+  return *this;
+};
+
+
+Configure::Configure ()
+{
+  try
+  {
+    PWSTR docPath { NULL };
+    HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
+    if ( FAILED ( hResult ) )
+    {
+      anException.set ( "knownD" );
+      throw anException;
+    }
+    pathToMyDocuments = docPath;
+    current.Width = config.Width;
+    current.Height = config.Height;
+    //std::wstring path { pathToMyDocuments + L"\\settings.lua" };
+    std::wstring path { L"settings.lua" };
+    sol::state lua;
+    lua.script_file ( strConverter ( path ) );
+    //valid;
+  }
+  catch ( const std::exception& ex )
+  {
+    if ( ex.what () == "knownD" )
+    {
+      MessageBoxA ( 0, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The path to document directory is unknown!" );
+    } else
+    {
+    }
+    logEngineToFile.push ( aLog );
+    valid = false;
+  }
+};
+
+
+Configure::~Configure ()
+{
+
+};
+
+
+void Configure::set ( const Configuration& )
+{
+
+};
+
+
+const Configuration& Configure::set ( void )
+{
+  return current;
+};
+
+
+const std::wstring& Configure::strConverter ( const std::string& str )
+{
+  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
+  return entity.from_bytes ( str );
+};
+
+
+const std::string& Configure::strConverter ( const std::wstring& wstr )
+{
+  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
+  return entity.to_bytes ( wstr );
+};

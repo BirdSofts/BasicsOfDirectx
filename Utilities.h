@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,26.07.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -30,6 +30,7 @@ enum logType { info = 0, debug, warning, error };
 struct Log
 {
   unsigned short id;
+  unsigned short count;
   logType type;
   std::string cMoment;
   std::thread::id threadId;
@@ -41,8 +42,6 @@ struct Log
              const std::thread::id&,
              const std::string&,
              const std::string& );
-
-  static unsigned short count;
 };
 
 
@@ -60,7 +59,7 @@ public:
 };
 
 
-// screen stream policy
+// Todo screen stream policy
 //class toScreen {};
 
 
@@ -86,6 +85,35 @@ public:
 
 // don't call this function: solution for linker error, when using templates.
 void problemSolver ();
+
+
+struct Configuration
+{
+  unsigned int Width;
+  unsigned int Height;
+
+  Configuration ();
+  const Configuration& set ( void );
+};
+
+
+// Todo file: available and containing valid configurations: file is source
+// if first run or the file is not valid then default configurations in the structure
+class Configure
+{
+private:
+  std::wstring pathToMyDocuments;
+  bool valid;
+  Configuration current;
+public:
+  Configure ();
+  ~Configure ();
+  void set ( const Configuration& );
+  const Configuration& set ( void );
+
+  static const std::wstring& strConverter ( const std::string& );
+  static const std::string& strConverter ( const std::wstring& );
+};
 
 
 #endif // !UTILITIES_H

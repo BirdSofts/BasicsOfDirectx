@@ -3,18 +3,24 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,21.07.2019</changed>
+/// <changed>ʆϒʅ,26.07.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
 #define WINDOW_H
 
 
+#include "DirectX.h"
+
+
 class Window
 {
+  //friend class DirectX3dCore;
 private:
   HWND mainWindow;
   bool initialized;
+  unsigned int clientWidth;
+  unsigned int clientHeight;
 public:
   Window ( const HINSTANCE&, const int& );
   ~Window ();

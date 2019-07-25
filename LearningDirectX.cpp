@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,26.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -24,9 +24,11 @@
 bool running { true };
 
 
+Window* win { nullptr };
+theException anException;
 Log aLog;
 Logger<toFile> logEngineToFile;
-theException anException;
+Configuration config;
 
 
 float r { 0.0f };
@@ -44,12 +46,9 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                      _In_ LPSTR lpCmdLine,
                      _In_ int nShowCmd ) // indicates how the main window is to be opened (minimized, maximized)
 {
-
-  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Logging service is started." );
-  logEngineToFile.push ( aLog );
-
-  Window win ( hInstance, nShowCmd );
-  if ( !win.initialState () )
+  
+  win = new Window ( hInstance, nShowCmd );
+  if ( !win->initialState () )
   {
     MessageBoxA ( 0, "Window initialization failed.", "Error", MB_OK | MB_ICONERROR );
     aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window initialization failed." );
@@ -74,6 +73,11 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     logEngineToFile.push ( aLog );
   }
 
+  //lua_State* LuaState = luaL_newstate ();
+  //lua_close ( LuaState );
+  //aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Lua scripting language engine is initialized." );
+  //logEngineToFile.push ( aLog );
+
   //if ( !InitializeScene () )
   //{
   //  MessageBoxA ( 0, "Scene initialization failed.", "Error", MB_OK | MB_ICONERROR );
@@ -96,34 +100,35 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   {
 
 #pragma region peekLoop
-    // check and peek (get) window messages already placed in an event queue.
-    // note the difference between the below two functions:
-    // the get function, once called, actually waits for a message,
-    // while peek function allows the normal flow, if there is no message in the message queue.
-    while ( // peek loop for messages (empting the message queue)
-            PeekMessage (
-              // pointer to a message structure to receive message information
-              &msg,
-              // handle to the window, whose messages is intended,
-              // and NULL as argument allow the retrieve of all messages for any window, which belongs to the current thread.
-              handle,
-              // to retrieve messages filtered through the introduced range. (both zero retunes all available messages)
-              // first message to last message
-              0, 0,
-              // removal flags specify how the messages are to be handled:
-              // additionally to below introduced argument, PM_NOREMOVE prevents the removal of messages in the queue,
-              // therefore after it is passed, the get function is additionally needed to actually retrieve the messages.
-              PM_REMOVE ) )
-      //while ( GetMessage ( &msg, NULL, 0, 0 ) ) // not a good one for a game, which needs to deliver 30 F/S
-    {
-      // translation of the virtual-key messages into character messages
-      TranslateMessage ( &msg );
-      // dispatching the message to the window procedure function, so the event could be handled appropriately.
-      DispatchMessage ( &msg );
-      // the evaluated value: exit (using intellisense or MSDN, the possible and obvious messages could be seen)
-      if ( msg.message == WM_QUIT )
-        running = false;
-    }
+    if ( ( counter % 500 ) == 0 )
+      // check and peek (get) window messages already placed in an event queue.
+      // note the difference between the below two functions:
+      // the get function, once called, actually waits for a message,
+      // while peek function allows the normal flow, if there is no message in the message queue.
+      while ( // peek loop for messages (empting the message queue)
+              PeekMessage (
+                // pointer to a message structure to receive message information
+                &msg,
+                // handle to the window, whose messages is intended,
+                // and NULL as argument allow the retrieve of all messages for any window, which belongs to the current thread.
+                win->gethHandle (),
+                // to retrieve messages filtered through the introduced range. (both zero retunes all available messages)
+                // first message to last message
+                0, 0,
+                // removal flags specify how the messages are to be handled:
+                // additionally to below introduced argument, PM_NOREMOVE prevents the removal of messages in the queue,
+                // therefore after it is passed, the get function is additionally needed to actually retrieve the messages.
+                PM_REMOVE ) )
+        //while ( GetMessage ( &msg, NULL, 0, 0 ) ) // not a good one for a game, which needs to deliver 30 F/S
+      {
+        // translation of the virtual-key messages into character messages
+        TranslateMessage ( &msg );
+        // dispatching the message to the window procedure function, so the event could be handled appropriately.
+        DispatchMessage ( &msg );
+        // the evaluated value: exit (using intellisense or MSDN, the possible and obvious messages could be seen)
+        //if ( msg.message == WM_QUIT )
+        //  running = false;
+      }
 #pragma endregion
 
     r += colourMod_r * 0.00001f;
@@ -144,6 +149,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     theCore.swapChain->Present ( 0, 0 );
 
     counter++;
+    // my environment could manage 10! :)
     if ( ( counter % 1000 ) == 0 )
     {
       std::string str { "" };
@@ -161,6 +167,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
   } while ( running == true );
   return EXIT_SUCCESS;
+
 }
 
 
