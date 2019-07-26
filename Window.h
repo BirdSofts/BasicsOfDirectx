@@ -17,6 +17,8 @@ class Window
 {
   //friend class DirectX3dCore;
 private:
+  HINSTANCE appInstance;
+  int showCommands;
   HWND mainWindow;
   bool initialized;
   unsigned int clientWidth;
@@ -24,6 +26,7 @@ private:
 public:
   Window ( const HINSTANCE&, const int& );
   ~Window ();
+  void initial ();
   const bool& initialState ();
   const HWND& gethHandle ();
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM );

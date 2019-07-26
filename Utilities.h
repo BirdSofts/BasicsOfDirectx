@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,26.07.2019</changed>
+/// <changed>ʆϒʅ,27.07.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -87,6 +87,7 @@ public:
 void problemSolver ();
 
 
+// default configurations
 struct Configuration
 {
   unsigned int Width;
@@ -111,8 +112,8 @@ public:
   void set ( const Configuration& );
   const Configuration& set ( void );
 
-  static const std::wstring& strConverter ( const std::string& );
-  static const std::string& strConverter ( const std::wstring& );
+  static std::wstring strConverter ( const std::string& );
+  static std::string strConverter ( const std::wstring& );
 };
 
 

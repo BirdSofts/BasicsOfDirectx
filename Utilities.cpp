@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,26.07.2019</changed>
+/// <changed>ʆϒʅ,27.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -181,7 +181,7 @@ void loggerEngine ( Logger<tType>* engine )
   try
   {
     // dump engine: write the present logs' data
-    aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started: Full-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^" );
+    aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n\n" );
     logEngineToFile.push ( aLog );
 
     // initializing and not locking the mutex object (mark as not owing a lock)
@@ -189,10 +189,10 @@ void loggerEngine ( Logger<tType>* engine )
 
     do
     {
-      //std::this_thread::sleep_for ( std::chrono::milliseconds { 50 } );
+      std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
       if ( engine->buffer.size () )
       {
-        //if ( !lock.try_lock_for ( std::chrono::milliseconds { 10 } ) )
+        //if ( !lock.try_lock_for ( std::chrono::milliseconds { 50 } ) )
         //  continue;
         for ( auto& element : engine->buffer )
           //engine->policy.write ( element );
@@ -201,7 +201,6 @@ void loggerEngine ( Logger<tType>* engine )
             aLog.set ( logType::warning, std::this_thread::get_id (), "logThread", "Dumping wasn't possible." );
             logEngineToFile.push ( aLog );
           }
-
         engine->buffer.clear ();
         //lock.unlock ();
       }
@@ -227,8 +226,8 @@ void problemSolver ()
 
 Configuration::Configuration ()
 {
-  Width = 800;
-  Height = 600;
+  Width = 640;
+  Height = 480;
 };
 
 
@@ -250,13 +249,22 @@ Configure::Configure ()
       throw anException;
     }
     pathToMyDocuments = docPath;
-    current.Width = config.Width;
-    current.Height = config.Height;
     //std::wstring path { pathToMyDocuments + L"\\settings.lua" };
-    std::wstring path { L"settings.lua" };
-    sol::state lua;
-    lua.script_file ( strConverter ( path ) );
-    //valid;
+    std::wstring path { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
+    sol::state configs;
+    configs.script_file ( strConverter ( path ) );
+    current.Width = configs ["configurations"]["resolution"]["width"].get_or ( defaults.Width );
+    current.Height = configs ["configurations"]["resolution"]["height"].get_or ( defaults.Height );
+    if ( current.Height == 800 )
+    {
+      valid = true;
+      aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The configuration file is successfully read." );
+
+    } else
+    {
+      //anException.set ( "invalidF" );
+      //throw anException;
+    }
   }
   catch ( const std::exception& ex )
   {
@@ -265,8 +273,11 @@ Configure::Configure ()
       MessageBoxA ( 0, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
       aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The path to document directory is unknown!" );
     } else
-    {
-    }
+      if ( ex.what () == "invalidF" )
+      {
+        MessageBoxA ( 0, "The configuration file is corrupt!", "Error", MB_OK | MB_ICONERROR );
+        aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The configuration file is corrupt!" );
+      }
     logEngineToFile.push ( aLog );
     valid = false;
   }
@@ -281,7 +292,7 @@ Configure::~Configure ()
 
 void Configure::set ( const Configuration& )
 {
-
+  // Todo new settings to configuration file
 };
 
 
@@ -291,14 +302,14 @@ const Configuration& Configure::set ( void )
 };
 
 
-const std::wstring& Configure::strConverter ( const std::string& str )
+std::wstring Configure::strConverter ( const std::string& str )
 {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
   return entity.from_bytes ( str );
 };
 
 
-const std::string& Configure::strConverter ( const std::wstring& wstr )
+std::string Configure::strConverter ( const std::wstring& wstr )
 {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
   return entity.to_bytes ( wstr );

@@ -3,17 +3,15 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,25.07.2019</changed>
+/// <changed>ʆϒʅ,27.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
 
 
-LPCTSTR mainWindowName { L"windowOne" }; // window name
+LPCTSTR mainWindowName { L"The game" }; // window name
 //HWND wndHandle { NULL }; // window handle
-int Width { 800 }; // window size
-int Height { 600 }; // window size
 bool fullScreen { false }; // windowed
 
 
@@ -26,12 +24,28 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 }
 
 
-// window initialization
 Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
+{
+  wnd = this; // necessary to forward messages
+
+  appInstance = hInstance;
+  showCommands = nShowCmd;
+  mainWindow = NULL;
+  initialized = false;
+
+  clientWidth = defaults.Width;
+  clientHeight = defaults.Height;
+  initial ();
+};
+
+
+// window initialization
+void Window::initial ()
 {
   try
   {
-    wnd = this; // necessary to forward messages
+    clientWidth = settings.set ().Width;
+    clientHeight = settings.set ().Height;
 
     // filling the instantiation of the extended version of window class,
     // a structure that handles properties and actions of a window:
@@ -44,7 +58,7 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
     // ('LoadIcon' and 'LoadCursor' functions retrieve handles to standard common icons)
     wClass.hIcon = LoadIcon ( 0, IDI_APPLICATION ); // title bar icon
     wClass.hIconSm = LoadIcon ( 0, IDI_APPLICATION ); // taskbar icon
-    wClass.hInstance = hInstance; // handle to current application instance, which has created the window
+    wClass.hInstance = appInstance; // handle to current application instance, which has created the window
     // callback function pointer to handler of the window (default window callback procedure)
     wClass.lpfnWndProc = mainWndProc;
     // a long pointer to a constant literal representing the name of the window class itself,
@@ -66,10 +80,29 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
       throw anException;
     }
 
+    // client size: all the raw window size can't be tampered with as working area,
+    // therefore the exact dimension needs to be calculated.
+    // rectangle structure to store the coordinates (top-left and bottom-right)
+    RECT rectangle { 0, 0, long ( clientWidth ), long ( clientHeight ) };
+    if ( !AdjustWindowRectEx (
+      // long pointer to the rectangle structure to be filled with the calculated coordinates
+      &rectangle,
+      WS_OVERLAPPEDWINDOW, // current window style (is needed to calculated the client size)
+      false, // window contains a menu or not
+      WS_EX_OVERLAPPEDWINDOW ) ) // current extended window style (is needed to calculated the client size)
+    {
+      anException.set ( "adjustW" );
+      throw anException;
+    } else
+    {
+      aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The client window size is successfully calculated." );
+      logEngineToFile.push ( aLog );
+    }
+
     // after the properties of a window class is known to Windows, it can finally be created.
     // the below function returns a handle to the newly created window, or NULL in case of failure.
     mainWindow = CreateWindowEx (
-      NULL, // extended window style (for game NULL)
+      WS_EX_OVERLAPPEDWINDOW, // extended window style (for game NULL)
       wClass.lpszClassName, // a long pointer to a constant literal representing the registered window class name
       mainWindowName, // a long pointer to a constant literal representing the name or title of the window
       WS_OVERLAPPEDWINDOW, // window style (an overlapped window has a title bar and a border)
@@ -77,10 +110,10 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
       CW_USEDEFAULT, // window horizontal position in pixel (x)
       CW_USEDEFAULT, // window vertical position in pixel (y)
       // note that the below arguments can be set to default if the initial dimension is of no importance
-      Width, Height, // window size
+      rectangle.right - rectangle.left, rectangle.bottom - rectangle.top, // window size
       NULL, // handle to parent or owner window (Null designates the desktop as parent)
       NULL, // handle to menu, or child-window identifier
-      hInstance, // handle to current application instance, which has created the window
+      appInstance, // handle to current application instance, which has created the window
       NULL // pointer to window-creation data (advanced)
     );
 
@@ -103,12 +136,26 @@ Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
   {
     initialized = false;
     if ( ex.what () == "regW" )
-      MessageBoxA ( 0, "Window registration failed.", "Error", MB_OK | MB_ICONERROR );
-    else
+    {
+      MessageBoxA ( 0, "Window registration failed!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window registration failed!" );
+    } else
       if ( ex.what () == "crW" )
-        MessageBoxA ( 0, "Window creation failed.", "Error", MB_OK | MB_ICONERROR );
-      else
-        MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
+      {
+        MessageBoxA ( 0, "Window creation failed!", "Error", MB_OK | MB_ICONERROR );
+        aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window creation failed!" );
+      } else
+        if ( ex.what () == "adjustW" )
+        {
+          MessageBoxA ( 0, "The calculation of the client window size failed!", "Error", MB_OK | MB_ICONERROR );
+          aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The calculation of the client window size failed!" );
+        } else
+        {
+          MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
+          aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
+        }
+        logEngineToFile.push ( aLog );
+        initialized = false;
   }
 };
 

@@ -28,7 +28,8 @@ Window* win { nullptr };
 theException anException;
 Log aLog;
 Logger<toFile> logEngineToFile;
-Configuration config;
+Configuration defaults;
+Configure settings;
 
 
 float r { 0.0f };
@@ -46,7 +47,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                      _In_ LPSTR lpCmdLine,
                      _In_ int nShowCmd ) // indicates how the main window is to be opened (minimized, maximized)
 {
-  
+
   win = new Window ( hInstance, nShowCmd );
   if ( !win->initialState () )
   {

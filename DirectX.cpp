@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,25.07.2019</changed>
+/// <changed>ʆϒʅ,27.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -19,8 +19,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
 
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
-  swapChainD.BufferDesc.Width = Width;
-  swapChainD.BufferDesc.Height = Height;
+  swapChainD.BufferDesc.Width = settings.set ().Width;
+  swapChainD.BufferDesc.Height = settings.set ().Height;
   swapChainD.BufferDesc.RefreshRate.Numerator = 60;
   swapChainD.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   swapChainD.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -96,8 +96,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
   D3D10_VIEWPORT viewPort;
   viewPort.TopLeftX = 0;
   viewPort.TopLeftY = 0;
-  viewPort.Width = Width;
-  viewPort.Height = Height;
+  viewPort.Width = settings.set ().Width;
+  viewPort.Height = settings.set ().Height;
   viewPort.MinDepth = 0.0f;
   viewPort.MaxDepth = 1.0f;
 
