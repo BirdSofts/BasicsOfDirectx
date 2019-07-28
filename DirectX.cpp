@@ -3,19 +3,16 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,27.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "DirectX.h"
 
 
-DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
+DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) : appInstance ( hInstance ), initialized ( false ), paused ( false )
 {
   // the structure type to declare the swap chain:
-
-  initialized = false;
-  hInstance = h_instance;
 
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
@@ -109,18 +106,35 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& h_instance )
   swapChain->Present ( 0, 0 );
 
   initialized = true;
-  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "DirectX3D is initialized." );
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
   logEngineToFile.push ( aLog );
-};
-
-
-DirectX3dCore::~DirectX3dCore ()
-{
-
 };
 
 
 const bool& DirectX3dCore::initialState ()
 {
   return initialized;
+};
+
+
+bool& DirectX3dCore::pause ()
+{
+  return paused;
+};
+
+
+void DirectX3dCore::resize ( void )
+{
+  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
+  logEngineToFile.push ( aLog );
+};
+
+
+void DirectX3dCore::shutdown ( void )
+{
+  if ( appInstance )
+    appInstance = NULL;
+  initialized = 0;
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
+  logEngineToFile.push ( aLog );
 };

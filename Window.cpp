@@ -3,16 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,27.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
-
-
-LPCTSTR mainWindowName { L"The game" }; // window name
-//HWND wndHandle { NULL }; // window handle
-bool fullScreen { false }; // windowed
 
 
 Window* wnd { nullptr };
@@ -24,17 +19,16 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 }
 
 
-Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd )
+Window::Window ( const HINSTANCE& hInstance, const int& nShowCmd ) :
+  appInstance ( hInstance ), showCommands ( nShowCmd ), appWindow ( NULL ), initialized ( false ),
+  minimized ( false ), maximized ( false ), resizing ( false ), paused ( false )
 {
   wnd = this; // necessary to forward messages
 
-  appInstance = hInstance;
-  showCommands = nShowCmd;
-  mainWindow = NULL;
-  initialized = false;
-
   clientWidth = defaults.Width;
   clientHeight = defaults.Height;
+  fullScreen = false;
+
   initial ();
 };
 
@@ -63,7 +57,7 @@ void Window::initial ()
     wClass.lpfnWndProc = mainWndProc;
     // a long pointer to a constant literal representing the name of the window class itself,
     // useful when the application opens more than one window, so Windows is able to keep track of them
-    wClass.lpszClassName = mainWindowName;
+    wClass.lpszClassName = L"The Game";
     // a long pointer to a constant literal representing the name of the menu to attach
     wClass.lpszMenuName = 0;
     // object style flags: below arguments are usable to redraw the window, when moving it vertically or horizontally,
@@ -95,16 +89,16 @@ void Window::initial ()
       throw anException;
     } else
     {
-      aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The client window size is successfully calculated." );
+      aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window size is successfully calculated." );
       logEngineToFile.push ( aLog );
     }
 
     // after the properties of a window class is known to Windows, it can finally be created.
     // the below function returns a handle to the newly created window, or NULL in case of failure.
-    mainWindow = CreateWindowEx (
+    appWindow = CreateWindowEx (
       WS_EX_OVERLAPPEDWINDOW, // extended window style (for game NULL)
       wClass.lpszClassName, // a long pointer to a constant literal representing the registered window class name
-      mainWindowName, // a long pointer to a constant literal representing the name or title of the window
+      L"The Game", // a long pointer to a constant literal representing the name or title of the window
       WS_OVERLAPPEDWINDOW, // window style (an overlapped window has a title bar and a border)
       // note that the below arguments can be set to default if the actual location is of no importance
       CW_USEDEFAULT, // window horizontal position in pixel (x)
@@ -117,7 +111,7 @@ void Window::initial ()
       NULL // pointer to window-creation data (advanced)
     );
 
-    if ( !mainWindow )
+    if ( !appWindow )
     {
       anException.set ( "crW" );
       throw anException;
@@ -126,10 +120,10 @@ void Window::initial ()
     // show the window: the second parameter controls how the window is to be shown,
     // it can be passed the last parameter of the main function (nShowCmd) of the program,
     // or SW_SWOW, for example, activates the window and displays it in its current size and position.
-    ShowWindow ( mainWindow, SW_SHOW );
+    ShowWindow ( appWindow, SW_SHOW );
     // using the function below, Windows is forced to update the window content,
     // additionally generating a WM_PAINT message that needs to be handled by the event handler.
-    UpdateWindow ( mainWindow );
+    UpdateWindow ( appWindow );
     initialized = true;
   }
   catch ( const std::exception& ex )
@@ -137,22 +131,22 @@ void Window::initial ()
     initialized = false;
     if ( ex.what () == "regW" )
     {
-      MessageBoxA ( 0, "Window registration failed!", "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window registration failed!" );
+      MessageBoxA ( appWindow, "Window registration failed!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window registration failed!" );
     } else
       if ( ex.what () == "crW" )
       {
-        MessageBoxA ( 0, "Window creation failed!", "Error", MB_OK | MB_ICONERROR );
-        aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window creation failed!" );
+        MessageBoxA ( appWindow, "Window creation failed!", "Error", MB_OK | MB_ICONERROR );
+        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
       } else
         if ( ex.what () == "adjustW" )
         {
-          MessageBoxA ( 0, "The calculation of the client window size failed!", "Error", MB_OK | MB_ICONERROR );
-          aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The calculation of the client window size failed!" );
+          MessageBoxA ( appWindow, "The calculation of the client window size failed!", "Error", MB_OK | MB_ICONERROR );
+          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
         } else
         {
-          MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
-          aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
+          MessageBoxA ( appWindow, ex.what (), "Error", MB_OK | MB_ICONERROR );
+          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
         }
         logEngineToFile.push ( aLog );
         initialized = false;
@@ -163,8 +157,12 @@ void Window::initial ()
 // window destruction
 Window::~Window ()
 {
-  if ( mainWindow )
-    mainWindow = NULL;
+  if ( appWindow )
+    appWindow = NULL;
+  if ( appInstance )
+    appInstance = NULL;
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
+  logEngineToFile.push ( aLog );
 };
 
 
@@ -176,8 +174,14 @@ const bool& Window::initialState ()
 
 const HWND& Window::gethHandle ()
 {
-  return mainWindow;
+  return appWindow;
 }
+
+
+const bool& Window::isPaused ()
+{
+  return paused;
+};
 
 
 // the event handler, a callback function, also known as Windows Procedure,
@@ -198,23 +202,115 @@ LRESULT CALLBACK Window::msgProc (
   switch ( msg )
   {
     case WM_KEYDOWN: // if a key is pressed
-      if ( wPrm == VK_ESCAPE ) // the ESC key
+      if ( wPrm == VK_ESCAPE ) // the ESC key identification
       {
-        if ( MessageBoxA ( 0, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+        // Note for the time being:
+        if ( MessageBoxA ( appWindow, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
         {
-          //DestroyWindow ( handle ); // release the memory
-          // next expression simply indicates to the system the termination intention,
+          // next expression simply indicates to the system intention to terminate the window,
           // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
-          PostQuitMessage ( 0 );  // send the corresponding quite message
+          PostQuitMessage ( 0 ); // send the corresponding quite message
           running = false;
-          return 0; // after despatching quit message, it is advised to return zero.
-        }
+          gameState = L"shutting down";
+          aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
+          logEngineToFile.push ( aLog );
+          return 0; // the message was useful and is handled.
+        } else
+          return 0; // the message was useful and is handled.
       }
-    case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked),
-      PostQuitMessage ( 0 );
-      running = false;
+
+      //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
+    case WM_CLOSE: // the user tries to somehow close the application
+      if ( MessageBoxA ( appWindow, "Exit the program?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+      {
+        PostQuitMessage ( 0 );
+        running = false;
+        gameState = L"shutting down";
+        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
+        logEngineToFile.push ( aLog );
+        return DefWindowProc ( appWindow, msg, wPrm, lPrm ); // so the window behaves logical! :)
+      } else
+        return 0;
+
+    case WM_ACTIVATE: // if window activation state changes
+      if ( gameState == L"gaming" )
+        if ( ( LOWORD ( wPrm ) == WA_INACTIVE ) ) // activation flag
+          paused = true; // the game is paused
+        else
+          paused = false; // the game is running
+      return 0;
+
+    case WM_MENUCHAR: // handling none mnemonic or accelerator key and preventing constant beeping
+      // the games don't have a menu, this fact can easily be used to deceive the Windows,
+      // binding this not-needed feature to close the non-existent menu.
+      return MAKELRESULT ( 0, MNC_CLOSE );
+      return 0;
+
+    case WM_SIZE: // important for games in windowed mode (resizing the client size and game universe)
+      if ( gameState == L"gaming" )
+        if ( wPrm == SIZE_MINIMIZED ) // window is minimized
+        {
+          minimized = true;
+          maximized = false;
+          paused = true;
+        } else
+          if ( wPrm == SIZE_MAXIMIZED ) // window is maximized
+          {
+            minimized = false;
+            maximized = true;
+            paused = false;
+          } else
+            if ( wPrm == SIZE_RESTORED ) // window is restored, find the previous state:
+            {
+              if ( minimized )
+              {
+                minimized = false;
+                theCore->resize ();
+                paused = true;
+              } else
+                if ( maximized )
+                {
+                  maximized = false;
+                  theCore->resize ();
+                  paused = false;
+                } else
+                  if ( resizing )
+                  {
+                    if ( gameState == L"gaming" )
+                      if ( !paused )
+                        paused = true;
+                    // a game window get seldom resized or dragged, even when such a case occur,
+                    // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
+                  } else // response when resized
+                  {
+                    theCore->resize ();
+                    if ( gameState == L"gaming" )
+                      paused = false;
+                  }
+            }
+          return 0;
+
+    case WM_ENTERSIZEMOVE: // the edge of the window is being dragged around to resize it
+      resizing = true;
+      if ( gameState == L"gaming" )
+        paused = true;
+      return 0;
+
+    case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
+      resizing = false;
+      theCore->resize ();
+      if ( gameState == L"gaming" )
+        paused = false;
+      return 0;
+
+      // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
+    case WM_GETMINMAXINFO:
+      // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = defaults.Width;
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = defaults.Height;
       return 0;
   }
+
   // it is very important to let Window handle other for the program irrelevant messages,
   // using below pass through function, preventing the Window losing them all. :)
   return DefWindowProc ( handle, msg, wPrm, lPrm );

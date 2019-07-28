@@ -1,5 +1,6 @@
 # Introduction 
-Learning DirectX notes:
+1.	Learning DirectX notes
+2.	Game platform development notes
 The project is just learning materials, which tries very hard to bring learning instruction, the source code itself and the compilation results all together in coding environment in easy language which results in experiencing more joy while learning DirectX.
 
 <table>
@@ -51,11 +52,11 @@ cmake --build build-path
 I appreciate any contribution from anyone, who sees that the project deserves his precious time.
 
 # References
-https://www.braynzarsoft.net/
 https://bell0bytes.eu/
 https://docs.microsoft.com/
 http://www.cplusplus.com/
 http://www.rastertek.com/
+https://www.braynzarsoft.net/
 
 # Copyright
-This is not a freeware and the source code and the literature within is copyrighted. Most of the code is from the online references and the addition to them can just be used as teaching materials. For any other uses the written acknowledgement and permission is needed.
+This is not a freeware, thus the ideas, the source code and the literature within is copyrighted. Most of the code is learned and inspired from online references and the addition to them can just be used as teaching materials. For any other uses the written acknowledgement and permission is needed.

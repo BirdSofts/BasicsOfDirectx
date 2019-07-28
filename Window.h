@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,26.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -19,16 +19,22 @@ class Window
 private:
   HINSTANCE appInstance;
   int showCommands;
-  HWND mainWindow;
+  HWND appWindow;
   bool initialized;
   unsigned int clientWidth;
   unsigned int clientHeight;
+  bool fullScreen;
+  bool minimized;
+  bool maximized;
+  bool resizing;
+  bool paused;
 public:
   Window ( const HINSTANCE&, const int& );
   ~Window ();
   void initial ();
   const bool& initialState ();
   const HWND& gethHandle ();
+  const bool& isPaused ();
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM );
 };
 

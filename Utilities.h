@@ -10,7 +10,7 @@
 #define UTILITIES_H
 
 
-// the special exception container
+// special expansion to exception container
 class theException : public std::exception
 {
 private:
@@ -22,26 +22,26 @@ public:
 };
 
 
-// the severity of the log entity
+// log severity
 enum logType { info = 0, debug, warning, error };
 
 
-// the log entity
+// log container structure
 struct Log
 {
   unsigned short id;
   unsigned short count;
   logType type;
-  std::string cMoment;
+  std::wstring cMoment;
   std::thread::id threadId;
-  std::string threadName;
-  std::string message;
+  std::wstring threadName;
+  std::wstring message;
 
   Log ();
   void set ( const logType&,
              const std::thread::id&,
-             const std::string&,
-             const std::string& );
+             const std::wstring&,
+             const std::wstring& );
 };
 
 
@@ -63,7 +63,7 @@ public:
 //class toScreen {};
 
 
-// log engine
+// logging engine
 template<class tType>
 class Logger
 {
@@ -98,8 +98,7 @@ struct Configuration
 };
 
 
-// Todo file: available and containing valid configurations: file is source
-// if first run or the file is not valid then default configurations in the structure
+// application configurations container
 class Configure
 {
 private:
@@ -112,6 +111,8 @@ public:
   void set ( const Configuration& );
   const Configuration& set ( void );
 
+  // to and from standard string type converters (Lua needs)
+  // Windows 10 builds upon Unicode natively, thus using wide strings is wise.
   static std::wstring strConverter ( const std::string& );
   static std::string strConverter ( const std::wstring& );
 };

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECTX_H
@@ -13,12 +13,12 @@
 class DirectX3dCore
 {
 private:
-  HINSTANCE hInstance;
+  HINSTANCE appInstance;
   bool initialized;
+  bool paused;
 public:
-
   // Direct3D interface, in charge of controlling the hardware device,
-// the structure type is basically the software controller to the graphic device
+  // the structure type is basically the software controller to the graphic device
   ID3D10Device* d3dDevice;
 
   // swap chain interface, a structure type to hold the front and back buffer,
@@ -35,8 +35,10 @@ public:
   ID3D10RenderTargetView* renderTargetView;
 
   DirectX3dCore ( HINSTANCE& );
-  ~DirectX3dCore ();
   const bool& initialState ();
+  bool& pause ();
+  void resize ( void );
+  void shutdown ( void );
 };
 
 

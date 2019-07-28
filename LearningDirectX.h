@@ -3,11 +3,15 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,27.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
 #define LEARNINGDIRECTX_H
+
+#if WIN32
+#define WIN32_LEAN_AND_MEAN // rarely-used stuff exclusion
+#endif // WIN32
 
 
 #include <windows.h> // Windows standard APIs
@@ -47,20 +51,18 @@
 
 #include "Utilities.h"
 #include "Window.h"
+#include "DirectX.h"
 
 
-// defined and introduced in LearningDirectX.cpp:
+// LearningDirectX.cpp:
 extern bool running;
-
-
-// defined and introduced in Windows.cpp:
-extern LPCTSTR mainWindowName;
-//extern HWND wndHandle;
-extern bool fullScreen;
+extern std::wstring gameState;
 
 
 // Window.h
 extern Window* win;
+// DirectX.h
+extern DirectX3dCore* theCore;
 // Utilities.h:
 extern theException anException;
 extern Log aLog;

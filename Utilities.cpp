@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,27.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -21,22 +21,20 @@ const char* theException::what () const throw( )
 };
 
 
-Log::Log ()
+Log::Log () : id ( 0 ), count ( 1 )
 {
-  id = 0;
-  count = 1;
   type = logType::info;
   threadId = std::this_thread::get_id ();
-  threadName = "null";
-  message = "null";
-  cMoment = "null";
+  threadName = L"null";
+  message = L"null";
+  cMoment = L"null";
 };
 
 
 void Log::set ( const logType& t,
                 const std::thread::id& tId,
-                const std::string& tName,
-                const std::string& msg )
+                const std::wstring& tName,
+                const std::wstring& msg )
 {
   id = count;
   count++;
@@ -44,21 +42,20 @@ void Log::set ( const logType& t,
   threadId = tId;
   threadName = tName;
   message = msg;
-  std::stringstream current;
+  std::wstringstream current;
   SYSTEMTIME cDateT;
   GetLocalTime ( &cDateT );
   // date and time format: xx/xx/xx xx:xx:xx
-  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << " "
+  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
     << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
   cMoment = current.str ();
 };
 
 
-toFile::toFile ()
+toFile::toFile () : ready ( false )
 {
   try
   {
-    ready = false;
     fileStream.open ( "dump.log", std::ofstream::binary );
     if ( fileStream.is_open () )
       ready = true;
@@ -72,12 +69,12 @@ toFile::toFile ()
   {
     if ( ex.what () == "fileO" )
     {
-      MessageBoxA ( 0, "The log file could not be opened for output operation!", "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The log file could not be opened for output operation!" );
+      MessageBoxA ( win->gethHandle (), "The log file could not be opened!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The log file could not be opened!" );
     } else
     {
-      MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
+      MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     }
     logEngineToFile.push ( aLog );
   }
@@ -101,8 +98,15 @@ bool toFile::write ( const Log& entity )
 {
   try
   {
-    std::stringstream line;
-    line << "\r\n" << entity.id << "\t\t" << entity.cMoment << '\t';
+    std::wstringstream line;
+    if ( ( running == false ) && ( gameState == L"shutting down" ) )
+    {
+      line << "\r\n\n";
+      gameState = L"uninitialized";
+    } else
+      line << "\r\n";
+
+    line << entity.id << "\t\t" << entity.cMoment << '\t';
     switch ( entity.type )
     {
       case 0:
@@ -119,8 +123,15 @@ bool toFile::write ( const Log& entity )
         break;
     }
     line << entity.threadId << '\t' << entity.threadName << '\t' << entity.message;
+
+    if ( ( running == true ) && ( gameState == L"initialized" ) )
+    {
+      line << '\n';
+      gameState = L"gaming";
+    }
+
     if ( ready )
-      fileStream << line.str ();
+      fileStream << settings.strConverter ( line.str () );
     else
     {
       anException.set ( "logW" );
@@ -132,12 +143,12 @@ bool toFile::write ( const Log& entity )
   {
     if ( ex.what () == "logW" )
     {
-      MessageBoxA ( 0, "File output stream was not ready!", "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "File output stream was not ready!" );
+      MessageBoxA ( win->gethHandle (), "File output stream was not ready!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
     } else
     {
-      MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
+      MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     }
     logEngineToFile.push ( aLog );
     return false;
@@ -161,6 +172,9 @@ Logger<tType>::Logger () : policy (), writeGuard ()
 template<class tType>
 Logger<tType>::~Logger ()
 {
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
+  logEngineToFile.push ( aLog );
+  std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
   operating.clear ();
   commit.join ();
   buffer.clear ();
@@ -181,7 +195,7 @@ void loggerEngine ( Logger<tType>* engine )
   try
   {
     // dump engine: write the present logs' data
-    aLog.set ( logType::info, std::this_thread::get_id (), "logThread", "Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n\n" );
+    aLog.set ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
     logEngineToFile.push ( aLog );
 
     // initializing and not locking the mutex object (mark as not owing a lock)
@@ -189,27 +203,26 @@ void loggerEngine ( Logger<tType>* engine )
 
     do
     {
-      std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
       if ( engine->buffer.size () )
       {
-        //if ( !lock.try_lock_for ( std::chrono::milliseconds { 50 } ) )
-        //  continue;
+        if ( !lock.try_lock_for ( std::chrono::milliseconds { 30 } ) )
+          continue;
         for ( auto& element : engine->buffer )
           //engine->policy.write ( element );
           if ( !engine->policy.write ( element ) )
           {
-            aLog.set ( logType::warning, std::this_thread::get_id (), "logThread", "Dumping wasn't possible." );
+            aLog.set ( logType::warning, std::this_thread::get_id (), L"logThread", L"Dumping wasn't possible." );
             logEngineToFile.push ( aLog );
           }
         engine->buffer.clear ();
-        //lock.unlock ();
+        lock.unlock ();
       }
     } while ( engine->operating.test_and_set () || engine->buffer.size () );
   }
   catch ( const std::exception& ex )
   {
-    MessageBoxA ( 0, ex.what (), "Error", MB_OK | MB_ICONERROR );
-    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", ex.what () );
+    MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
   }
 };
@@ -242,44 +255,42 @@ Configure::Configure ()
   try
   {
     PWSTR docPath { NULL };
+
     HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
     if ( FAILED ( hResult ) )
     {
-      anException.set ( "knownD" );
-      throw anException;
+      MessageBoxA ( win->gethHandle (), "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
+      logEngineToFile.push ( aLog );
     }
+
     pathToMyDocuments = docPath;
     //std::wstring path { pathToMyDocuments + L"\\settings.lua" };
     std::wstring path { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
+
     sol::state configs;
+    // opening the configuration file
     configs.script_file ( strConverter ( path ) );
+    // read or use the application defaults:
     current.Width = configs ["configurations"]["resolution"]["width"].get_or ( defaults.Width );
+    // the sol state class is constructed like a table, thus nested variables are accessible like multidimensional arrays.
     current.Height = configs ["configurations"]["resolution"]["height"].get_or ( defaults.Height );
-    if ( current.Height == 800 )
+    if ( current.Height != defaults.Height )
     {
       valid = true;
-      aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The configuration file is successfully read." );
-
+      aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The configuration file is successfully read." );
     } else
     {
-      //anException.set ( "invalidF" );
-      //throw anException;
+      valid = false;
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file. Default settings are used!" );
     }
+    logEngineToFile.push ( aLog );
   }
   catch ( const std::exception& ex )
   {
-    if ( ex.what () == "knownD" )
-    {
-      MessageBoxA ( 0, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
-      aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The path to document directory is unknown!" );
-    } else
-      if ( ex.what () == "invalidF" )
-      {
-        MessageBoxA ( 0, "The configuration file is corrupt!", "Error", MB_OK | MB_ICONERROR );
-        aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The configuration file is corrupt!" );
-      }
+    MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
-    valid = false;
   }
 };
 

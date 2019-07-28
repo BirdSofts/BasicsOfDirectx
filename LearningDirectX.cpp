@@ -3,28 +3,30 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,26.07.2019</changed>
+/// <changed>ʆϒʅ,28.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
-#include "Window.h"
-#include "DirectX.h"
+//#include "Window.h"
+//#include "DirectX.h"
 #include "Game.h"
 #include "Utilities.h"
 
 
 // references:
-// https://www.braynzarsoft.net/
 // https://bell0bytes.eu/
 // https://docs.microsoft.com/
 // http://www.cplusplus.com/
 // http://www.rastertek.com/
+// https://www.braynzarsoft.net/
 
 
 bool running { true };
+std::wstring gameState { L"uninitialized" };
 
 
 Window* win { nullptr };
+DirectX3dCore* theCore { nullptr };
 theException anException;
 Log aLog;
 Logger<toFile> logEngineToFile;
@@ -51,26 +53,25 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   win = new Window ( hInstance, nShowCmd );
   if ( !win->initialState () )
   {
-    MessageBoxA ( 0, "Window initialization failed.", "Error", MB_OK | MB_ICONERROR );
-    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Window initialization failed." );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
     logEngineToFile.push ( aLog );
     return EXIT_FAILURE;
   } else
   {
-    aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Window is initialized." );
+    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
     logEngineToFile.push ( aLog );
   }
 
-  GameCore theCore ( hInstance );
-  if ( !theCore.initialState () )
+  theCore = new DirectX3dCore ( hInstance );
+  if ( !theCore->initialState () )
   {
-    MessageBoxA ( 0, "The initialization of core failed.", "Error", MB_OK | MB_ICONERROR );
-    aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "The initialization of core failed." );
+    MessageBoxA ( win->gethHandle (), "The initialization of core failed.", "Error", MB_OK | MB_ICONERROR );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of core failed." );
     logEngineToFile.push ( aLog );
     return EXIT_FAILURE;
   } else
   {
-    aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "The core is initialized." );
+    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The core is initialized." );
     logEngineToFile.push ( aLog );
   }
 
@@ -81,7 +82,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
   //if ( !InitializeScene () )
   //{
-  //  MessageBoxA ( 0, "Scene initialization failed.", "Error", MB_OK | MB_ICONERROR );
+  //  MessageBoxA ( win->gethHandle(), "Scene initialization failed.", "Error", MB_OK | MB_ICONERROR );
   //  aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Scene initialization failed." );
   //  logEngineToFile.push ( aLog );
   //  return EXIT_FAILURE;
@@ -94,7 +95,11 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   MSG msg { 0 }; // a new message structure
   unsigned short counter { 0 };
 
-  aLog.set ( logType::warning, std::this_thread::get_id (), "mainThread", "The colour is going to change constantly, pay attention to your nose!" );
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
+  logEngineToFile.push ( aLog );
+  gameState = L"initialized";
+
+  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"The colour is going to change constantly, pay attention to your nose!" );
   logEngineToFile.push ( aLog );
   // main part (game engine)
   do // continuous loop
@@ -132,41 +137,56 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
       }
 #pragma endregion
 
-    r += colourMod_r * 0.00001f;
-    g += colourMod_g * 0.00005f;
-    b += colourMod_b * 0.00010f;
-
-    if ( ( r >= 1.0f ) || ( r <= 0.0f ) )
-      colourMod_r *= -1;
-    if ( ( g >= 1.0f ) || ( g <= 0.0f ) )
-      colourMod_g *= -1;
-    if ( ( b >= 1.0f ) || ( b <= 0.0f ) )
-      colourMod_b *= -1;
-
-    float backColor [4] { r, g, b, 1.0f };
-
-    theCore.d3dDevice->ClearRenderTargetView ( theCore.renderTargetView, backColor );
-
-    theCore.swapChain->Present ( 0, 0 );
-
-    counter++;
-    // my environment could manage 10! :)
-    if ( ( counter % 1000 ) == 0 )
+    if ( !win->isPaused () )
     {
-      std::string str { "" };
-      for ( unsigned char i = 0; i < 4; i++ )
+      if ( theCore->pause () )
+        theCore->pause () = false;
+
+      r += colourMod_r * 0.00001f;
+      g += colourMod_g * 0.00005f;
+      b += colourMod_b * 0.00010f;
+
+      if ( ( r >= 1.0f ) || ( r <= 0.0f ) )
+        colourMod_r *= -1;
+      if ( ( g >= 1.0f ) || ( g <= 0.0f ) )
+        colourMod_g *= -1;
+      if ( ( b >= 1.0f ) || ( b <= 0.0f ) )
+        colourMod_b *= -1;
+
+      float backColor [4] { r, g, b, 1.0f };
+
+      theCore->d3dDevice->ClearRenderTargetView ( theCore->renderTargetView, backColor );
+
+      theCore->swapChain->Present ( 0, 0 );
+
+      counter++;
+      // my environment could manage 10! :)
+      if ( ( counter % 10000 ) == 0 )
       {
-        if ( i == 0 )
-          str += std::to_string ( backColor [i] );
-        else
-          str += ", " + std::to_string ( backColor [i] );
+        std::wstring str { L"" };
+        for ( unsigned char i = 0; i < 4; i++ )
+        {
+          if ( i == 0 )
+            str += std::to_wstring ( backColor [i] );
+          else
+            str += L", " + std::to_wstring ( backColor [i] );
+        }
+        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
+        logEngineToFile.push ( aLog );
+        counter = 0;
       }
-      aLog.set ( logType::warning, std::this_thread::get_id (), "mainThread", "The colour is now: RGBA ( " + str + " )" );
-      logEngineToFile.push ( aLog );
-      counter = 0;
-    }
+    } else
+      theCore->pause () = true;
 
   } while ( running == true );
+
+  theCore->shutdown ();
+  std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
+  gameState = L"uninitialized";
+
+  delete theCore;
+  delete win;
+
   return EXIT_SUCCESS;
 
 }
