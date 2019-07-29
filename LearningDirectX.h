@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,28.07.2019</changed>
+/// <changed>ʆϒʅ,29.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
@@ -54,16 +54,14 @@
 #include "DirectX.h"
 
 
+//#define _NOT_DEBUGGING
+
+
 // LearningDirectX.cpp:
 extern bool running;
 extern std::wstring gameState;
 
 
-// Window.h
-extern Window* win;
-// DirectX.h
-extern DirectX3dCore* theCore;
-// Utilities.h:
 extern theException anException;
 extern Log aLog;
 extern Logger<toFile> logEngineToFile;

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,28.07.2019</changed>
+/// <changed>ʆϒʅ,29.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -69,12 +69,14 @@ toFile::toFile () : ready ( false )
   {
     if ( ex.what () == "fileO" )
     {
-      MessageBoxA ( win->gethHandle (), "The log file could not be opened!", "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The log file could not be opened!" );
+#endif // !_NOT_DEBUGGING
     } else
     {
-      MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
     }
     logEngineToFile.push ( aLog );
   }
@@ -143,14 +145,18 @@ bool toFile::write ( const Log& entity )
   {
     if ( ex.what () == "logW" )
     {
-      MessageBoxA ( win->gethHandle (), "File output stream was not ready!", "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
+#endif // !_NOT_DEBUGGING
     } else
     {
-      MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
     }
+#ifndef _NOT_DEBUGGING
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
     return false;
   }
 };
@@ -160,7 +166,6 @@ void loggerEngine ( Logger<tType>* engine );
 template<class tType>
 Logger<tType>::Logger () : policy (), writeGuard ()
 {
-  //operating = ATOMIC_FLAG_INIT; // standard initialization
   if ( policy.state () )
   {
     operating.test_and_set (); // mark the write engine as running
@@ -172,8 +177,10 @@ Logger<tType>::Logger () : policy (), writeGuard ()
 template<class tType>
 Logger<tType>::~Logger ()
 {
+#ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
   operating.clear ();
   commit.join ();
@@ -195,8 +202,10 @@ void loggerEngine ( Logger<tType>* engine )
   try
   {
     // dump engine: write the present logs' data
+#ifndef _NOT_DEBUGGING
     aLog.set ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
 
     // initializing and not locking the mutex object (mark as not owing a lock)
     std::unique_lock<std::timed_mutex> lock ( engine->writeGuard, std::defer_lock );
@@ -208,11 +217,12 @@ void loggerEngine ( Logger<tType>* engine )
         if ( !lock.try_lock_for ( std::chrono::milliseconds { 30 } ) )
           continue;
         for ( auto& element : engine->buffer )
-          //engine->policy.write ( element );
           if ( !engine->policy.write ( element ) )
           {
+#ifndef _NOT_DEBUGGING
             aLog.set ( logType::warning, std::this_thread::get_id (), L"logThread", L"Dumping wasn't possible." );
             logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
           }
         engine->buffer.clear ();
         lock.unlock ();
@@ -221,9 +231,10 @@ void loggerEngine ( Logger<tType>* engine )
   }
   catch ( const std::exception& ex )
   {
-    MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
     aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   }
 };
 
@@ -233,7 +244,6 @@ void problemSolver ()
 {
   Logger<toFile> tempObj;
   tempObj.push ( aLog );
-  //loggerEngine ( &tempObj );
 }
 
 
@@ -259,18 +269,22 @@ Configure::Configure ()
     HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
     if ( FAILED ( hResult ) )
     {
-      MessageBoxA ( win->gethHandle (), "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( NULL, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
       logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
     }
 
     pathToMyDocuments = docPath;
     //std::wstring path { pathToMyDocuments + L"\\settings.lua" };
     std::wstring path { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
+    std::string pathStr { "" };
 
     sol::state configs;
     // opening the configuration file
-    configs.script_file ( strConverter ( path ) );
+    pathStr = strConverter ( path );
+    configs.script_file ( pathStr );
     // read or use the application defaults:
     current.Width = configs ["configurations"]["resolution"]["width"].get_or ( defaults.Width );
     // the sol state class is constructed like a table, thus nested variables are accessible like multidimensional arrays.
@@ -278,19 +292,26 @@ Configure::Configure ()
     if ( current.Height != defaults.Height )
     {
       valid = true;
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The configuration file is successfully read." );
+#endif // !_NOT_DEBUGGING
     } else
     {
       valid = false;
+#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file. Default settings are used!" );
+#endif // !_NOT_DEBUGGING
     }
+#ifndef _NOT_DEBUGGING
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   }
   catch ( const std::exception& ex )
   {
-    MessageBoxA ( win->gethHandle (), ex.what (), "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
     aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   }
 };
 

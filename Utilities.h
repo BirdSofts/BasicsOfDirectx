@@ -72,7 +72,8 @@ private:
   tType policy; // output stream policy
   std::timed_mutex writeGuard; // write guard
   std::thread commit; // write engine thread
-  std::atomic_flag operating { ATOMIC_FLAG_INIT }; // lock-free atomic flag (checking the running state)
+  // lock-free atomic flag (checking the running state) (standard initialization):
+  std::atomic_flag operating { ATOMIC_FLAG_INIT };
 public:
   Logger ();
   ~Logger ();

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,28.07.2019</changed>
+/// <changed>ʆϒʅ,29.07.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -15,11 +15,10 @@
 
 class Window
 {
-  //friend class DirectX3dCore;
 private:
   HINSTANCE appInstance;
-  int showCommands;
-  HWND appWindow;
+  DirectX3dCore* theCore;
+  HWND theHandle;
   bool initialized;
   unsigned int clientWidth;
   unsigned int clientHeight;
@@ -27,14 +26,11 @@ private:
   bool minimized;
   bool maximized;
   bool resizing;
-  bool paused;
 public:
-  Window ( const HINSTANCE&, const int& );
-  ~Window ();
-  void initial ();
+  Window ( DirectX3dCore* );
   const bool& initialState ();
-  const HWND& gethHandle ();
-  const bool& isPaused ();
+  const HWND& getHandle ();
+  void shutdown ( void );
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM );
 };
 

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,28.07.2019</changed>
+/// <changed>ʆϒʅ,29.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -25,8 +25,6 @@ bool running { true };
 std::wstring gameState { L"uninitialized" };
 
 
-Window* win { nullptr };
-DirectX3dCore* theCore { nullptr };
 theException anException;
 Log aLog;
 Logger<toFile> logEngineToFile;
@@ -50,57 +48,38 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                      _In_ int nShowCmd ) // indicates how the main window is to be opened (minimized, maximized)
 {
 
-  win = new Window ( hInstance, nShowCmd );
-  if ( !win->initialState () )
+  DirectX3dCore theCore ( hInstance );
+  if ( !theCore.initialState () )
   {
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
-    logEngineToFile.push ( aLog );
-    return EXIT_FAILURE;
-  } else
-  {
-    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
-    logEngineToFile.push ( aLog );
-  }
-
-  theCore = new DirectX3dCore ( hInstance );
-  if ( !theCore->initialState () )
-  {
-    MessageBoxA ( win->gethHandle (), "The initialization of core failed.", "Error", MB_OK | MB_ICONERROR );
+#ifndef _NOT_DEBUGGING
     aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of core failed." );
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
     return EXIT_FAILURE;
   } else
   {
+#ifndef _NOT_DEBUGGING
     aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The core is initialized." );
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   }
-
-  //lua_State* LuaState = luaL_newstate ();
-  //lua_close ( LuaState );
-  //aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Lua scripting language engine is initialized." );
-  //logEngineToFile.push ( aLog );
-
-  //if ( !InitializeScene () )
-  //{
-  //  MessageBoxA ( win->gethHandle(), "Scene initialization failed.", "Error", MB_OK | MB_ICONERROR );
-  //  aLog.set ( logType::error, std::this_thread::get_id (), "mainThread", "Scene initialization failed." );
-  //  logEngineToFile.push ( aLog );
-  //  return EXIT_FAILURE;
-  //} else
-  //{
-  //  aLog.set ( logType::info, std::this_thread::get_id (), "mainThread", "Scene is initialized." );
-  //  logEngineToFile.push ( aLog );
-  //}
 
   MSG msg { 0 }; // a new message structure
   unsigned short counter { 0 };
 
+#ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
   gameState = L"initialized";
 
-  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"The colour is going to change constantly, pay attention to your nose!" );
+#ifndef _NOT_DEBUGGING
+  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Entering the game loop: the colour is going to change constantly, pay attention to your nose!" );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
+  theCore.getTimer ()->event ( "reset" ); // reset (start)
+
   // main part (game engine)
   do // continuous loop
   {
@@ -117,7 +96,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                 &msg,
                 // handle to the window, whose messages is intended,
                 // and NULL as argument allow the retrieve of all messages for any window, which belongs to the current thread.
-                win->gethHandle (),
+                theCore.getHandle (),
                 // to retrieve messages filtered through the introduced range. (both zero retunes all available messages)
                 // first message to last message
                 0, 0,
@@ -132,15 +111,25 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
         // dispatching the message to the window procedure function, so the event could be handled appropriately.
         DispatchMessage ( &msg );
         // the evaluated value: exit (using intellisense or MSDN, the possible and obvious messages could be seen)
-        //if ( msg.message == WM_QUIT )
-        //  running = false;
       }
 #pragma endregion
 
-    if ( !win->isPaused () )
+    // tick the timer to calculate a frame
+    theCore.getTimer ()->tick ();
+
+    if ( !theCore.pauseState () )
     {
-      if ( theCore->pause () )
-        theCore->pause () = false;
+
+      // a game loop purpose:
+      // -- process inputted data
+
+      // -- fps calculation
+      theCore.frameStatistics ();
+
+      // -- update the game universe/logic
+      // Note the needed delta time
+
+      // -- output a frame
 
       r += colourMod_r * 0.00001f;
       g += colourMod_g * 0.00005f;
@@ -155,9 +144,9 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
       float backColor [4] { r, g, b, 1.0f };
 
-      theCore->d3dDevice->ClearRenderTargetView ( theCore->renderTargetView, backColor );
+      theCore.d3dDevice->ClearRenderTargetView ( theCore.renderTargetView, backColor );
 
-      theCore->swapChain->Present ( 0, 0 );
+      theCore.swapChain->Present ( 0, 0 );
 
       counter++;
       // my environment could manage 10! :)
@@ -171,25 +160,20 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
           else
             str += L", " + std::to_wstring ( backColor [i] );
         }
+#ifndef _NOT_DEBUGGING
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
         logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
         counter = 0;
       }
-    } else
-      theCore->pause () = true;
+
+    }
 
   } while ( running == true );
 
-  theCore->shutdown ();
+  theCore.shutdown ();
   std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
   gameState = L"uninitialized";
 
-  delete theCore;
-  delete win;
-
   return EXIT_SUCCESS;
-
 }
-
-
-// Todo add a logger: https://bell0bytes.eu/thread-safe-logger/

@@ -3,17 +3,41 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,28.07.2019</changed>
+/// <changed>ʆϒʅ,29.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "DirectX.h"
 
 
-DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) : appInstance ( hInstance ), initialized ( false ), paused ( false )
+DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
+  appInstance ( hInstance ), appWindow ( nullptr ),
+  initialized ( false ), paused ( false ), timer ( nullptr ),
+  fps ( 0 ), frameRenderTime ( 0.0 )
 {
-  // the structure type to declare the swap chain:
+  // timer instantiation
+  timer = new Timer ();
 
+  // application window instantiation
+  appWindow = new Window ( this );
+  if ( !appWindow->initialState () )
+  {
+#ifndef _NOT_DEBUGGING
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
+    logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+  } else
+  {
+#ifndef _NOT_DEBUGGING
+    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
+    logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+  }
+
+  // handle of the instantiated window
+  appHandle = appWindow->getHandle ();
+
+  // the structure type to declare the swap chain:
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
   swapChainD.BufferDesc.Width = settings.set ().Width;
@@ -22,26 +46,20 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) : appInstance ( hInstance 
   swapChainD.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   swapChainD.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
   swapChainD.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
   // no multi sampling
   // -- SampleDesc: the number of samples or the quality, needs to be done using antialiasing, but for now:
   swapChainD.SampleDesc.Count = 1;
   swapChainD.SampleDesc.Quality = 0;
-
   // -- BufferUsage: the value specifies, that the back buffer is the target to render to.
   swapChainD.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-
   // -- BufferCount: the number of back buffers used in swap chain. one back buffer for double buffering and two for triple buffering.
   swapChainD.BufferCount = 1;
-
   // handle to the window and the windowed or full-screen mode
-  swapChainD.OutputWindow = win->gethHandle ();
+  swapChainD.OutputWindow = appHandle;
   swapChainD.Windowed = true;
-
   // -- SwapEffect: the way to swap the back and front buffers.
   // the specified value provides the display driver the most efficient presentation technique for swap chain.
   swapChainD.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
   // to introduce probable needed extra flags
   swapChainD.Flags = 0;
 
@@ -106,8 +124,11 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) : appInstance ( hInstance 
   swapChain->Present ( 0, 0 );
 
   initialized = true;
+
+#ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
 };
 
 
@@ -117,24 +138,76 @@ const bool& DirectX3dCore::initialState ()
 };
 
 
-bool& DirectX3dCore::pause ()
+const HINSTANCE& DirectX3dCore::getInstance ()
+{
+  return appInstance;
+};
+
+
+const HWND& DirectX3dCore::getHandle ()
+{
+  return appHandle;
+};
+
+
+const bool& DirectX3dCore::pauseState ()
 {
   return paused;
 };
 
 
+Timer* DirectX3dCore::getTimer ()
+{
+  return timer;
+};
+
+
 void DirectX3dCore::resize ( void )
 {
+#ifndef _NOT_DEBUGGING
   aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+};
+
+
+void DirectX3dCore::frameStatistics ()
+{
+  // a static local variable retains its state between the calls:
+  static int frameCounter; // frame counter (a frame is a full cycle of the game loop)
+  static double elapsed; // the elapsed time since the last call
+  frameCounter++;
+
+  if ( ( timer->getTotal () - elapsed ) >= 1.0 )
+  {
+    // frame calculations:
+    fps = frameCounter; // the number of counted frames
+    frameRenderTime = 1000.0 / ( double) fps; // average taken time by a frame
+
+    // results to caption
+    std::wstring caption = L"The Game ^,^ --- fps: " + std::to_wstring ( fps ) +
+      L" --- frame render time in milliseconds: " + std::to_wstring ( frameRenderTime );
+    SetWindowTextW ( appHandle, caption.c_str () );
+
+    // reset
+    frameCounter = 0;
+    elapsed += 1.0;
+  }
 };
 
 
 void DirectX3dCore::shutdown ( void )
 {
+  appWindow->shutdown ();
+  if ( timer )
+    delete timer;
+  if ( appWindow )
+    delete appWindow;
   if ( appInstance )
     appInstance = NULL;
   initialized = 0;
+#ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
   logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
 };

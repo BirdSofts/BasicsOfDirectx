@@ -152,6 +152,7 @@
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="LearningDirectX.cpp" />
+    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="LearningDirectX.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Window.h" />
@@ -167,6 +169,7 @@
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="README.md" />
+    <None Include="settings.lua" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
