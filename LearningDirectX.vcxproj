@@ -152,6 +152,7 @@
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="LearningDirectX.cpp" />
+    <ClCompile Include="Shared.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="LearningDirectX.h" />
+    <ClInclude Include="Shared.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
     <ClInclude Include="resource.h" />

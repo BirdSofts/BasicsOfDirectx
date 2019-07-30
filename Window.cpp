@@ -3,12 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
-#include "DirectX.h"
+#include "Shared.h"
 
 
 Window* wnd { nullptr };
@@ -30,11 +30,11 @@ Window::Window ( DirectX3dCore* coreObject ) :
 
     appInstance = coreObject->getInstance ();
 
-    if ( settings.get ().Width == 640 )
-      settings.apply ();
-    clientWidth = settings.get ().Width;
-    clientHeight = settings.get ().Height;
-    fullScreen = settings.get ().fullscreen;
+    if ( PointerProvider::getConfiguration ()->get ().Width == 640 )
+      PointerProvider::getConfiguration ()->apply ();
+    clientWidth = PointerProvider::getConfiguration ()->get ().Width;
+    clientHeight = PointerProvider::getConfiguration ()->get ().Height;
+    fullScreen = PointerProvider::getConfiguration ()->get ().fullscreen;
 
     // filling the instantiation of the extended version of window class,
     // a structure that handles properties and actions of a window:
@@ -65,8 +65,8 @@ Window::Window ( DirectX3dCore* coreObject ) :
     // when it terminates, no manual cleaning is necessary.
     if ( !RegisterClassEx ( &wClass ) )
     {
-      anException.set ( "regW" );
-      throw anException;
+      PointerProvider::getException ()->set ( "regW" );
+      throw* PointerProvider::getException ();
     }
 
     // client size: all the raw window size can't be tampered with as working area,
@@ -80,14 +80,13 @@ Window::Window ( DirectX3dCore* coreObject ) :
       false, // window contains a menu or not
       WS_EX_OVERLAPPEDWINDOW ) ) // current extended window style (is needed to calculated the client size)
     {
-      anException.set ( "adjustW" );
-      throw anException;
+      PointerProvider::getException ()->set ( "adjustW" );
+      throw* PointerProvider::getException ();
     } else
     {
 
 #ifndef _NOT_DEBUGGING
-      aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window size is successfully calculated." );
-      logEngineToFile.push ( aLog );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window size is successfully calculated." );
 #endif // !_NOT_DEBUGGING
 
     }
@@ -112,8 +111,8 @@ Window::Window ( DirectX3dCore* coreObject ) :
 
     if ( !theHandle )
     {
-      anException.set ( "crW" );
-      throw anException;
+      PointerProvider::getException ()->set ( "crW" );
+      throw* PointerProvider::getException ();
     }
 
     // show the window: the second parameter controls how the window is to be shown,
@@ -132,7 +131,7 @@ Window::Window ( DirectX3dCore* coreObject ) :
     {
 
 #ifndef _NOT_DEBUGGING
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window registration failed!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window registration failed!" );
 #endif // !_NOT_DEBUGGING
 
     } else
@@ -140,7 +139,7 @@ Window::Window ( DirectX3dCore* coreObject ) :
       {
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
 #endif // !_NOT_DEBUGGING
 
       } else
@@ -148,21 +147,17 @@ Window::Window ( DirectX3dCore* coreObject ) :
         {
 
 #ifndef _NOT_DEBUGGING
-          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
 #endif // !_NOT_DEBUGGING
 
         } else
         {
 
 #ifndef _NOT_DEBUGGING
-          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
         }
-
-#ifndef _NOT_DEBUGGING
-        logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
 
         initialized = false;
   }
@@ -194,8 +189,7 @@ void Window::shutdown ( void )
     appInstance = NULL;
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
 #endif // !_NOT_DEBUGGING
 
 };
@@ -245,8 +239,7 @@ LRESULT CALLBACK Window::msgProc (
           gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-          aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
-          logEngineToFile.push ( aLog );
+          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
 #endif // !_NOT_DEBUGGING
 
           return 0; // the message was useful and is handled.
@@ -269,8 +262,7 @@ LRESULT CALLBACK Window::msgProc (
         gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
-        logEngineToFile.push ( aLog );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
 #endif // !_NOT_DEBUGGING
 
         return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)
@@ -363,8 +355,8 @@ LRESULT CALLBACK Window::msgProc (
       // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
     case WM_GETMINMAXINFO:
       // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = settings.getDefaults ().Width;
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = settings.getDefaults ().Height;
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
       return 0;
   }
 

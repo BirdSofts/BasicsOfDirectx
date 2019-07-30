@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -29,19 +29,12 @@ enum logType { info = 0, debug, warning, error };
 // log container structure
 struct Log
 {
-  unsigned short id;
-  unsigned short count;
+  static unsigned int id;
   logType type;
   std::wstring cMoment;
   std::thread::id threadId;
   std::wstring threadName;
   std::wstring message;
-
-  Log ();
-  void set ( const logType&,
-             const std::thread::id&,
-             const std::wstring&,
-             const std::wstring& );
 };
 
 
@@ -68,6 +61,7 @@ template<class tType>
 class Logger
 {
 private:
+  Log logEntity;
   std::list<Log> buffer; // buffer list container 
   tType policy; // output stream policy
   std::timed_mutex writeGuard; // write guard
@@ -77,7 +71,10 @@ private:
 public:
   Logger ();
   ~Logger ();
-  void push ( const Log& );
+  void push ( const logType&,
+              const std::thread::id&,
+              const std::wstring&,
+              const std::wstring& );
 
   template<class tType>
   friend void loggerEngine ( Logger<tType>* ); // write engine

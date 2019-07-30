@@ -3,11 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Utilities.h"
+#include "Shared.h"
 
 
 theException::theException () : expected ( "null" ) {};
@@ -21,35 +22,7 @@ const char* theException::what () const throw( )
 };
 
 
-Log::Log () : id ( 0 ), count ( 1 )
-{
-  type = logType::info;
-  threadId = std::this_thread::get_id ();
-  threadName = L"null";
-  message = L"null";
-  cMoment = L"null";
-};
-
-
-void Log::set ( const logType& t,
-                const std::thread::id& tId,
-                const std::wstring& tName,
-                const std::wstring& msg )
-{
-  id = count;
-  count++;
-  type = t;
-  threadId = tId;
-  threadName = tName;
-  message = msg;
-  std::wstringstream current;
-  SYSTEMTIME cDateT;
-  GetLocalTime ( &cDateT );
-  // date and time format: xx/xx/xx xx:xx:xx
-  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
-    << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
-  cMoment = current.str ();
-};
+unsigned int Log::id { 0 };
 
 
 toFile::toFile () : ready ( false )
@@ -60,25 +33,11 @@ toFile::toFile () : ready ( false )
     if ( fileStream.is_open () )
       ready = true;
     else
-    {
-      anException.set ( "fileO" );
-      throw anException;
-    }
+      throw;
   }
   catch ( const std::exception& ex )
   {
-
-#ifndef _NOT_DEBUGGING
-    if ( ex.what () == "fileO" )
-    {
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The log file could not be opened!" );
-    } else
-    {
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-    }
-    logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
-
+    MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
   }
 };
 
@@ -136,8 +95,8 @@ bool toFile::write ( const Log& entity )
       fileStream << Converter::strConverter ( line.str () );
     else
     {
-      anException.set ( "logW" );
-      throw anException;
+      PointerProvider::getException ()->set ( "logW" );
+      throw* PointerProvider::getException ();
     }
     return true;
   }
@@ -146,13 +105,9 @@ bool toFile::write ( const Log& entity )
 
 #ifndef _NOT_DEBUGGING
     if ( ex.what () == "logW" )
-    {
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
-    } else
-    {
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-    }
-    logEngineToFile.push ( aLog );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
+    else
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
     return false;
@@ -177,8 +132,7 @@ Logger<tType>::~Logger ()
 {
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
 #endif // !_NOT_DEBUGGING
 
   std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
@@ -189,10 +143,29 @@ Logger<tType>::~Logger ()
 
 
 template<class tType>
-void Logger<tType>::push ( const Log& entity )
+void Logger<tType>::push ( const logType& t,
+                           const std::thread::id& tId,
+                           const std::wstring& tName,
+                           const std::wstring& msg )
 {
-  std::lock_guard<std::timed_mutex> lock ( writeGuard );
-  buffer.push_back ( entity );
+  logEntity.id += 1;
+  logEntity.type = t;
+  logEntity.threadId = tId;
+  logEntity.threadName = tName;
+  logEntity.message = msg;
+
+  std::wstringstream current;
+  SYSTEMTIME cDateT;
+  GetLocalTime ( &cDateT );
+  // date and time format: xx/xx/xx xx:xx:xx
+  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
+    << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
+  logEntity.cMoment = current.str ();
+
+  std::unique_lock<std::timed_mutex> lock ( writeGuard, std::defer_lock );
+  lock.try_lock_for ( std::chrono::milliseconds { 30 } );
+  buffer.push_back ( logEntity );
+  lock.unlock ();
 };
 
 
@@ -203,8 +176,7 @@ void loggerEngine ( Logger<tType>* engine )
   {
     // dump engine: write the present logs' data
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
-    logEngineToFile.push ( aLog );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
 #endif // !_NOT_DEBUGGING
 
     // initializing and not locking the mutex object (mark as not owing a lock)
@@ -221,8 +193,7 @@ void loggerEngine ( Logger<tType>* engine )
           {
 
 #ifndef _NOT_DEBUGGING
-            aLog.set ( logType::warning, std::this_thread::get_id (), L"logThread", L"Dumping wasn't possible." );
-            logEngineToFile.push ( aLog );
+            PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"logThread", L"Dumping wasn't possible." );
 #endif // !_NOT_DEBUGGING
 
           }
@@ -235,8 +206,7 @@ void loggerEngine ( Logger<tType>* engine )
   {
 
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-    logEngineToFile.push ( aLog );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -247,7 +217,7 @@ void loggerEngine ( Logger<tType>* engine )
 void problemSolver ()
 {
   Logger<toFile> tempObj;
-  tempObj.push ( aLog );
+  tempObj.push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The problem solver..." );
 }
 
 
@@ -274,8 +244,7 @@ Configurations::Configurations ()
       MessageBoxA ( NULL, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
 
 #ifndef _NOT_DEBUGGING
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
-      logEngineToFile.push ( aLog );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
 #endif // !_NOT_DEBUGGING
 
       pathToMyDocuments = L"";
@@ -323,8 +292,7 @@ Configurations::Configurations ()
       {
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-        logEngineToFile.push ( aLog );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
       }
@@ -335,16 +303,11 @@ Configurations::Configurations ()
         valid = true;
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-                   L"The configuration file is successfully read:" );
-        logEngineToFile.push ( aLog );
-        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-                   L"Resolution: (" + std::to_wstring ( currents.Width ) + L" x "
-                   + std::to_wstring ( currents.Height ) + L" )" );
-        logEngineToFile.push ( aLog );
-        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-                   L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
-        logEngineToFile.push ( aLog );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                  L"The configuration file is successfully read:\n\tResolution: (" +
+                                                  std::to_wstring ( currents.Width ) + L" x "
+                                                  + std::to_wstring ( currents.Height ) + L" )\t\t" +
+                                                  L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
 #endif // !_NOT_DEBUGGING
 
         break;
@@ -352,8 +315,7 @@ Configurations::Configurations ()
       {
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file!" );
-        logEngineToFile.push ( aLog );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file!" );
 #endif // !_NOT_DEBUGGING
 
         // rewrite the configuration file with defaults
@@ -369,8 +331,7 @@ Configurations::Configurations ()
           writeStream.close ();
 
 #ifndef _NOT_DEBUGGING
-          aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Configuration file is now rewritten with default settings." );
-          logEngineToFile.push ( aLog );
+          PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Configuration file is now rewritten with default settings." );
 #endif // !_NOT_DEBUGGING
 
         }
@@ -381,8 +342,7 @@ Configurations::Configurations ()
   {
 
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-    logEngineToFile.push ( aLog );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -423,16 +383,11 @@ void Configurations::apply ()
   }
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-             L"The configuration file is successfully written:" );
-  logEngineToFile.push ( aLog );
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-             L"Resolution: (" + std::to_wstring ( currents.Width ) + L" x "
-             + std::to_wstring ( currents.Height ) + L" )" );
-  logEngineToFile.push ( aLog );
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
-             L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                            L"The configuration file is successfully written:\n\tResolution: (" +
+                                            std::to_wstring ( currents.Width ) + L" x "
+                                            + std::to_wstring ( currents.Height ) + L" )\t\t" +
+                                            L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
 #endif // !_NOT_DEBUGGING
 
 };

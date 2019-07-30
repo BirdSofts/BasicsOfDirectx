@@ -3,12 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
-#include "Window.h"
 #include "DirectX.h"
+#include "Shared.h"
 
 
 DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
@@ -24,14 +24,9 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
 
 #ifndef _NOT_DEBUGGING
   if ( !appWindow->initialState () )
-  {
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
-    logEngineToFile.push ( aLog );
-  } else
-  {
-    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
-    logEngineToFile.push ( aLog );
-  }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
+  else
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
 #endif // !_NOT_DEBUGGING
 
   // handle of the instantiated window
@@ -40,8 +35,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   // the structure type to declare the swap chain:
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
-  swapChainD.BufferDesc.Width = settings.get ().Width;
-  swapChainD.BufferDesc.Height = settings.get ().Height;
+  swapChainD.BufferDesc.Width = PointerProvider::getConfiguration ()->get ().Width;
+  swapChainD.BufferDesc.Height = PointerProvider::getConfiguration ()->get ().Height;
   swapChainD.BufferDesc.RefreshRate.Numerator = 60;
   swapChainD.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   swapChainD.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -111,8 +106,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   D3D10_VIEWPORT viewPort;
   viewPort.TopLeftX = 0;
   viewPort.TopLeftY = 0;
-  viewPort.Width = settings.get ().Width;
-  viewPort.Height = settings.get ().Height;
+  viewPort.Width = PointerProvider::getConfiguration ()->get ().Width;
+  viewPort.Height = PointerProvider::getConfiguration ()->get ().Height;
   viewPort.MinDepth = 0.0f;
   viewPort.MaxDepth = 1.0f;
 
@@ -126,8 +121,7 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   initialized = true;
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
 #endif // !_NOT_DEBUGGING
 
 };
@@ -167,8 +161,7 @@ void DirectX3dCore::resize ( void )
 {
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
 #endif // !_NOT_DEBUGGING
 
 };
@@ -211,7 +204,6 @@ void DirectX3dCore::shutdown ( void )
   initialized = 0;
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
 #endif // !_NOT_DEBUGGING
 };

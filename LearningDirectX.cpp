@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -11,6 +11,7 @@
 #include "DirectX.h"
 #include "Game.h"
 #include "Utilities.h"
+#include "Shared.h"
 
 
 // references:
@@ -25,20 +26,6 @@ bool running { true };
 std::wstring gameState { L"uninitialized" };
 
 
-theException anException;
-Log aLog;
-Logger<toFile> logEngineToFile;
-Configurations settings;
-
-
-float r { 0.0f };
-float g { 0.0f };
-float b { 0.0f };
-int colourMod_r { 1 };
-int colourMod_g { 1 };
-int colourMod_b { 1 };
-
-
 // main function (application entry point)
 int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by Windows for the program
                      _In_opt_ HINSTANCE hPrevInstance, // obsolete plus backward compatibility (https://bell0bytes.eu/hello-world/)
@@ -47,37 +34,51 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                      _In_ int nShowCmd ) // indicates how the main window is to be opened (minimized, maximized)
 {
 
+  std::shared_ptr<theException> anException ( new theException () );
+  PointerProvider::exceptionProvider ( anException );
+
+  std::shared_ptr<Logger<toFile>> fileLoggerEngine ( new Logger<toFile> () );
+  PointerProvider::fileLoggerProvider ( fileLoggerEngine );
+
+  std::shared_ptr<Configurations> settings ( new Configurations () );
+  PointerProvider::configurationProvider ( settings );
+
+#ifndef _NOT_DEBUGGING
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Exception, file logger and configuration providers are up and running." );
+#endif // !_NOT_DEBUGGING
+
   DirectX3dCore theCore ( hInstance );
 
 #ifndef _NOT_DEBUGGING
   if ( !theCore.initialState () )
   {
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of core failed." );
-    logEngineToFile.push ( aLog );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of core failed." );
     return EXIT_FAILURE;
   } else
-  {
-    aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The core is initialized." );
-    logEngineToFile.push ( aLog );
-  }
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The core is initialized." );
 #endif // !_NOT_DEBUGGING
 
   MSG msg { 0 }; // a new message structure
   unsigned short counter { 0 };
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
 #endif // !_NOT_DEBUGGING
 
   gameState = L"initialized";
 
 #ifndef _NOT_DEBUGGING
-  aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Entering the game loop: the colour is going to change constantly, pay attention to your nose!" );
-  logEngineToFile.push ( aLog );
+  PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Entering the game loop: the colour is going to change constantly, pay attention to your nose!" );
 #endif // !_NOT_DEBUGGING
 
   theCore.getTimer ()->event ( "reset" ); // reset (start)
+
+  float r { 0.0f };
+  float g { 0.0f };
+  float b { 0.0f };
+  int colourMod_r { 1 };
+  int colourMod_g { 1 };
+  int colourMod_b { 1 };
 
   // main part (game engine)
   do // continuous loop
@@ -161,8 +162,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
         }
 
 #ifndef _NOT_DEBUGGING
-        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
-        logEngineToFile.push ( aLog );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
 #endif // !_NOT_DEBUGGING
 
         counter = 0;

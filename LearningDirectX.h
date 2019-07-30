@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
@@ -50,8 +50,6 @@
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol.hpp> // Sol binding framework between Lua and C++
 
-#include "Utilities.h"
-
 
 //#define _NOT_DEBUGGING
 
@@ -59,12 +57,6 @@
 // LearningDirectX.cpp:
 extern bool running;
 extern std::wstring gameState;
-
-
-extern theException anException;
-extern Log aLog;
-extern Logger<toFile> logEngineToFile;
-extern Configurations settings;
 
 
 #endif // !LEARNINGDIRECTX_H
