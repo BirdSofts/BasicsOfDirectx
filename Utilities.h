@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,27.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -88,30 +88,39 @@ public:
 void problemSolver ();
 
 
-// default configurations
-struct Configuration
+// configurations container
+struct ConfigsContainer
 {
   unsigned int Width;
   unsigned int Height;
-
-  Configuration ();
-  const Configuration& set ( void );
+  bool fullscreen;
 };
 
 
-// application configurations container
-class Configure
+// application configurations class
+class Configurations
 {
 private:
   std::wstring pathToMyDocuments;
+  std::wstring pathToSettings;
   bool valid;
-  Configuration current;
+  ConfigsContainer defaults;
+  ConfigsContainer currents;
 public:
-  Configure ();
-  ~Configure ();
-  void set ( const Configuration& );
-  const Configuration& set ( void );
+  Configurations ();
+  const bool& isValid ();
+  const ConfigsContainer& getDefaults ( void );
+  const ConfigsContainer& get ( void );
+  void apply ();
+  void apply ( const ConfigsContainer& );
+};// application configurations container
 
+
+// string converter class
+class Converter
+{
+private:
+public:
   // to and from standard string type converters (Lua needs)
   // Windows 10 builds upon Unicode natively, thus using wide strings is wise.
   static std::wstring strConverter ( const std::string& );

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
@@ -39,19 +39,18 @@
 
 // Lua: a powerful, lightweight and embeddable scripting language engine,
 // and additionally the most popular general-purpose one used in games nowadays.
-// --more information: http://luabinaries.sourceforge.net/download.html
-// --documentation: https://www.lua.org/docs.html
+// -- more information: http://luabinaries.sourceforge.net/download.html
+// -- Lua documentation: https://www.lua.org/docs.html
+// -- Sol documentation: https://sol2.readthedocs.io/en/latest/
 // purposes: write and read configuration files, run scripts and to write code to drive the gameplay.
 // Sol: the go-to framework for high-performance binding between Lua and C++
-// --more information: https://github.com/ThePhD/sol2/releases
+// -- more information: https://github.com/ThePhD/sol2/releases
 #include <lua.hpp> // Lua scripting language engine header file
 #pragma comment (lib, "liblua53.a") // Lua scripting language engine library
 #define SOL_ALL_SAFETIES_ON 1
 #include <sol.hpp> // Sol binding framework between Lua and C++
 
 #include "Utilities.h"
-#include "Window.h"
-#include "DirectX.h"
 
 
 //#define _NOT_DEBUGGING
@@ -65,8 +64,7 @@ extern std::wstring gameState;
 extern theException anException;
 extern Log aLog;
 extern Logger<toFile> logEngineToFile;
-extern Configuration defaults;
-extern Configure settings;
+extern Configurations settings;
 
 
 #endif // !LEARNINGDIRECTX_H

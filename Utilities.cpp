@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -67,18 +67,18 @@ toFile::toFile () : ready ( false )
   }
   catch ( const std::exception& ex )
   {
+
+#ifndef _NOT_DEBUGGING
     if ( ex.what () == "fileO" )
     {
-#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The log file could not be opened!" );
-#endif // !_NOT_DEBUGGING
     } else
     {
-#ifndef _NOT_DEBUGGING
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     }
     logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
   }
 };
 
@@ -133,7 +133,7 @@ bool toFile::write ( const Log& entity )
     }
 
     if ( ready )
-      fileStream << settings.strConverter ( line.str () );
+      fileStream << Converter::strConverter ( line.str () );
     else
     {
       anException.set ( "logW" );
@@ -143,20 +143,18 @@ bool toFile::write ( const Log& entity )
   }
   catch ( const std::exception& ex )
   {
+
+#ifndef _NOT_DEBUGGING
     if ( ex.what () == "logW" )
     {
-#ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
-#endif // !_NOT_DEBUGGING
     } else
     {
-#ifndef _NOT_DEBUGGING
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
+      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     }
-#ifndef _NOT_DEBUGGING
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
     return false;
   }
 };
@@ -177,10 +175,12 @@ Logger<tType>::Logger () : policy (), writeGuard ()
 template<class tType>
 Logger<tType>::~Logger ()
 {
+
 #ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
   operating.clear ();
   commit.join ();
@@ -219,10 +219,12 @@ void loggerEngine ( Logger<tType>* engine )
         for ( auto& element : engine->buffer )
           if ( !engine->policy.write ( element ) )
           {
+
 #ifndef _NOT_DEBUGGING
             aLog.set ( logType::warning, std::this_thread::get_id (), L"logThread", L"Dumping wasn't possible." );
             logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
           }
         engine->buffer.clear ();
         lock.unlock ();
@@ -231,10 +233,12 @@ void loggerEngine ( Logger<tType>* engine )
   }
   catch ( const std::exception& ex )
   {
+
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   }
 };
 
@@ -247,101 +251,207 @@ void problemSolver ()
 }
 
 
-Configuration::Configuration ()
-{
-  Width = 640;
-  Height = 480;
-};
-
-
-const Configuration& Configuration::set ( void )
-{
-  return *this;
-};
-
-
-Configure::Configure ()
+Configurations::Configurations ()
 {
   try
   {
-    PWSTR docPath { NULL };
+    valid = false;
 
+    // defaults initialization:
+    defaults.Width = 640;
+    defaults.Height = 480;
+    defaults.fullscreen = false;
+
+    // currents initialization:
+    currents.Width = 0;
+    currents.Height = 0;
+    currents.fullscreen = false;
+
+    PWSTR docPath { NULL };
     HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
     if ( FAILED ( hResult ) )
     {
       MessageBoxA ( NULL, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+
 #ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
       logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
-    }
 
-    pathToMyDocuments = docPath;
-    //std::wstring path { pathToMyDocuments + L"\\settings.lua" };
-    std::wstring path { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
-    std::string pathStr { "" };
-
-    sol::state configs;
-    // opening the configuration file
-    pathStr = strConverter ( path );
-    configs.script_file ( pathStr );
-    // read or use the application defaults:
-    current.Width = configs ["configurations"]["resolution"]["width"].get_or ( defaults.Width );
-    // the sol state class is constructed like a table, thus nested variables are accessible like multidimensional arrays.
-    current.Height = configs ["configurations"]["resolution"]["height"].get_or ( defaults.Height );
-    if ( current.Height != defaults.Height )
-    {
-      valid = true;
-#ifndef _NOT_DEBUGGING
-      aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The configuration file is successfully read." );
-#endif // !_NOT_DEBUGGING
+      pathToMyDocuments = L"";
     } else
+      pathToMyDocuments = docPath;
+
+    std::wstring path { L"" };
+
+    if ( pathToMyDocuments == L"" )
     {
-      valid = false;
+      path = L"C:\\TheGame";
+      hResult = SHCreateDirectory ( NULL, path.c_str () );
+      if ( FAILED ( hResult ) )
+        path = L"C:\\settings.lua";
+      else
+        path += L"\\settings.lua";
+    } else
+      std::wstring path { pathToMyDocuments + L"\\settings.lua" };
+
+
+    // development time path
+    path = { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
+
+
+    pathToSettings = path;
+    // Lua accepts a string type as path
+    std::string pathStr { "" };
+    pathStr = Converter::strConverter ( pathToSettings );
+
+    for ( char i = 0; i < 2; i++ )
+    {
+      // read the configuration
+      sol::state configs;
+      try
+      {
+        configs.safe_script_file ( pathStr );
+        // opening the configuration file
+        // read or use the application defaults:
+        currents.Width = configs ["configurations"]["resolution"]["width"].get_or ( defaults.Width );
+        // the sol state class is constructed like a table, thus nested variables are accessible like multidimensional arrays.
+        currents.Height = configs ["configurations"]["resolution"]["height"].get_or ( defaults.Height );
+        currents.fullscreen = configs ["fullscreen"].get_or ( defaults.fullscreen );
+      }
+      catch ( const std::exception& ex )
+      {
+
 #ifndef _NOT_DEBUGGING
-      aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file. Default settings are used!" );
+        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+        logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
+      }
+
+      // validation
+      if ( ( currents.Width != 0 ) && ( currents.Height != 0 ) && ( !valid ) )
+      {
+        valid = true;
+
+#ifndef _NOT_DEBUGGING
+        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+                   L"The configuration file is successfully read:" );
+        logEngineToFile.push ( aLog );
+        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+                   L"Resolution: (" + std::to_wstring ( currents.Width ) + L" x "
+                   + std::to_wstring ( currents.Height ) + L" )" );
+        logEngineToFile.push ( aLog );
+        aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+                   L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
+        logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
+        break;
+      } else
+      {
+
+#ifndef _NOT_DEBUGGING
+        aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file!" );
+        logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
+        // rewrite the configuration file with defaults
+        std::ofstream writeStream ( path.c_str () );
+        if ( writeStream.good () )
+        {
+          std::stringstream settingsLine;
+          settingsLine << "configurations =\n\t{\n" <<
+            "\t\tresolution = { width = " << std::to_string ( defaults.Width ) <<
+            " , height = " << std::to_string ( defaults.Height ) << " },\n" <<
+            "\t\tfullscreen = " << std::to_string ( defaults.fullscreen ) << "\n\t}";
+          writeStream << settingsLine.str ();
+          writeStream.close ();
+
+#ifndef _NOT_DEBUGGING
+          aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Configuration file is now rewritten with default settings." );
+          logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
+        }
+      }
     }
-#ifndef _NOT_DEBUGGING
-    logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
   }
   catch ( const std::exception& ex )
   {
+
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   }
 };
 
 
-Configure::~Configure ()
+const bool& Configurations::isValid ()
+{
+  return valid;
+};
+
+
+const ConfigsContainer& Configurations::getDefaults ( void )
+{
+  return currents;
+};
+
+
+const ConfigsContainer& Configurations::get ( void )
+{
+  return currents;
+};
+
+
+void Configurations::apply ()
+{
+  //xx Todo new settings to configuration file
+  // Todo add user settings
+  std::ofstream writeStream ( pathToSettings.c_str () );
+  if ( writeStream.good () )
+  {
+    std::stringstream settingsLine;
+    settingsLine << "configurations =\n\t{\n" <<
+      "\t\tresolution = { width = 800 , height = 600 },\n" <<
+      "\t\tfullscreen = 0\n\t}";
+    writeStream << settingsLine.str ();
+    writeStream.close ();
+  }
+
+#ifndef _NOT_DEBUGGING
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+             L"The configuration file is successfully written:" );
+  logEngineToFile.push ( aLog );
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+             L"Resolution: (" + std::to_wstring ( currents.Width ) + L" x "
+             + std::to_wstring ( currents.Height ) + L" )" );
+  logEngineToFile.push ( aLog );
+  aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread",
+             L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
+  logEngineToFile.push ( aLog );
+#endif // !_NOT_DEBUGGING
+
+};
+
+
+void Configurations::apply ( const ConfigsContainer& )
 {
 
 };
 
 
-void Configure::set ( const Configuration& )
-{
-  // Todo new settings to configuration file
-};
-
-
-const Configuration& Configure::set ( void )
-{
-  return current;
-};
-
-
-std::wstring Configure::strConverter ( const std::string& str )
+std::wstring Converter::strConverter ( const std::string& str )
 {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
   return entity.from_bytes ( str );
 };
 
 
-std::string Configure::strConverter ( const std::wstring& wstr )
+std::string Converter::strConverter ( const std::wstring& wstr )
 {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
   return entity.to_bytes ( wstr );

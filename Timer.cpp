@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -32,10 +32,12 @@ secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
       // once calculated seconds per count (reciprocal of the frequency)
       // TimeValueInSeconds = TimeValueInCounts / Frequency
       secondsPerCount = 1.0 / ( double) frequency;
+
 #ifndef _NOT_DEBUGGING
       aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is instantiated." );
       logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
     } else
     {
       throw;
@@ -43,20 +45,24 @@ secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
   }
   catch ( const std::exception& ex )
   {
+
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   }
 };
 
 
 Timer::~Timer ()
 {
+
 #ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully destructed." );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
 };
 
 
@@ -98,6 +104,7 @@ void Timer::event ( const char* type )
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is started." );
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
       }
 
       // if stop is requested as event
@@ -110,6 +117,7 @@ void Timer::event ( const char* type )
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is stopped." );
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
       }
 
       // if reset is requested as event
@@ -124,6 +132,7 @@ void Timer::event ( const char* type )
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is reset." );
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
       }
 
     } else
@@ -131,10 +140,12 @@ void Timer::event ( const char* type )
   }
   catch ( const std::exception& ex )
   {
+
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   }
 };
 
@@ -163,9 +174,11 @@ void Timer::tick ()
   }
   catch ( const std::exception& ex )
   {
+
 #ifndef _NOT_DEBUGGING
-    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+    aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
     logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   }
 };

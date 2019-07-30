@@ -3,11 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
+#include "DirectX.h"
 
 
 Window* wnd { nullptr };
@@ -28,9 +29,12 @@ Window::Window ( DirectX3dCore* coreObject ) :
     wnd = this; // necessary to forward messages
 
     appInstance = coreObject->getInstance ();
-    clientWidth = settings.set ().Width;
-    clientHeight = settings.set ().Height;
-    fullScreen = false;
+
+    if ( settings.get ().Width == 640 )
+      settings.apply ();
+    clientWidth = settings.get ().Width;
+    clientHeight = settings.get ().Height;
+    fullScreen = settings.get ().fullscreen;
 
     // filling the instantiation of the extended version of window class,
     // a structure that handles properties and actions of a window:
@@ -80,10 +84,12 @@ Window::Window ( DirectX3dCore* coreObject ) :
       throw anException;
     } else
     {
+
 #ifndef _NOT_DEBUGGING
       aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window size is successfully calculated." );
       logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
     }
 
     // after the properties of a window class is known to Windows, it can finally be created.
@@ -124,30 +130,40 @@ Window::Window ( DirectX3dCore* coreObject ) :
     initialized = false;
     if ( ex.what () == "regW" )
     {
+
 #ifndef _NOT_DEBUGGING
       aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window registration failed!" );
 #endif // !_NOT_DEBUGGING
+
     } else
       if ( ex.what () == "crW" )
       {
+
 #ifndef _NOT_DEBUGGING
         aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
 #endif // !_NOT_DEBUGGING
+
       } else
         if ( ex.what () == "adjustW" )
         {
+
 #ifndef _NOT_DEBUGGING
           aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
 #endif // !_NOT_DEBUGGING
+
         } else
         {
+
 #ifndef _NOT_DEBUGGING
-          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", settings.strConverter ( ex.what () ) );
+          aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
+
         }
+
 #ifndef _NOT_DEBUGGING
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
         initialized = false;
   }
 };
@@ -176,10 +192,12 @@ void Window::shutdown ( void )
     theHandle = NULL;
   if ( appInstance )
     appInstance = NULL;
+
 #ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
 };
 
 
@@ -225,10 +243,12 @@ LRESULT CALLBACK Window::msgProc (
           PostQuitMessage ( 0 ); // send the corresponding quite message
           running = false;
           gameState = L"shutting down";
+
 #ifndef _NOT_DEBUGGING
           aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
           logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
           return 0; // the message was useful and is handled.
         } else
         {
@@ -247,10 +267,12 @@ LRESULT CALLBACK Window::msgProc (
         PostQuitMessage ( 0 );
         running = false;
         gameState = L"shutting down";
+
 #ifndef _NOT_DEBUGGING
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
         return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)
       } else
       {
@@ -341,8 +363,8 @@ LRESULT CALLBACK Window::msgProc (
       // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
     case WM_GETMINMAXINFO:
       // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = defaults.Width;
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = defaults.Height;
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = settings.getDefaults ().Width;
+      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = settings.getDefaults ().Height;
       return 0;
   }
 

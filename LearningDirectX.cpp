@@ -3,12 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
-//#include "Window.h"
-//#include "DirectX.h"
+#include "Window.h"
+#include "DirectX.h"
 #include "Game.h"
 #include "Utilities.h"
 
@@ -28,8 +28,7 @@ std::wstring gameState { L"uninitialized" };
 theException anException;
 Log aLog;
 Logger<toFile> logEngineToFile;
-Configuration defaults;
-Configure settings;
+Configurations settings;
 
 
 float r { 0.0f };
@@ -49,20 +48,19 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 {
 
   DirectX3dCore theCore ( hInstance );
+
+#ifndef _NOT_DEBUGGING
   if ( !theCore.initialState () )
   {
-#ifndef _NOT_DEBUGGING
     aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of core failed." );
     logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
     return EXIT_FAILURE;
   } else
   {
-#ifndef _NOT_DEBUGGING
     aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The core is initialized." );
     logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
   }
+#endif // !_NOT_DEBUGGING
 
   MSG msg { 0 }; // a new message structure
   unsigned short counter { 0 };
@@ -71,6 +69,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
   gameState = L"initialized";
 
 #ifndef _NOT_DEBUGGING
@@ -160,10 +159,12 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
           else
             str += L", " + std::to_wstring ( backColor [i] );
         }
+
 #ifndef _NOT_DEBUGGING
         aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
         logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
         counter = 0;
       }
 

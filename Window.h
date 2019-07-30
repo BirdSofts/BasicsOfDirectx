@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -15,6 +15,7 @@
 
 class Window
 {
+  friend class DirectX3dCore;
 private:
   HINSTANCE appInstance;
   DirectX3dCore* theCore;

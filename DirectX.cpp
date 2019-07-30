@@ -3,10 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,29.07.2019</changed>
+/// <changed>ʆϒʅ,30.07.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
+#include "Window.h"
 #include "DirectX.h"
 
 
@@ -20,19 +21,18 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
 
   // application window instantiation
   appWindow = new Window ( this );
+
+#ifndef _NOT_DEBUGGING
   if ( !appWindow->initialState () )
   {
-#ifndef _NOT_DEBUGGING
     aLog.set ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
     logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
   } else
   {
-#ifndef _NOT_DEBUGGING
     aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
     logEngineToFile.push ( aLog );
-#endif // !_NOT_DEBUGGING
   }
+#endif // !_NOT_DEBUGGING
 
   // handle of the instantiated window
   appHandle = appWindow->getHandle ();
@@ -40,8 +40,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   // the structure type to declare the swap chain:
   // -- BufferDesc: general properties of the back buffer
   DXGI_SWAP_CHAIN_DESC swapChainD;
-  swapChainD.BufferDesc.Width = settings.set ().Width;
-  swapChainD.BufferDesc.Height = settings.set ().Height;
+  swapChainD.BufferDesc.Width = settings.get ().Width;
+  swapChainD.BufferDesc.Height = settings.get ().Height;
   swapChainD.BufferDesc.RefreshRate.Numerator = 60;
   swapChainD.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   swapChainD.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -111,8 +111,8 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   D3D10_VIEWPORT viewPort;
   viewPort.TopLeftX = 0;
   viewPort.TopLeftY = 0;
-  viewPort.Width = settings.set ().Width;
-  viewPort.Height = settings.set ().Height;
+  viewPort.Width = settings.get ().Width;
+  viewPort.Height = settings.get ().Height;
   viewPort.MinDepth = 0.0f;
   viewPort.MaxDepth = 1.0f;
 
@@ -129,6 +129,7 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
 };
 
 
@@ -164,10 +165,12 @@ Timer* DirectX3dCore::getTimer ()
 
 void DirectX3dCore::resize ( void )
 {
+
 #ifndef _NOT_DEBUGGING
   aLog.set ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
   logEngineToFile.push ( aLog );
 #endif // !_NOT_DEBUGGING
+
 };
 
 
@@ -206,6 +209,7 @@ void DirectX3dCore::shutdown ( void )
   if ( appInstance )
     appInstance = NULL;
   initialized = 0;
+
 #ifndef _NOT_DEBUGGING
   aLog.set ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
   logEngineToFile.push ( aLog );
