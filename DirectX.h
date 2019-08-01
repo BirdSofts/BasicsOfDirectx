@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,30.07.2019</changed>
+/// <changed>ʆϒʅ,31.07.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECTX_H
@@ -18,12 +18,12 @@ class DirectX3dCore
 {
   friend class Window;
 private:
-  HINSTANCE appInstance;
-  Window* appWindow;
-  HWND appHandle;
-  bool initialized;
-  bool paused;
-  Timer* timer;
+  HINSTANCE appInstance; // handle to the application instance
+  HWND appHandle; // handle to game window (main window)
+  Window* appWindow; // pointer to game window (main window)
+  bool initialized; // true if the initialization was successful
+  bool paused; // true if the game is paused
+  Timer* timer; // pointer to DirectX high-precision timer application
   int fps; // frames per second
   double frameRenderTime; // render time of a frame in milliseconds
 public:
@@ -42,15 +42,15 @@ public:
   // therefore a render target view is created for the back buffer.
   ID3D10RenderTargetView* renderTargetView;
 
-  DirectX3dCore ( HINSTANCE& );
-  const bool& initialState ();
-  const HINSTANCE& getInstance ();
-  const HWND& getHandle ();
-  const bool& pauseState ();
-  Timer* getTimer ();
-  void resize ( void );
+  DirectX3dCore ( HINSTANCE& ); // constructor and initializer
+  const bool& isInitialized (); // get the initialized state
+  const HINSTANCE& getInstance (); // get the handle to application instance
+  const HWND& getHandle (); // get the handle to main window
+  const bool& isPaused (); // get the paused state
+  Timer* getTimer (); // get the pointer to application timer
+  void resize ( void ); // resize game graphics
   void frameStatistics (); // frame statistics calculations
-  void shutdown ( void );
+  void shutdown ( void ); // destruction preparations
 };
 
 

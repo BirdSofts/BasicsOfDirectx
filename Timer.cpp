@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,31.07.2019</changed>
+/// <changed>ʆϒʅ,01.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -11,9 +11,9 @@
 #include "Shared.h"
 
 
-Timer::Timer () : timeStart ( 0 ), timeCurrent ( 0 ), timePrevious ( 0 ),
-timeStopped ( 0 ), timeTotalIdle ( 0 ),
-secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
+Timer::Timer () : initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ), timePreviousFrame ( 0 ),
+timeLastStopped ( 0 ), timeTotalIdle ( 0 ),
+secondsPerCount ( 0 ), timeDelta ( 0 ), paused ( false )
 {
   try
   {
@@ -24,15 +24,15 @@ secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
     // current frequency of the performance counter (the counts per second of the performance timer),
     // which is a fixed value at system boot and consistent across all processors.
     // -- QueryPerformanceCounter:
-    // current value of the performance counter in counts,
-    // consisted of a high-precision (<1μs) time stamp, usable in time-interval measurements.
+    // the amounts of counts per seconds consisted of a high-precision (<1μs) time stamp,
+    // usable in time-interval measurements.
     // note that the function returns zero if an error is occurred.
     // Todo implement C++ standard chrono
     if ( QueryPerformanceFrequency ( ( LARGE_INTEGER*) & frequency ) )
     {
-      // once calculated seconds per count (reciprocal of the frequency)
-      // TimeValueInSeconds = TimeValueInCounts / Frequency
-      secondsPerCount = 1.0 / ( double) frequency;
+      // once calculated seconds per count (reciprocal of the number of counts per seconds)
+      // TimeValueInSeconds = ActualTimeValue / Frequency
+      secondsPerCount = double ( 1 ) / frequency;
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is instantiated." );
@@ -40,8 +40,13 @@ secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
 
     } else
     {
-      throw;
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The high-precision timer instantiation failed!" );
+#endif // !_NOT_DEBUGGING
+
     }
+    initialized = true;
   }
   catch ( const std::exception& ex )
   {
@@ -54,31 +59,43 @@ secondsPerCount ( 0.0 ), deltaTime ( 0.0 ), stopped ( false )
 };
 
 
-Timer::~Timer ()
+//Timer::~Timer ()
+//{
+//
+//#ifndef _NOT_DEBUGGING
+//  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully destructed." );
+//#endif // !_NOT_DEBUGGING
+//
+//};
+
+
+const bool& Timer::isInitialized ()
 {
-
-#ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully destructed." );
-#endif // !_NOT_DEBUGGING
-
+  return initialized;
 };
 
 
 const double Timer::getTotal ()
 {
-  // a total from the start of the game
+  // total running time from the start of the game
   double temp;
-  if ( stopped )
-    temp = ( timeStopped - timeStart - timeTotalIdle ) * secondsPerCount;
+  if ( paused )
+    temp = ( timeLastStopped - timeStart - timeTotalIdle ) * secondsPerCount;
   else
-    temp = ( timeCurrent - timeStart - timeTotalIdle ) * secondsPerCount;
+    temp = ( timeCurrentFrame - timeStart - timeTotalIdle ) * secondsPerCount;
   return temp;
 };
 
 
 const double& Timer::getDelta ()
 {
-  return deltaTime;
+  return timeDelta;
+};
+
+
+const bool& Timer::isPaused ()
+{
+  return paused;
 };
 
 
@@ -89,14 +106,14 @@ void Timer::event ( const char* type )
   {
     if ( QueryPerformanceCounter ( ( LARGE_INTEGER*) & current ) )
     {
-      // if start is requested as event
-      if ( ( type == "start" ) && ( stopped ) )
+      // if start is requested as event (invoked at game reactivation)
+      if ( ( type == "start" ) && ( paused ) )
       {
-        timeTotalIdle += ( current - timeStopped ); // total ideal time up until now
-        timePrevious = current; // sync to the current time
+        timeTotalIdle += ( current - timeLastStopped ); // calculate total ideal
+        timePreviousFrame = current; // prepare the calculation of this frame
         // make ready for next stop:
-        timeStopped = 0;
-        stopped = false;
+        timeLastStopped = 0;
+        paused = false;
 
 #ifndef _NOT_DEBUGGING
         PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is started." );
@@ -104,11 +121,11 @@ void Timer::event ( const char* type )
 
       }
 
-      // if stop is requested as event
-      if ( ( type == "stop" ) && ( !stopped ) )
+      // if pause is requested as event (invoked at game deactivation)
+      if ( ( type == "pause" ) && ( !paused ) )
       {
-        timeStopped = current; // the start time of the stop
-        stopped = true;
+        timeLastStopped = current; // store the time for later use
+        paused = true;
 
 #ifndef _NOT_DEBUGGING
         PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is stopped." );
@@ -116,13 +133,14 @@ void Timer::event ( const char* type )
 
       }
 
-      // if reset is requested as event
+      // if reset is requested as event (start of the game loop)
       if ( type == "reset" )
       {
+        // prepare the timer:
         timeStart = current;
-        timePrevious = current;
-        timeStopped = 0;
-        stopped = false;
+        timePreviousFrame = current;
+        timeLastStopped = 0;
+        paused = false;
 
 #ifndef _NOT_DEBUGGING
         PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is reset." );
@@ -131,7 +149,13 @@ void Timer::event ( const char* type )
       }
 
     } else
-      throw;
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Failure in timer functionality! Requested event: " + Converter::strConverter ( type ) );
+#endif // !_NOT_DEBUGGING
+
+    }
   }
   catch ( const std::exception& ex )
   {
@@ -149,21 +173,25 @@ void Timer::tick ()
   // tick and calculate the time between two frames
   try
   {
-    if ( stopped )
-      deltaTime = 0.0; // the elapsed time in a stopped state
+    if ( paused )
+      timeDelta = 0; // the elapsed time in a stopped state (for calculations in an idle time)
     else
-      if ( QueryPerformanceCounter ( ( LARGE_INTEGER*) & timeCurrent ) )
+      if ( QueryPerformanceCounter ( ( LARGE_INTEGER*) & timeCurrentFrame ) )
       {
-        deltaTime = ( timeCurrent - timePrevious ) * secondsPerCount; // the elapsed time of one frame
-        timePrevious = timeCurrent; // save for next tick
+        timeDelta = ( timeCurrentFrame - timePreviousFrame ) * secondsPerCount; // the elapsed time of one frame
+        timePreviousFrame = timeCurrentFrame; // preparation for the next tick
 
         // in case, a negative delta means that the processor goes idle. the cause can be an overflow,
         // a power save mode or the movement of the process to another processor.
-        if ( deltaTime < 0.0 )
-          deltaTime = 0.0;
+        if ( timeDelta < 0 )
+          timeDelta = 0;
       } else
       {
-        throw;
+
+#ifndef _NOT_DEBUGGING
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Timer failed to tick!" );
+#endif // !_NOT_DEBUGGING
+
       }
   }
   catch ( const std::exception& ex )

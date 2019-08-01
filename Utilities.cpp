@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,31.07.2019</changed>
+/// <changed>ʆϒʅ,01.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -20,9 +20,6 @@ const char* theException::what () const throw( )
 {
   return expected;
 };
-
-
-unsigned int Log::id { 0 };
 
 
 toFile::toFile () : ready ( false )
@@ -91,6 +88,7 @@ bool toFile::write ( const Log& entity )
       gameState = L"gaming";
     }
 
+    // Todo add the flush functionality
     if ( ready )
       fileStream << Converter::strConverter ( line.str () );
     else
@@ -119,10 +117,19 @@ void loggerEngine ( Logger<tType>* engine );
 template<class tType>
 Logger<tType>::Logger () : policy (), writeGuard ()
 {
-  if ( policy.state () )
+  try
   {
-    operating.test_and_set (); // mark the write engine as running
-    commit = std::move ( std::thread { loggerEngine<tType>, this } );
+    if ( policy.state () )
+    {
+      operating.test_and_set (); // mark the write engine as running
+      commit = std::move ( std::thread { loggerEngine<tType>, this } );
+    }
+  }
+  catch ( const std::exception& ex )
+  {
+
+    MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
+
   }
 };
 
@@ -133,9 +140,9 @@ Logger<tType>::~Logger ()
 
 #ifndef _NOT_DEBUGGING
   PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
+  std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
 #endif // !_NOT_DEBUGGING
 
-  std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
   operating.clear ();
   commit.join ();
   buffer.clear ();
@@ -148,24 +155,35 @@ void Logger<tType>::push ( const logType& t,
                            const std::wstring& tName,
                            const std::wstring& msg )
 {
-  logEntity.id += 1;
-  logEntity.type = t;
-  logEntity.threadId = tId;
-  logEntity.threadName = tName;
-  logEntity.message = msg;
+  try
+  {
+    counter++;
+    logEntity.id = counter;
+    logEntity.type = t;
+    logEntity.threadId = tId;
+    logEntity.threadName = tName;
+    logEntity.message = msg;
 
-  std::wstringstream current;
-  SYSTEMTIME cDateT;
-  GetLocalTime ( &cDateT );
-  // date and time format: xx/xx/xx xx:xx:xx
-  current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
-    << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
-  logEntity.cMoment = current.str ();
+    std::wstringstream current;
+    SYSTEMTIME cDateT;
+    GetLocalTime ( &cDateT );
+    // date and time format: xx/xx/xx xx:xx:xx
+    current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
+      << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
+    logEntity.cMoment = current.str ();
 
-  std::unique_lock<std::timed_mutex> lock ( writeGuard, std::defer_lock );
-  lock.try_lock_for ( std::chrono::milliseconds { 30 } );
-  buffer.push_back ( logEntity );
-  lock.unlock ();
+    // Todo robust lock
+    std::lock_guard<std::timed_mutex> lock ( writeGuard );
+    buffer.push_back ( logEntity );
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+  }
 };
 
 
@@ -179,6 +197,7 @@ void loggerEngine ( Logger<tType>* engine )
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
 #endif // !_NOT_DEBUGGING
 
+    // Todo robust lock
     // initializing and not locking the mutex object (mark as not owing a lock)
     std::unique_lock<std::timed_mutex> lock ( engine->writeGuard, std::defer_lock );
 
@@ -206,11 +225,15 @@ void loggerEngine ( Logger<tType>* engine )
   {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"logThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
 };
+
+
+template<class tType>
+unsigned int Logger<tType>::counter { 0 };
 
 
 // don't call this function: solution for linker error, when using templates.
@@ -239,22 +262,16 @@ Configurations::Configurations ()
 
     PWSTR docPath { NULL };
     HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
+    std::wstring path { L"" };
     if ( FAILED ( hResult ) )
     {
-      MessageBoxA ( NULL, "The path to document directory is unknown!", "Error", MB_OK | MB_ICONERROR );
+      MessageBoxA ( NULL, "The path to document directory is unknown! Please contact your OS support.", "Critical-Error", MB_OK | MB_ICONERROR );
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
 #endif // !_NOT_DEBUGGING
 
       pathToMyDocuments = L"";
-    } else
-      pathToMyDocuments = docPath;
-
-    std::wstring path { L"" };
-
-    if ( pathToMyDocuments == L"" )
-    {
       path = L"C:\\TheGame";
       hResult = SHCreateDirectory ( NULL, path.c_str () );
       if ( FAILED ( hResult ) )
@@ -262,10 +279,11 @@ Configurations::Configurations ()
       else
         path += L"\\settings.lua";
     } else
-      std::wstring path { pathToMyDocuments + L"\\settings.lua" };
+      pathToMyDocuments = docPath;
+    path = pathToMyDocuments + L"\\settings.lua";
 
 
-    // development time path
+    //!? temporary statement: development time path
     path = { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
 
 
@@ -334,7 +352,15 @@ Configurations::Configurations ()
           PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Configuration file is now rewritten with default settings." );
 #endif // !_NOT_DEBUGGING
 
+        } else
+        {
+
+#ifndef _NOT_DEBUGGING
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Configuration file could not be rewritten with default settings." );
+#endif // !_NOT_DEBUGGING
+
         }
+
       }
     }
   }
@@ -357,11 +383,11 @@ const bool& Configurations::isValid ()
 
 const ConfigsContainer& Configurations::getDefaults ( void )
 {
-  return currents;
+  return defaults;
 };
 
 
-const ConfigsContainer& Configurations::get ( void )
+const ConfigsContainer& Configurations::getSettings ( void )
 {
   return currents;
 };
@@ -369,45 +395,92 @@ const ConfigsContainer& Configurations::get ( void )
 
 void Configurations::apply ()
 {
-  //xx Todo new settings to configuration file
-  // Todo add user settings
-  std::ofstream writeStream ( pathToSettings.c_str () );
-  if ( writeStream.good () )
+  try
   {
-    std::stringstream settingsLine;
-    settingsLine << "configurations =\n\t{\n" <<
-      "\t\tresolution = { width = 800 , height = 600 },\n" <<
-      "\t\tfullscreen = 0\n\t}";
-    writeStream << settingsLine.str ();
-    writeStream.close ();
-  }
+    //xx Todo new settings to configuration file
+    // Todo add user settings
+    std::ofstream writeStream ( pathToSettings.c_str () );
+    if ( writeStream.good () )
+    {
+      std::stringstream settingsLine;
+      settingsLine << "configurations =\n\t{\n" <<
+        "\t\tresolution = { width = 800 , height = 600 },\n" <<
+        "\t\tfullscreen = 0\n\t}";
+      writeStream << settingsLine.str ();
+      writeStream.close ();
+    }
 
 #ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                            L"The configuration file is successfully written:\n\tResolution: (" +
-                                            std::to_wstring ( currents.Width ) + L" x "
-                                            + std::to_wstring ( currents.Height ) + L" )\t\t" +
-                                            L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                              L"The configuration file is successfully written:\n\tResolution: (" +
+                                              std::to_wstring ( currents.Width ) + L" x "
+                                              + std::to_wstring ( currents.Height ) + L" )\t\t" +
+                                              L"fullscreen: " + std::to_wstring ( currents.fullscreen ) );
+#endif // !_NOT_DEBUGGING
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
+  }
 };
 
 
 void Configurations::apply ( const ConfigsContainer& )
 {
+  try
+  {
 
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+  }
 };
 
 
 std::wstring Converter::strConverter ( const std::string& str )
 {
-  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
-  return entity.from_bytes ( str );
+  try
+  {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
+    return entity.from_bytes ( str );
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+    return L"";
+
+  }
 };
 
 
 std::string Converter::strConverter ( const std::wstring& wstr )
 {
-  std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
-  return entity.to_bytes ( wstr );
+  try
+  {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> entity;
+    return entity.to_bytes ( wstr );
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+    return "";
+
+  }
 };

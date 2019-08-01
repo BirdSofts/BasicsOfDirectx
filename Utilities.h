@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,31.07.2019</changed>
+/// <changed>ʆϒʅ,01.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -29,8 +29,8 @@ enum logType { info = 0, debug, warning, error };
 // log container structure
 struct Log
 {
-  static unsigned int id;
-  logType type;
+  unsigned int id;
+  logType type { info };
   std::wstring cMoment;
   std::thread::id threadId;
   std::wstring threadName;
@@ -62,7 +62,8 @@ class Logger
 {
 private:
   Log logEntity;
-  std::list<Log> buffer; // buffer list container 
+  static unsigned int counter;
+  std::list<Log> buffer; // buffer list container
   tType policy; // output stream policy
   std::timed_mutex writeGuard; // write guard
   std::thread commit; // write engine thread
@@ -107,7 +108,7 @@ public:
   Configurations ();
   const bool& isValid ();
   const ConfigsContainer& getDefaults ( void );
-  const ConfigsContainer& get ( void );
+  const ConfigsContainer& getSettings ( void );
   void apply ();
   void apply ( const ConfigsContainer& );
 };// application configurations container
@@ -118,7 +119,7 @@ class Converter
 {
 private:
 public:
-  // to and from standard string type converters (Lua needs)
+  // standard string types converters (Lua needs)
   // Windows 10 builds upon Unicode natively, thus using wide strings is wise.
   static std::wstring strConverter ( const std::string& );
   static std::string strConverter ( const std::wstring& );

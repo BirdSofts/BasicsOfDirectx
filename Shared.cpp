@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,31.07.2019</changed>
+/// <changed>ʆϒʅ,01.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -30,6 +30,9 @@ std::shared_ptr<theException> PointerProvider::exception = nullptr;
 std::shared_ptr<Configurations> PointerProvider::configuration = nullptr;
 
 std::shared_ptr<Logger<toFile>> PointerProvider::fileLogger = nullptr;
+
+
+std::exception_ptr PointerProvider::exceptionPointer = nullptr;
 
 
 theException* PointerProvider::getException ()

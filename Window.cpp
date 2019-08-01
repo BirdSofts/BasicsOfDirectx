@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,31.07.2019</changed>
+/// <changed>ʆϒʅ,01.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -21,7 +21,7 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 
 
 Window::Window ( DirectX3dCore* coreObject ) :
-  theCore ( coreObject ), theHandle ( NULL ), initialized ( false ),
+  theHandle ( NULL ), theCore ( coreObject ), initialized ( false ),
   minimized ( false ), maximized ( false ), resizing ( false )
 {
   try
@@ -30,11 +30,12 @@ Window::Window ( DirectX3dCore* coreObject ) :
 
     appInstance = coreObject->getInstance ();
 
-    if ( PointerProvider::getConfiguration ()->get ().Width == 640 )
+    if ( PointerProvider::getConfiguration ()->getSettings ().Width == 640 )
       PointerProvider::getConfiguration ()->apply ();
-    clientWidth = PointerProvider::getConfiguration ()->get ().Width;
-    clientHeight = PointerProvider::getConfiguration ()->get ().Height;
-    fullScreen = PointerProvider::getConfiguration ()->get ().fullscreen;
+
+    clientWidth = PointerProvider::getConfiguration ()->getSettings ().Width;
+    clientHeight = PointerProvider::getConfiguration ()->getSettings ().Height;
+    fullScreen = PointerProvider::getConfiguration ()->getSettings ().fullscreen;
 
     // filling the instantiation of the extended version of window class,
     // a structure that handles properties and actions of a window:
@@ -67,6 +68,13 @@ Window::Window ( DirectX3dCore* coreObject ) :
     {
       PointerProvider::getException ()->set ( "regW" );
       throw* PointerProvider::getException ();
+    } else
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window is successfully registered." );
+#endif // !_NOT_DEBUGGING
+
     }
 
     // client size: all the raw window size can't be tampered with as working area,
@@ -113,6 +121,13 @@ Window::Window ( DirectX3dCore* coreObject ) :
     {
       PointerProvider::getException ()->set ( "crW" );
       throw* PointerProvider::getException ();
+    } else
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window is successfully created." );
+#endif // !_NOT_DEBUGGING
+
     }
 
     // show the window: the second parameter controls how the window is to be shown,
@@ -135,19 +150,19 @@ Window::Window ( DirectX3dCore* coreObject ) :
 #endif // !_NOT_DEBUGGING
 
     } else
-      if ( ex.what () == "crW" )
+      if ( ex.what () == "adjustW" )
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
 #endif // !_NOT_DEBUGGING
 
       } else
-        if ( ex.what () == "adjustW" )
+        if ( ex.what () == "crW" )
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
 #endif // !_NOT_DEBUGGING
 
         } else
@@ -164,7 +179,7 @@ Window::Window ( DirectX3dCore* coreObject ) :
 };
 
 
-const bool& Window::initialState ()
+const bool& Window::isInitialized ()
 {
   return initialized;
 };
@@ -178,20 +193,31 @@ const HWND& Window::getHandle ()
 
 void Window::shutdown ( void )
 {
-  if ( theCore )
+  try
   {
-    theCore = nullptr;
-    delete theCore;
-  }
-  if ( theHandle )
-    theHandle = NULL;
-  if ( appInstance )
-    appInstance = NULL;
+    if ( theCore )
+    {
+      theCore = nullptr;
+      delete theCore;
+    }
+    if ( theHandle )
+      theHandle = NULL;
+    if ( appInstance )
+      appInstance = NULL;
 
 #ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
 #endif // !_NOT_DEBUGGING
 
+  }
+  catch ( const std::exception& ex )
+  {
+
+#ifndef _NOT_DEBUGGING
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+  }
 };
 
 
@@ -210,157 +236,171 @@ LRESULT CALLBACK Window::msgProc (
   WPARAM wPrm, // additional information describing the message
   LPARAM lPrm ) // additional information describing the message
 {
-  switch ( msg )
+  try
   {
-    case WM_ACTIVATE: // if window activation state changes
-      if ( gameState == L"gaming" )
-        if ( ( LOWORD ( wPrm ) == WA_INACTIVE ) ) // activation flag
-        {
-          theCore->paused = true; // the game is paused
-          theCore->timer->event ( "stop" );
-        } else
-        {
-          theCore->timer->event ( "start" );
-          theCore->paused = false; // the game is running
-        }
-        return 0;
+    switch ( msg )
+    {
+      case WM_ACTIVATE: // if window activation state changes
+        if ( gameState == L"gaming" )
+          if ( ( LOWORD ( wPrm ) == WA_INACTIVE ) ) // activation flag
+          {
+            theCore->paused = true; // the game is paused
+            theCore->timer->event ( "pause" );
+          } else
+          {
+            theCore->timer->event ( "start" );
+            theCore->paused = false; // the game is running
+          }
+          return 0;
 
-    case WM_KEYDOWN: // if a key is pressed
-      if ( wPrm == VK_ESCAPE ) // the ESC key identification
-      {
+      case WM_KEYDOWN: // if a key is pressed
+        if ( wPrm == VK_ESCAPE ) // the ESC key identification
+        {
+          theCore->paused = true;
+          theCore->timer->event ( "pause" );
+          if ( MessageBoxA ( theHandle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+          {
+            // next expression simply indicates to the system intention to terminate the window,
+            // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
+            PostQuitMessage ( 0 ); // send the corresponding quite message
+            running = false;
+            gameState = L"shutting down";
+
+#ifndef _NOT_DEBUGGING
+            PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
+#endif // !_NOT_DEBUGGING
+
+            return 0; // the message was useful and is handled.
+          } else
+          {
+            theCore->timer->event ( "start" );
+            theCore->paused = false;
+            return 0; // the message was useful and is handled.
+          }
+        }
+
+        //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
+      case WM_CLOSE: // the user tries to somehow close the application
         theCore->paused = true;
-        theCore->timer->event ( "stop" );
+        theCore->timer->event ( "pause" );
         if ( MessageBoxA ( theHandle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
         {
-          // next expression simply indicates to the system intention to terminate the window,
-          // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
-          PostQuitMessage ( 0 ); // send the corresponding quite message
+          PostQuitMessage ( 0 );
           running = false;
           gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
+          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
 #endif // !_NOT_DEBUGGING
 
-          return 0; // the message was useful and is handled.
+          return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)
         } else
         {
           theCore->timer->event ( "start" );
           theCore->paused = false;
-          return 0; // the message was useful and is handled.
+          return 0;
         }
-      }
 
-      //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
-    case WM_CLOSE: // the user tries to somehow close the application
-      theCore->paused = true;
-      theCore->timer->event ( "stop" );
-      if ( MessageBoxA ( theHandle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
-      {
-        PostQuitMessage ( 0 );
-        running = false;
-        gameState = L"shutting down";
+      case WM_MENUCHAR: // handling none mnemonic or accelerator key and preventing constant beeping
+        // the games don't have a menu, this fact can easily be used to deceive the Windows,
+        // binding this not-needed feature to close the non-existent menu.
+        return MAKELRESULT ( 0, MNC_CLOSE );
+        return 0;
+
+      case WM_SIZE: // important for games in windowed mode (resizing the client size and game universe)
+        if ( gameState == L"gaming" )
+          if ( wPrm == SIZE_MINIMIZED ) // window is minimized
+          {
+            minimized = true;
+            maximized = false;
+            theCore->timer->event ( "pause" );
+            theCore->paused = true;
+          } else
+            if ( wPrm == SIZE_MAXIMIZED ) // window is maximized
+            {
+              minimized = false;
+              maximized = true;
+              theCore->paused = false;
+              theCore->timer->event ( "start" );
+            } else
+              if ( wPrm == SIZE_RESTORED ) // window is restored, find the previous state:
+              {
+                if ( minimized )
+                {
+                  minimized = false;
+                  theCore->resize ();
+                  theCore->timer->event ( "pause" );
+                  theCore->paused = true;
+                } else
+                  if ( maximized )
+                  {
+                    maximized = false;
+                    theCore->resize ();
+                    theCore->paused = false;
+                    theCore->timer->event ( "start" );
+                  } else
+                    if ( resizing )
+                    {
+                      if ( gameState == L"gaming" )
+                        if ( !theCore->paused )
+                        {
+                          theCore->timer->event ( "pause" );
+                          theCore->paused = true;
+                        }
+                      // a game window get seldom resized or dragged, even when such a case occur,
+                      // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
+                    } else // response when resized
+                    {
+                      theCore->resize ();
+                      if ( gameState == L"gaming" )
+                      {
+                        theCore->paused = false;
+                        theCore->timer->event ( "start" );
+                      }
+                    }
+              }
+            return 0;
+
+      case WM_ENTERSIZEMOVE: // the edge of the window is being dragged around to resize it
+        resizing = true;
+        if ( gameState == L"gaming" )
+        {
+          theCore->timer->event ( "pause" );
+          theCore->paused = true;
+        }
+        return 0;
+
+      case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
+        resizing = false;
+        theCore->resize ();
+        if ( gameState == L"gaming" )
+        {
+          theCore->paused = false;
+          theCore->timer->event ( "start" );
+        }
+        return 0;
+
+        // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
+      case WM_GETMINMAXINFO:
+        // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
+        ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
+        ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
+        return 0;
+    }
+
+    // it is very important to let Window handle other for the program irrelevant messages,
+    // using below pass through function, preventing the Window losing them all. :)
+    return DefWindowProc ( handle, msg, wPrm, lPrm );
+
+  }
+  catch ( const std::exception& ex )
+  {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
-        return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)
-      } else
-      {
-        theCore->timer->event ( "start" );
-        theCore->paused = false;
-        return 0;
-      }
+    return DefWindowProc ( handle, msg, wPrm, lPrm );
 
-    case WM_MENUCHAR: // handling none mnemonic or accelerator key and preventing constant beeping
-      // the games don't have a menu, this fact can easily be used to deceive the Windows,
-      // binding this not-needed feature to close the non-existent menu.
-      return MAKELRESULT ( 0, MNC_CLOSE );
-      return 0;
-
-    case WM_SIZE: // important for games in windowed mode (resizing the client size and game universe)
-      if ( gameState == L"gaming" )
-        if ( wPrm == SIZE_MINIMIZED ) // window is minimized
-        {
-          minimized = true;
-          maximized = false;
-          theCore->timer->event ( "stop" );
-          theCore->paused = true;
-        } else
-          if ( wPrm == SIZE_MAXIMIZED ) // window is maximized
-          {
-            minimized = false;
-            maximized = true;
-            theCore->paused = false;
-            theCore->timer->event ( "start" );
-          } else
-            if ( wPrm == SIZE_RESTORED ) // window is restored, find the previous state:
-            {
-              if ( minimized )
-              {
-                minimized = false;
-                theCore->resize ();
-                theCore->timer->event ( "stop" );
-                theCore->paused = true;
-              } else
-                if ( maximized )
-                {
-                  maximized = false;
-                  theCore->resize ();
-                  theCore->paused = false;
-                  theCore->timer->event ( "start" );
-                } else
-                  if ( resizing )
-                  {
-                    if ( gameState == L"gaming" )
-                      if ( !theCore->paused )
-                      {
-                        theCore->timer->event ( "stop" );
-                        theCore->paused = true;
-                      }
-                    // a game window get seldom resized or dragged, even when such a case occur,
-                    // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
-                  } else // response when resized
-                  {
-                    theCore->resize ();
-                    if ( gameState == L"gaming" )
-                    {
-                      theCore->paused = false;
-                      theCore->timer->event ( "start" );
-                    }
-                  }
-            }
-          return 0;
-
-    case WM_ENTERSIZEMOVE: // the edge of the window is being dragged around to resize it
-      resizing = true;
-      if ( gameState == L"gaming" )
-      {
-        theCore->timer->event ( "stop" );
-        theCore->paused = true;
-      }
-      return 0;
-
-    case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
-      resizing = false;
-      theCore->resize ();
-      if ( gameState == L"gaming" )
-      {
-        theCore->paused = false;
-        theCore->timer->event ( "start" );
-      }
-      return 0;
-
-      // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
-    case WM_GETMINMAXINFO:
-      // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
-      ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
-      return 0;
   }
-
-  // it is very important to let Window handle other for the program irrelevant messages,
-  // using below pass through function, preventing the Window losing them all. :)
-  return DefWindowProc ( handle, msg, wPrm, lPrm );
 };

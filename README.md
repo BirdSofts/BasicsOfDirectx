@@ -52,11 +52,14 @@ cmake --build build-path
 I appreciate any contribution from anyone, who sees that the project deserves his precious time.
 
 # References
-https://bell0bytes.eu/
-https://docs.microsoft.com/
-http://www.cplusplus.com/
-http://www.rastertek.com/
-https://www.braynzarsoft.net/
+<table>
+<tr><a href="https://bell0bytes.eu/">bell0bytes</a></tr>
+<tr><a href="https://docs.microsoft.com/">Microsoft Docs</a></tr>
+<tr><a href="http://www.cplusplus.com/">cplusplus.com</a></tr>
+<tr><a href="https://en.cppreference.com/">cppreference.com</a></tr>
+<tr><a href="http://www.rastertek.com/">Raster Tek</a></tr>
+<tr><a href="https://www.braynzarsoft.net/">Braynzar Soft</a></tr>
+</table>
 
 # Copyright
 This is not a freeware, thus the ideas, the source code and the literature within is copyrighted. Most of the code is learned and inspired from online references and the addition to them can just be used as teaching materials. For any other uses the written acknowledgement and permission is needed.
