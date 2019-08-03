@@ -149,7 +149,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DirectX.cpp" />
+    <ClCompile Include="D3D.cpp" />
+    <ClCompile Include="Core.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="LearningDirectX.cpp" />
     <ClCompile Include="Shared.cpp" />
@@ -158,7 +159,8 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DirectX.h" />
+    <ClInclude Include="D3D.h" />
+    <ClInclude Include="Core.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="LearningDirectX.h" />
     <ClInclude Include="Shared.h" />

@@ -3,16 +3,16 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,24.07.2019</changed>
+/// <changed>ʆϒʅ,02.08.2019</changed>
 // ********************************************************************************
 
-#include "DirectX.h"
+#include "Core.h"
 
 #ifndef GAME_H
 #define GAME_H
 
 
-class GameCore : public DirectX3dCore
+class GameCore : public TheCore
 {
 private:
 public:

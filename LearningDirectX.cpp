@@ -3,12 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
 #include "Window.h"
-#include "DirectX.h"
+#include "Core.h"
 #include "Game.h"
 #include "Utilities.h"
 #include "Shared.h"
@@ -64,7 +64,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
       throw;
 #endif // !_NOT_DEBUGGING
 
-    DirectX3dCore theCore ( hInstance );
+    TheCore theCore ( hInstance );
 
 #ifndef _NOT_DEBUGGING
     if ( !theCore.isInitialized () )
@@ -78,6 +78,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     MSG msg { 0 }; // a new message structure
     unsigned short counter { 0 };
 
+
+
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
 #endif // !_NOT_DEBUGGING
@@ -87,6 +89,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Entering the game loop: the colour is going to change constantly, pay attention to your nose!" );
 #endif // !_NOT_DEBUGGING
+
+
 
     theCore.getTimer ()->event ( "reset" ); // reset (start)
 
@@ -168,9 +172,9 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
         float backColor [4] { r, g, b, 1 };
 
         theCore.d3dDevice->ClearRenderTargetView ( theCore.renderTargetView, backColor );
-
+        
         theCore.swapChain->Present ( 0, 0 );
-
+        
         counter++;
         // my environment could manage 10! :)
         if ( ( counter % 10000 ) == 0 )

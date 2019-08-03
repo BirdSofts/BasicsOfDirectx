@@ -3,43 +3,68 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
-#include "DirectX.h"
+#include "Core.h"
 #include "Shared.h"
 
 
-DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
-  appInstance ( hInstance ), appWindow ( nullptr ),
-  initialized ( false ), paused ( false ), timer ( nullptr ),
-  fps ( 0 ), frameRenderTime ( 0 )
+TheCore::TheCore ( HINSTANCE& hInstance ) :
+  appInstance ( hInstance ), timer ( nullptr ),
+  fps ( 0 ), frameRenderTime ( 0 ), appWindow ( nullptr ),
+  initialized ( false ), paused ( false ), d3d ( nullptr )
 {
   try
   {
     // timer instantiation
     timer = new ( std::nothrow ) Timer ();
+    if ( timer->isInitialized () )
+    {
 
 #ifndef _NOT_DEBUGGING
-    if ( !timer->isInitialized () )
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Timer initialization failed." );
-    else
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Timer is initialized." );
 #endif // !_NOT_DEBUGGING
 
+    } else
+    {
+      PointerProvider::getException ()->set ( "inT" );
+      throw* PointerProvider::getException ();
+    }
+
     // application window instantiation
     appWindow = new ( std::nothrow ) Window ( this );
+    if ( appWindow->isInitialized () )
+    {
 
 #ifndef _NOT_DEBUGGING
-    if ( !appWindow->isInitialized () )
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
-    else
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Window is initialized." );
 #endif // !_NOT_DEBUGGING
 
+    } else
+    {
+      PointerProvider::getException ()->set ( "inW" );
+      throw* PointerProvider::getException ();
+    }
     // handle of the instantiated window
     appHandle = appWindow->getHandle ();
+
+    // Direct3D 10 instantiation
+    d3d = new ( std::nothrow ) Direct3D ( this );
+    if ( d3d->isInitialized () )
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Direct3D 10 is successfully initialized." );
+#endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "inD" );
+      throw* PointerProvider::getException ();
+    }
+
 
     // the structure type to declare the swap chain:
     // -- BufferDesc: general properties of the back buffer
@@ -130,62 +155,79 @@ DirectX3dCore::DirectX3dCore ( HINSTANCE& hInstance ) :
     initialized = true;
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"DirectX3D is initialized." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Direct3D 10 is successfully initialized." );
 #endif // !_NOT_DEBUGGING
 
   }
   catch ( const std::exception& ex )
   {
 
+    if ( ex.what () == "inT" )
+    {
+
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Timer initialization failed." );
 #endif // !_NOT_DEBUGGING
 
+    } else
+      if ( ex.what () == "inW" )
+      {
+
+#ifndef _NOT_DEBUGGING
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window initialization failed." );
+#endif // !_NOT_DEBUGGING
+
+      } else
+        if ( ex.what () == "inD" )
+        {
+
+#ifndef _NOT_DEBUGGING
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D initialization failed." );
+#endif // !_NOT_DEBUGGING
+
+        } else
+        {
+
+#ifndef _NOT_DEBUGGING
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+        }
   }
 };
 
 
-const bool& DirectX3dCore::isInitialized ()
+const bool& TheCore::isInitialized ()
 {
   return initialized;
 };
 
 
-const HINSTANCE& DirectX3dCore::getInstance ()
+const HINSTANCE& TheCore::getInstance ()
 {
   return appInstance;
 };
 
 
-const HWND& DirectX3dCore::getHandle ()
+const HWND& TheCore::getHandle ()
 {
   return appHandle;
 };
 
 
-const bool& DirectX3dCore::isPaused ()
+const bool& TheCore::isPaused ()
 {
   return paused;
 };
 
 
-Timer* DirectX3dCore::getTimer ()
+Timer* TheCore::getTimer ()
 {
   return timer;
 };
 
 
-void DirectX3dCore::resize ( void )
-{
-
-#ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Since window is resized, the game graphics must be updated!" );
-#endif // !_NOT_DEBUGGING
-
-};
-
-
-void DirectX3dCore::frameStatistics ()
+void TheCore::frameStatistics ()
 {
   try
   {
@@ -221,7 +263,7 @@ void DirectX3dCore::frameStatistics ()
 };
 
 
-void DirectX3dCore::shutdown ( void )
+void TheCore::shutdown ( void )
 {
   try
   {
@@ -235,7 +277,7 @@ void DirectX3dCore::shutdown ( void )
     initialized = 0;
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is uninitialized." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The DirectX3D is successfully uninitialized." );
 #endif // !_NOT_DEBUGGING
 
   }

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
@@ -15,9 +15,9 @@
 
 
 #include <windows.h> // Windows standard APIs
-#include <d3d11.h> // Windows standard DirectX3D APIs
+#include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
+#include <d3d10.h> // Windows standard DirectX3D APIs
 #pragma comment (lib, "d3d10.lib") // linkage to the 'd3d10' library
-#pragma comment (lib, "d3d11.lib") // linkage to the 'd3d11' library
 #include <ShlObj.h> // Windows standard control APIs
 #include <Shlwapi.h> // Windows standard lightweight utility APIs
 #include <PathCch.h> // Windows standard shell APIs

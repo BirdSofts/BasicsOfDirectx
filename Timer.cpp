@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,02.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -38,35 +38,31 @@ secondsPerCount ( 0 ), timeDelta ( 0 ), paused ( false )
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is instantiated." );
 #endif // !_NOT_DEBUGGING
 
+      initialized = true;
     } else
     {
+      PointerProvider::getException ()->set ( "crT" );
+      throw* PointerProvider::getException ();
+      initialized = false;
+    }
+  }
+  catch ( const std::exception& ex )
+  {
+
+    if ( ex.what () == "crT" )
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The high-precision timer instantiation failed!" );
 #endif // !_NOT_DEBUGGING
 
-    }
-    initialized = true;
-  }
-  catch ( const std::exception& ex )
-  {
+    else
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
 };
-
-
-//Timer::~Timer ()
-//{
-//
-//#ifndef _NOT_DEBUGGING
-//  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully destructed." );
-//#endif // !_NOT_DEBUGGING
-//
-//};
 
 
 const bool& Timer::isInitialized ()

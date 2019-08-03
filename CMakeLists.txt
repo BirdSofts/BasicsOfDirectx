@@ -3,7 +3,7 @@
 #/ 
 #/ </summary>
 #/ <created>ʆϒʅ,19.07.2019</created>
-#/ <changed>ʆϒʅ,01.08.2019</changed>
+#/ <changed>ʆϒʅ,02.08.2019</changed>
 # *******************************************************************************************
 
 # CMakeList.txt : CMake project for LearningDirectX, include source and define
@@ -29,7 +29,7 @@ list(APPEND RESOURCES
 
 list(APPEND HEADER_FILES
           LearningDirectX.cpp
-          DirectX.h
+          Core.h
           Game.h
           Shared.h
           Timer.h
@@ -39,7 +39,7 @@ list(APPEND HEADER_FILES
 
 list(APPEND SOURCE_FILES
           LearningDirectX.cpp
-          DirectX.cpp
+          Core.cpp
           Game.cpp
           Shared.cpp
           Timer.cpp

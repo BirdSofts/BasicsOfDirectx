@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -20,7 +20,7 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 }
 
 
-Window::Window ( DirectX3dCore* coreObject ) :
+Window::Window ( TheCore* coreObject ) :
   theHandle ( NULL ), theCore ( coreObject ), initialized ( false ),
   minimized ( false ), maximized ( false ), resizing ( false )
 {
@@ -206,7 +206,7 @@ void Window::shutdown ( void )
       appInstance = NULL;
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is destructed." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is successfully destructed." );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -328,14 +328,14 @@ LRESULT CALLBACK Window::msgProc (
                 if ( minimized )
                 {
                   minimized = false;
-                  theCore->resize ();
+                  theCore->d3d->resize ();
                   theCore->timer->event ( "pause" );
                   theCore->paused = true;
                 } else
                   if ( maximized )
                   {
                     maximized = false;
-                    theCore->resize ();
+                    theCore->d3d->resize ();
                     theCore->paused = false;
                     theCore->timer->event ( "start" );
                   } else
@@ -351,7 +351,7 @@ LRESULT CALLBACK Window::msgProc (
                       // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
                     } else // response when resized
                     {
-                      theCore->resize ();
+                      theCore->d3d->resize ();
                       if ( gameState == L"gaming" )
                       {
                         theCore->paused = false;
@@ -372,7 +372,7 @@ LRESULT CALLBACK Window::msgProc (
 
       case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
         resizing = false;
-        theCore->resize ();
+        theCore->d3d->resize ();
         if ( gameState == L"gaming" )
         {
           theCore->paused = false;

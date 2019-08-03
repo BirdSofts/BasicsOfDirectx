@@ -53,12 +53,24 @@ I appreciate any contribution from anyone, who sees that the project deserves hi
 
 # References
 <table>
-<tr><a href="https://bell0bytes.eu/">bell0bytes</a></tr>
-<tr><a href="https://docs.microsoft.com/">Microsoft Docs</a></tr>
-<tr><a href="http://www.cplusplus.com/">cplusplus.com</a></tr>
-<tr><a href="https://en.cppreference.com/">cppreference.com</a></tr>
-<tr><a href="http://www.rastertek.com/">Raster Tek</a></tr>
-<tr><a href="https://www.braynzarsoft.net/">Braynzar Soft</a></tr>
+<tr>
+<td><a href="https://bell0bytes.eu/">bell0bytes</a></td>
+</tr>
+<tr>
+<td><a href="https://docs.microsoft.com/">Microsoft Docs</a></td>
+</tr>
+<tr>
+<td><a href="http://www.cplusplus.com/">cplusplus.com</a></td>
+</tr>
+<tr>
+<td><a href="https://en.cppreference.com/">cppreference.com</a></td>
+</tr>
+<tr>
+<td><a href="http://www.rastertek.com/">Raster Tek</a></td>
+</tr>
+<tr>
+<td><a href="https://www.braynzarsoft.net/">Braynzar Soft</a></td>
+</tr>
 </table>
 
 # Copyright

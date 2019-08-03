@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #ifndef TIMER_H
@@ -25,7 +25,6 @@ private:
   bool paused; // true if the timer is paused
 public:
   Timer ();
-  //~Timer ();
   const bool& isInitialized (); // get the initialized state
   const double getTotal (); // total time minus the idle time
   const double& getDelta (); // get the delta time
