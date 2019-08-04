@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,03.08.2019</changed>
+/// <changed>ʆϒʅ,04.08.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -30,29 +30,14 @@ private:
   bool paused; // true if the game is paused
   Direct3D* d3d;
 public:
-
-  // Direct3D interface, in charge of controlling the hardware device,
-  // the structure type is basically the software controller to the graphic device
-  ID3D10Device* d3dDevice;
-  // swap chain interface, a structure type to hold the front and back buffer,
-  // which are 2d textures to draw the scenes on, while the front buffer already appears on the screen,
-  // the back buffer is waiting to appear on the screen.
-  // these two buffers are on the row first calculated as back buffer and then shown as front buffer,
-  // this way the flickering effect is avoided, with other words,
-  // the calculation and drawing happen and what is going to be seen is the completed pictures.
-  IDXGISwapChain* swapChain;
-  // render target view interface, a structure type that gets the resource view and sends it to the wished pipeline stage.
-  // for the Direct3D to be able to render onto back buffer, it needs to be bound to the output merger stage,
-  // therefore a render target view is created for the back buffer.
-  ID3D10RenderTargetView* renderTargetView;
-
   TheCore ( HINSTANCE& ); // constructor and initializer
-  const bool& isInitialized (); // get the initialized state
-  const HINSTANCE& getInstance (); // get the handle to application instance
-  const HWND& getHandle (); // get the handle to main window
-  const bool& isPaused (); // get the paused state
-  Timer* getTimer (); // get the pointer to application timer
-  void frameStatistics (); // frame statistics calculations
+  const bool& isInitialized ( void ); // get the initialized state
+  const HINSTANCE& getInstance ( void ); // get the handle to application instance
+  const HWND& getHandle ( void ); // get the handle to main window
+  const bool& isPaused ( void ); // get the paused state
+  Timer* getTimer ( void ); // get the pointer to application timer
+  void frameStatistics ( void ); // frame statistics calculations
+  void testDirect3D ( float [] ); // tester
   void shutdown ( void ); // destruction preparations
 };
 

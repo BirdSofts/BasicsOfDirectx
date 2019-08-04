@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,02.08.2019</changed>
+/// <changed>ʆϒʅ,03.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -13,7 +13,7 @@
 
 Timer::Timer () : initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ), timePreviousFrame ( 0 ),
 timeLastStopped ( 0 ), timeTotalIdle ( 0 ),
-secondsPerCount ( 0 ), timeDelta ( 0 ), paused ( false )
+secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
 {
   try
   {

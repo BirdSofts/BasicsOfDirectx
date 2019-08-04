@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,03.08.2019</changed>
+/// <changed>ʆϒʅ,04.08.2019</changed>
 // ********************************************************************************
 
 #ifndef D3D_H
@@ -34,17 +34,23 @@ private:
   // purpose: swapping the back buffer (double or triple) and the display surface
   Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain; // the swap chain
 
-  //Microsoft::WRL::ComPtr<ID3D10RenderTargetView*> renderTargetView;
+  DXGI_FORMAT colourFormat; // colour format
+
+  Microsoft::WRL::ComPtr<ID3D10RenderTargetView> renderTargetView; // rendering target
+
+  Microsoft::WRL::ComPtr<ID3D10DepthStencilView> depthStencilView; // depth and stencil buffer
 
   bool initialized; // true if the initialization was successful
+  bool created; // true if the creation was successful
+  bool resized; // true if the resizing was successful
 
-  DXGI_FORMAT colourFormat; // colour format
 public:
   Direct3D ( TheCore* ); // device creation plus swapping the chain
   const bool& isInitialized (); // get the initialized state
   void createResources ( void ); // create the device resources
-  void present ( void ); // draw the scene
   void resize ( void ); // resize the resources
+  void clearBuffers ( void ); // clear depth and stencil buffers
+  void present ( void ); // present the chain by flipping the buffers
   void shutdown ( void ); // destruction preparations
 };
 

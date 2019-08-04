@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,03.08.2019</changed>
+/// <changed>ʆϒʅ,04.08.2019</changed>
 // ********************************************************************************
 
 #include "LearningDirectX.h"
@@ -94,9 +94,9 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
     theCore.getTimer ()->event ( "reset" ); // reset (start)
 
-    float r { 0 };
-    float g { 0 };
-    float b { 0 };
+    float r { 0.0 };
+    float g { 0.0 };
+    float b { 0.0 };
     int colourMod_r { 1 };
     int colourMod_g { 1 };
     int colourMod_b { 1 };
@@ -171,10 +171,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
         float backColor [4] { r, g, b, 1 };
 
-        theCore.d3dDevice->ClearRenderTargetView ( theCore.renderTargetView, backColor );
-        
-        theCore.swapChain->Present ( 0, 0 );
-        
+        theCore.testDirect3D ( backColor );
+
         counter++;
         // my environment could manage 10! :)
         if ( ( counter % 10000 ) == 0 )
