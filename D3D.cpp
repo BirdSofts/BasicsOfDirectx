@@ -3,10 +3,9 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,04.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
-#include "LearningDirectX.h"
 #include "D3D.h"
 #include "Shared.h"
 
@@ -160,7 +159,7 @@ void Direct3D::createResources ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Swap chain is successfully created!" );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Swap chain is successfully created." );
 #endif // !_NOT_DEBUGGING
 
     } else

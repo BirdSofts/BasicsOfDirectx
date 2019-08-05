@@ -3,14 +3,21 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
 #ifndef SHARED_H
 #define SHARED_H
 
+//#define _NOT_DEBUGGING // shipping time definition
+
 
 #include "Utilities.h"
+
+
+// global:
+extern bool running;
+extern std::wstring gameState;
 
 
 //template<class tType>

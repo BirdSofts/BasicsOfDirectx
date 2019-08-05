@@ -3,11 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,03.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
 #define WINDOW_H
+
+
+#include <windows.h> // Windows standard APIs
 
 
 #include "Core.h"

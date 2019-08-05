@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="D2D.cpp" />
     <ClCompile Include="D3D.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -159,10 +160,10 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="D2D.h" />
     <ClInclude Include="D3D.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="LearningDirectX.h" />
     <ClInclude Include="Shared.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />

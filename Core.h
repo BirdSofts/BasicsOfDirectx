@@ -13,12 +13,14 @@
 #include "Window.h"
 #include "Timer.h"
 #include "D3D.h"
+#include "D2D.h"
 
 
 class TheCore
 {
   friend class Window;
   friend class Direct3D;
+  friend class Direct2D;
 private:
   HINSTANCE appInstance; // handle to the application instance
   Timer* timer; // pointer to DirectX high-precision timer application
@@ -29,6 +31,7 @@ private:
   bool initialized; // true if the initialization was successful
   bool paused; // true if the game is paused
   Direct3D* d3d;
+  Direct2D* d2d;
 public:
   TheCore ( HINSTANCE& ); // constructor and initializer
   const bool& isInitialized ( void ); // get the initialized state

@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,04.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
-#include "LearningDirectX.h"
+//#include "LearningDirectX.h"
 #include "Window.h"
 #include "Core.h"
 #include "Game.h"
-#include "Utilities.h"
+#include "Utilities.h" // string + s,f streams + threads + list + Windows standards
 #include "Shared.h"
 
 
@@ -175,7 +175,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
         counter++;
         // my environment could manage 10! :)
-        if ( ( counter % 10000 ) == 0 )
+        if ( ( counter % 500 ) == 0 )
         {
           std::wstring str { L"" };
           for ( unsigned char i = 0; i < 4; i++ )

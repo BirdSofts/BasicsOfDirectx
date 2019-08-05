@@ -3,10 +3,9 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
-#include "LearningDirectX.h"
 #include "Utilities.h"
 #include "Shared.h"
 
@@ -64,7 +63,13 @@ bool toFile::write ( const Log& entity )
     } else
       line << "\r\n";
 
-    line << entity.id << "\t\t" << entity.cMoment << '\t';
+    if ( entity.id < 1000 )
+      line << entity.id << "\t\t";
+    else
+      line << entity.id << "\t";
+
+    line << entity.cMoment << '\t';
+
     switch ( entity.type )
     {
       case 0:
@@ -123,6 +128,7 @@ Logger<tType>::Logger () : policy (), writeGuard ()
     {
       operating.test_and_set (); // mark the write engine as running
       commit = std::move ( std::thread { loggerEngine<tType>, this } );
+      logEntity.id = 0;
     }
   }
   catch ( const std::exception& ex )
@@ -157,12 +163,24 @@ void Logger<tType>::push ( const logType& t,
 {
   try
   {
+    Log temp; // temporary buffer list container
+    temp.id = 0;
     counter++;
-    logEntity.id = counter;
-    logEntity.type = t;
-    logEntity.threadId = tId;
-    logEntity.threadName = tName;
-    logEntity.message = msg;
+    if ( ( counter > 0 ) && ( logEntity.id == 0 ) )
+    {
+      logEntity.id = counter;
+      logEntity.type = t;
+      logEntity.threadId = tId;
+      logEntity.threadName = tName;
+      logEntity.message = msg;
+    } else
+    {
+      temp.id = counter;
+      temp.type = t;
+      temp.threadId = tId;
+      temp.threadName = tName;
+      temp.message = msg;
+    }
 
     std::wstringstream current;
     SYSTEMTIME cDateT;
@@ -170,11 +188,18 @@ void Logger<tType>::push ( const logType& t,
     // date and time format: xx/xx/xx xx:xx:xx
     current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
       << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
-    logEntity.cMoment = current.str ();
 
-    // Todo robust lock
-    std::lock_guard<std::timed_mutex> lock ( writeGuard );
-    buffer.push_back ( logEntity );
+    if ( temp.id == 0 )
+    {
+      logEntity.cMoment = current.str ();
+      buffer.push_back ( logEntity );
+      logEntity.id = 0;
+    } else
+    {
+      temp.cMoment = current.str ();
+      buffer.push_back ( temp );
+      temp.id = 0;
+    }
   }
   catch ( const std::exception& ex )
   {
@@ -205,7 +230,7 @@ void loggerEngine ( Logger<tType>* engine )
     {
       if ( engine->buffer.size () )
       {
-        if ( !lock.try_lock_for ( std::chrono::milliseconds { 30 } ) )
+        if ( !lock.try_lock_for ( std::chrono::milliseconds { 100 } ) )
           continue;
         for ( auto& element : engine->buffer )
           if ( !engine->policy.write ( element ) )

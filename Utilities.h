@@ -3,11 +3,49 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,01.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
 #define UTILITIES_H
+
+
+#include <string.h> // C++ standard string class
+#include <locale> // C++ standard locals (facets of the below header is declared here)
+#include <codecvt> // C++ standard Unicode conversion facets
+
+#include <iostream> // C++ standard input and output streams
+#include <sstream> // C++ standard string streams
+#include <fstream> // C++ standard file streams
+
+#include <atomic> // C++ standard atomic objects (no data races)
+#include <thread> // C++ standard threads
+#include <mutex> // C++ standard lockable objects
+
+#include <list> // C++ standard list container
+
+#include <ShlObj.h> // Windows standard control APIs
+#include <Shlwapi.h> // Windows standard lightweight utility APIs
+#include <PathCch.h> // Windows standard shell APIs
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "PathCch.lib")
+
+// Lua: a powerful, lightweight and embeddable scripting language engine,
+// and additionally the most popular general-purpose one used in games nowadays.
+// -- more information: http://luabinaries.sourceforge.net/download.html
+// -- Lua documentation: https://www.lua.org/docs.html
+// -- Sol documentation: https://sol2.readthedocs.io/en/latest/
+// purposes: write and read configuration files, run scripts and to write code to drive the gameplay.
+// Sol: the go-to framework for high-performance binding between Lua and C++
+// -- more information: https://github.com/ThePhD/sol2/releases
+//#include <lua.hpp> // Lua scripting language engine header file
+#define SOL_ALL_SAFETIES_ON 1
+//#pragma warning( push )
+//#pragma warning( disable : 4127 ) // constant warning
+//#pragma warning( disable : 4702 ) // unreachable code warning
+#include <sol.hpp> // Sol binding framework between Lua and C++
+//#pragma warning( pop )
+#pragma comment (lib, "liblua53.a") // Lua scripting language engine library
 
 
 // special expansion to exception container

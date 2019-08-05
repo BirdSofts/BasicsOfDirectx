@@ -3,18 +3,17 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,04.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
-#include "LearningDirectX.h"
 #include "Core.h"
 #include "Shared.h"
 
 
 TheCore::TheCore ( HINSTANCE& hInstance ) :
   appInstance ( hInstance ), timer ( nullptr ),
-  fps ( 0 ), frameRenderTime ( 0 ), appWindow ( nullptr ),
-  initialized ( false ), paused ( false ), d3d ( nullptr )
+  fps ( 0 ), frameRenderTime ( 0 ), appHandle ( NULL ), appWindow ( nullptr ),
+  initialized ( false ), paused ( false ), d3d ( nullptr ), d2d ( nullptr )
 {
   try
   {
@@ -47,8 +46,7 @@ TheCore::TheCore ( HINSTANCE& hInstance ) :
       PointerProvider::getException ()->set ( "inW" );
       throw* PointerProvider::getException ();
     }
-    // handle of the instantiated window
-    appHandle = appWindow->getHandle ();
+    appHandle = appWindow->getHandle (); // handle to the instantiated window
 
     // Direct3D 10 instantiation
     d3d = new ( std::nothrow ) Direct3D ( this );
@@ -61,7 +59,22 @@ TheCore::TheCore ( HINSTANCE& hInstance ) :
 
     } else
     {
-      PointerProvider::getException ()->set ( "inD" );
+      PointerProvider::getException ()->set ( "inD3D" );
+      throw* PointerProvider::getException ();
+    }
+
+    // Direct2D 10 instantiation
+    d2d = new ( std::nothrow ) Direct2D ( this );
+    if ( d2d->isInitialized () )
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Direct2D is successfully initialized." );
+#endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "inD2D" );
       throw* PointerProvider::getException ();
     }
 
@@ -87,7 +100,7 @@ TheCore::TheCore ( HINSTANCE& hInstance ) :
 #endif // !_NOT_DEBUGGING
 
       } else
-        if ( ex.what () == "inD" )
+        if ( ex.what () == "inD3D" )
         {
 
 #ifndef _NOT_DEBUGGING
@@ -95,13 +108,21 @@ TheCore::TheCore ( HINSTANCE& hInstance ) :
 #endif // !_NOT_DEBUGGING
 
         } else
-        {
+          if ( ex.what () == "inD2D" )
+          {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct2D initialization failed." );
 #endif // !_NOT_DEBUGGING
 
-        }
+          } else
+          {
+
+#ifndef _NOT_DEBUGGING
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+          }
   }
 };
 

@@ -3,19 +3,26 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,04.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
 #ifndef D3D_H
 #define D3D_H
 
 
+#include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
+#include <d3d10_1.h> // Windows standard DirectX3D APIs
+#pragma comment (lib, "d3d10.lib") // linkage to the 'd3d10' library
+
+
 #include "Core.h"
+#include "D2D.h"
 
 
 class Direct3D
 {
   friend class TheCore;
+  friend class Direct2D;
 private:
   TheCore* theCore; // pointer to DirectX core application
 
@@ -43,7 +50,6 @@ private:
   bool initialized; // true if the initialization was successful
   bool created; // true if the creation was successful
   bool resized; // true if the resizing was successful
-
 public:
   Direct3D ( TheCore* ); // device creation plus swapping the chain
   const bool& isInitialized (); // get the initialized state

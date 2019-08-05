@@ -3,10 +3,9 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,03.08.2019</changed>
+/// <changed>ʆϒʅ,05.08.2019</changed>
 // ********************************************************************************
 
-#include "LearningDirectX.h"
 #include "Timer.h"
 #include "Shared.h"
 
