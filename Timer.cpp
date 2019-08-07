@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,07.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
@@ -34,7 +34,7 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
       secondsPerCount = double ( 1 ) / frequency;
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is instantiated." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is successfully instantiated." );
 #endif // !_NOT_DEBUGGING
 
       initialized = true;
@@ -111,7 +111,7 @@ void Timer::event ( const char* type )
         paused = false;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is started." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully started." );
 #endif // !_NOT_DEBUGGING
 
       }
@@ -123,7 +123,7 @@ void Timer::event ( const char* type )
         paused = true;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is stopped." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully stopped." );
 #endif // !_NOT_DEBUGGING
 
       }
@@ -138,7 +138,7 @@ void Timer::event ( const char* type )
         paused = false;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is reset." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully reset." );
 #endif // !_NOT_DEBUGGING
 
       }
@@ -147,7 +147,7 @@ void Timer::event ( const char* type )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Failure in timer functionality! Requested event: " + Converter::strConverter ( type ) );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"A Timer functionality failed! Requested event: " + Converter::strConverter ( type ) );
 #endif // !_NOT_DEBUGGING
 
     }

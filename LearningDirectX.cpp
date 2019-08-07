@@ -3,14 +3,13 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
-//#include "LearningDirectX.h"
 #include "Window.h"
 #include "Core.h"
 #include "Game.h"
-#include "Utilities.h" // string + s,f streams + threads + list + Windows standards
+#include "Utilities.h" // string + s,f streams + exception + threads + list + Windows standards
 #include "Shared.h"
 
 
@@ -25,6 +24,11 @@
 //long long* anArray = new long long [1000000000000000000]; // throwing a standard exception on memory allocation
 
 bool running { false };
+
+#ifndef _NOT_DEBUGGING
+bool debugger { false };
+#endif // !_NOT_DEBUGGING
+
 std::wstring gameState { L"uninitialized" };
 
 
@@ -38,50 +42,61 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   try
   {
 
+    // Todo add exception handle (initialization state)
     std::shared_ptr<theException> anException { new ( std::nothrow ) theException () };
     PointerProvider::exceptionProvider ( anException );
 
 #ifndef _NOT_DEBUGGING
+    // Todo add exception handle (initialization state)
     std::shared_ptr<Logger<toFile>> fileLoggerEngine ( new ( std::nothrow ) Logger<toFile> () );
     PointerProvider::fileLoggerProvider ( fileLoggerEngine );
 #endif // !_NOT_DEBUGGING
 
+    // Todo add exception handle (initialization state)
     std::shared_ptr<Configurations> settings ( new ( std::nothrow ) Configurations () );
     PointerProvider::configurationProvider ( settings );
 
     if ( ( anException ) && ( settings ) )
-    {
       running = true;
-    } else
-      throw;
+    else
+    {
+      PointerProvider::getException ()->set ( "appSone" );
+      throw* PointerProvider::getException ();
+    }
 
 #ifndef _NOT_DEBUGGING
     if ( fileLoggerEngine )
     {
-      running = true;
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Exception, file logger and configuration providers are up and running." );
+      debugger = true;
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Exception, file logger and configuration providers are successfully initialized." );
     } else
-      throw;
+    {
+      PointerProvider::getException ()->set ( "appDebug" );
+      throw* PointerProvider::getException ();
+    }
 #endif // !_NOT_DEBUGGING
+
 
     TheCore theCore ( hInstance );
 
-#ifndef _NOT_DEBUGGING
-    if ( !theCore.isInitialized () )
+    if ( theCore.isInitialized () )
     {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of application core failed." );
-      return EXIT_FAILURE;
-    } else
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The application core is initialized." );
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The application core is successfully initialized." );
 #endif // !_NOT_DEBUGGING
 
-    MSG msg { 0 }; // a new message structure
-    unsigned short counter { 0 };
+    } else
+    {
 
+      PointerProvider::getException ()->set ( "appStwo" );
+      throw* PointerProvider::getException ();
+
+    }
 
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is initialized successfully." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is successfully initialized." );
 #endif // !_NOT_DEBUGGING
 
     gameState = L"initialized";
@@ -91,6 +106,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 #endif // !_NOT_DEBUGGING
 
 
+    MSG msg { 0 }; // a new message structure
+    unsigned short counter { 0 };
 
     theCore.getTimer ()->event ( "reset" ); // reset (start)
 
@@ -141,41 +158,49 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
       // Todo: research for a robust game loop:
       // mathematical simulation of time and reality, physics, multithreading
       //
+
       // tick the timer to calculate a frame
       theCore.getTimer ()->tick ();
+      // -- fps calculation
+      theCore.frameStatistics ();
 
       if ( !theCore.isPaused () )
       {
 
+        // -----------------------------------------------------------------------------------------------------------
         // a game loop purpose:
         // -- process inputted data
 
-        // -- fps calculation
-        theCore.frameStatistics ();
+        //theCore.getd3d ()->clearBuffers ();
 
+
+        // -----------------------------------------------------------------------------------------------------------
         // -- update the game universe/logic
         // Note the needed delta time
 
-        // -- output a frame
-
         r += colourMod_r * 0.00001f;
-        g += colourMod_g * 0.00005f;
-        b += colourMod_b * 0.00010f;
-
-        if ( ( r >= 1 ) || ( r <= 0 ) )
+        g += colourMod_g * 0.00003f;
+        b += colourMod_b * 0.00006f;
+        if ( ( r >= 1.0f ) || ( r <= 0.0f ) )
           colourMod_r *= -1;
-        if ( ( g >= 1 ) || ( g <= 0 ) )
+        if ( ( g >= 1.0f ) || ( g <= 0.0f ) )
           colourMod_g *= -1;
-        if ( ( b >= 1 ) || ( b <= 0 ) )
+        if ( ( b >= 1.0f ) || ( b <= 0.0f ) )
           colourMod_b *= -1;
-
-        float backColor [4] { r, g, b, 1 };
-
+        float backColor [4] { r, g, b, 1.0f };
         theCore.testDirect3D ( backColor );
+
+        // -- fps on screen representation
+        theCore.getd2d ()->printFPS ();
+
+
+        // -----------------------------------------------------------------------------------------------------------
+        // -- output a frame
+        theCore.getd3d ()->present ();
 
         counter++;
         // my environment could manage 10! :)
-        if ( ( counter % 500 ) == 0 )
+        if ( ( counter % 2000 ) == 0 )
         {
           std::wstring str { L"" };
           for ( unsigned char i = 0; i < 4; i++ )
@@ -194,7 +219,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
         }
 
       }
-      // -----------------------------------------------------------------------------------------------------------
+      // ***********************************************************************************************************
       // ***********************************************************************************************************
 
     } while ( running == true );
@@ -213,16 +238,33 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   catch ( const std::exception& ex )
   {
 
-    if ( !running )
+    if ( ex.what () == "appSone" )
       MessageBoxA ( NULL, "The Game could not be started...", "Error", MB_OK | MB_ICONERROR );
-    if ( gameState == L"uninitialized" )
-      MessageBoxA ( NULL, "The Game functionality failed to start...", "Critical-Error", MB_OK | MB_ICONERROR );
+    else
+      if ( ex.what () == "appDebug" )
+        MessageBoxA ( NULL, "The debug service failed to start.", "Error", MB_OK | MB_ICONERROR );
+      else
+        if ( ex.what () == "appStwo" )
+        {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
-    std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of application core failed!" );
 #endif // !_NOT_DEBUGGING
 
-    return EXIT_FAILURE;
+          MessageBoxA ( NULL, "The Game functionality failed to start...", "Critical-Error", MB_OK | MB_ICONERROR );
+        } else
+        {
+          MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
+          if ( debugger )
+          {
+
+#ifndef _NOT_DEBUGGING
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+            std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
+#endif // !_NOT_DEBUGGING
+
+          }
+        }
+        return EXIT_FAILURE;
   }
 }

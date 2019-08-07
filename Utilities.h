@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,07.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -17,6 +17,8 @@
 #include <iostream> // C++ standard input and output streams
 #include <sstream> // C++ standard string streams
 #include <fstream> // C++ standard file streams
+
+//#include <exception> // C++ standard exception
 
 #include <atomic> // C++ standard atomic objects (no data races)
 #include <thread> // C++ standard threads
@@ -68,7 +70,7 @@ enum logType { info = 0, debug, warning, error };
 struct Log
 {
   unsigned int id;
-  logType type { info };
+  logType type;
   std::wstring cMoment;
   std::thread::id threadId;
   std::wstring threadName;
@@ -100,13 +102,14 @@ class Logger
 {
 private:
   Log logEntity;
-  static unsigned int counter;
   std::list<Log> buffer; // buffer list container
   tType policy; // output stream policy
   std::timed_mutex writeGuard; // write guard
   std::thread commit; // write engine thread
   // lock-free atomic flag (checking the running state) (standard initialization):
   std::atomic_flag operating { ATOMIC_FLAG_INIT };
+
+  static unsigned int counter;
 public:
   Logger ();
   ~Logger ();

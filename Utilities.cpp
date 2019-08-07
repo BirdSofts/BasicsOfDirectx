@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
@@ -29,11 +29,18 @@ toFile::toFile () : ready ( false )
     if ( fileStream.is_open () )
       ready = true;
     else
-      throw;
+    {
+      PointerProvider::getException ()->set ( "stream" );
+      throw* PointerProvider::getException ();
+    }
+
   }
   catch ( const std::exception& ex )
   {
-    MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
+    if ( ex.what () == "stream" )
+      MessageBoxA ( NULL, "The log file could not be opened for writing.", "Error", MB_OK | MB_ICONERROR );
+    else
+      MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
   }
 };
 
@@ -108,7 +115,7 @@ bool toFile::write ( const Log& entity )
 
 #ifndef _NOT_DEBUGGING
     if ( ex.what () == "logW" )
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"File output stream was not ready!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Outputting to file stream failed!" );
     else
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
@@ -117,6 +124,11 @@ bool toFile::write ( const Log& entity )
   }
 };
 
+
+template<class tType>
+unsigned int Logger<tType>::counter { 0 };
+
+
 template<class tType>
 void loggerEngine ( Logger<tType>* engine );
 template<class tType>
@@ -124,11 +136,16 @@ Logger<tType>::Logger () : policy (), writeGuard ()
 {
   try
   {
+    logEntity.id = 0;
+    logEntity.type = logType::info;
+    logEntity.threadId = std::this_thread::get_id ();
+    logEntity.threadName = L"";
+    logEntity.message = L"";
+
     if ( policy.state () )
     {
       operating.test_and_set (); // mark the write engine as running
       commit = std::move ( std::thread { loggerEngine<tType>, this } );
-      logEntity.id = 0;
     }
   }
   catch ( const std::exception& ex )
@@ -145,7 +162,7 @@ Logger<tType>::~Logger ()
 {
 
 #ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is shutting down..." );
+  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The logging engine is going to successfully shut down..." );
   std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
 #endif // !_NOT_DEBUGGING
 
@@ -186,17 +203,30 @@ void Logger<tType>::push ( const logType& t,
     SYSTEMTIME cDateT;
     GetLocalTime ( &cDateT );
     // date and time format: xx/xx/xx xx:xx:xx
-    current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' '
-      << cDateT.wHour << ':' << cDateT.wMinute << ':' << cDateT.wSecond;
+    current << cDateT.wDay << '/' << cDateT.wMonth << '/' << cDateT.wYear << ' ';
+    if ( cDateT.wHour > 9 )
+      current << cDateT.wHour << ':';
+    else
+      current << "0" << cDateT.wHour << ':';
+    if ( cDateT.wMinute > 9 )
+      current << cDateT.wMinute << ':';
+    else
+      current << "0" << cDateT.wMinute << ':';
+    if ( cDateT.wSecond > 9 )
+      current << cDateT.wSecond;
+    else
+      current << "0" << cDateT.wSecond;
 
     if ( temp.id == 0 )
     {
       logEntity.cMoment = current.str ();
+      std::lock_guard<std::timed_mutex> lock ( writeGuard );
       buffer.push_back ( logEntity );
       logEntity.id = 0;
     } else
     {
       temp.cMoment = current.str ();
+      std::lock_guard<std::timed_mutex> lock ( writeGuard );
       buffer.push_back ( temp );
       temp.id = 0;
     }
@@ -219,7 +249,8 @@ void loggerEngine ( Logger<tType>* engine )
   {
     // dump engine: write the present logs' data
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
+    std::this_thread::sleep_for ( std::chrono::milliseconds { 20 } );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"logThread", L"Logging engine is successfully started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
 #endif // !_NOT_DEBUGGING
 
     // Todo robust lock
@@ -230,7 +261,7 @@ void loggerEngine ( Logger<tType>* engine )
     {
       if ( engine->buffer.size () )
       {
-        if ( !lock.try_lock_for ( std::chrono::milliseconds { 100 } ) )
+        if ( !lock.try_lock_for ( std::chrono::milliseconds { 30 } ) )
           continue;
         for ( auto& element : engine->buffer )
           if ( !engine->policy.write ( element ) )
@@ -257,15 +288,11 @@ void loggerEngine ( Logger<tType>* engine )
 };
 
 
-template<class tType>
-unsigned int Logger<tType>::counter { 0 };
-
-
 // don't call this function: solution for linker error, when using templates.
 void problemSolver ()
 {
   Logger<toFile> tempObj;
-  tempObj.push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The problem solver..." );
+  tempObj.push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The problem solver... :)" );
 }
 
 
@@ -274,6 +301,7 @@ Configurations::Configurations ()
   try
   {
     valid = false;
+    std::this_thread::sleep_for ( std::chrono::milliseconds { 30 } );
 
     // defaults initialization:
     defaults.Width = 640;
@@ -293,14 +321,21 @@ Configurations::Configurations ()
       MessageBoxA ( NULL, "The path to document directory is unknown! Please contact your OS support.", "Critical-Error", MB_OK | MB_ICONERROR );
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The path to document directory is unknown!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Retrieving the document directory path failed!" );
 #endif // !_NOT_DEBUGGING
 
       pathToMyDocuments = L"";
       path = L"C:\\TheGame";
       hResult = SHCreateDirectory ( NULL, path.c_str () );
       if ( FAILED ( hResult ) )
+      {
+
+#ifndef _NOT_DEBUGGING
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The creation of directory failed!" );
+#endif // !_NOT_DEBUGGING
+
         path = L"C:\\settings.lua";
+      }
       else
         path += L"\\settings.lua";
     } else
@@ -358,7 +393,7 @@ Configurations::Configurations ()
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Non-existent or invalid configuration file!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Retrieving the configuration file failed (Non-existent or invalid)!" );
 #endif // !_NOT_DEBUGGING
 
         // rewrite the configuration file with defaults
@@ -381,7 +416,7 @@ Configurations::Configurations ()
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Configuration file could not be rewritten with default settings." );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Rewriting the Configuration file with default settings failed." );
 #endif // !_NOT_DEBUGGING
 
         }

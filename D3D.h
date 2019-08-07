@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,06.08.2019</changed>
 // ********************************************************************************
 
 #ifndef D3D_H
@@ -12,7 +12,7 @@
 
 #include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
 #include <d3d10_1.h> // Windows standard DirectX3D APIs
-#pragma comment (lib, "d3d10.lib") // linkage to the 'd3d10' library
+#pragma comment (lib, "d3d10_1.lib") // linkage to the 'd3d10' library
 
 
 #include "Core.h"
@@ -31,7 +31,7 @@ private:
 
   // -- the device object: virtual representation of the video adapter
   // purpose: access to GPU memory and creation of Direct3D COM objects.
-  Microsoft::WRL::ComPtr<ID3D10Device> dev; // Direct3D device
+  Microsoft::WRL::ComPtr<ID3D10Device1> dev; // Direct3D device
 
   // -- the device context: the structure defining a set of graphic objects
   // and their associated attributes, additionally graphic modes that affect output.

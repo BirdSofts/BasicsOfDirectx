@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,07.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -289,7 +289,7 @@ LRESULT CALLBACK Window::msgProc (
           gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is flagged for destruction." );
+          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is successfully flagged for destruction." );
 #endif // !_NOT_DEBUGGING
 
           return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)

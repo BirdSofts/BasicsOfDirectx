@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
 #include "D3D.h"
@@ -12,22 +12,24 @@
 
 Direct3D::Direct3D ( TheCore* coreObject ) : theCore ( coreObject ),
 // reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
-colourFormat ( DXGI_FORMAT_R8G8B8A8_UNORM ),
+colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
 initialized ( false ), created ( false ), resized ( false )
 
 {
   try
   {
+    HRESULT hResult;
 
     // flag: needed to get Direct2D interoperability with Direct3D resources
-    unsigned int deviceFlags = D3D10_CREATE_DEVICE_BGRA_SUPPORT;
+    unsigned int deviceFlags = D3D10_CREATE_DEVICE_BGRA_SUPPORT | D3D10_CREATE_DEVICE_PREVENT_INTERNAL_THREADING_OPTIMIZATIONS;
 
 #ifndef _NOT_DEBUGGING
-    deviceFlags |= D3D10_CREATE_DEVICE_DEBUG; // creation with debug layer
+    //deviceFlags |= D3D10_CREATE_DEVICE_DEBUG; // creation with debug layer
 #endif // !_NOT_DEBUGGING
 
     // the actual device creation
-    HRESULT hResult = D3D10CreateDevice ( nullptr, D3D10_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, D3D10_SDK_VERSION, &dev );
+    D3D10_FEATURE_LEVEL1 featureLevel { D3D10_FEATURE_LEVEL_10_1 };
+    hResult = D3D10CreateDevice1 ( nullptr, D3D10_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, featureLevel, D3D10_1_SDK_VERSION, &dev );
 
     if ( SUCCEEDED ( hResult ) )
     {
@@ -115,13 +117,13 @@ void Direct3D::createResources ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Retrieving the underlying DXGI device was successful." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The underlying DXGI device is successfully retrieved." );
 #endif // !_NOT_DEBUGGING
 
     } else
     {
       PointerProvider::getException ()->set ( "getF" );
-      throw PointerProvider::getException ();
+      throw* PointerProvider::getException ();
     }
 
     // ---- physical GPU identification
@@ -130,12 +132,12 @@ void Direct3D::createResources ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The Physical GPU identification is now complete." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The Physical GPU is successfully identified." );
 #endif // !_NOT_DEBUGGING
     } else
     {
       PointerProvider::getException ()->set ( "getF" );
-      throw PointerProvider::getException ();
+      throw* PointerProvider::getException ();
     }
 
     // ---- retrieving the factory
@@ -144,13 +146,13 @@ void Direct3D::createResources ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Retrieving the factory was successful." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The factory is successfully retrieved." );
 #endif // !_NOT_DEBUGGING
 
     } else
     {
       PointerProvider::getException ()->set ( "getF" );
-      throw PointerProvider::getException ();
+      throw* PointerProvider::getException ();
     }
 
     // -- now create the swap chain
@@ -165,7 +167,7 @@ void Direct3D::createResources ( void )
     } else
     {
       PointerProvider::getException ()->set ( "crS" );
-      throw PointerProvider::getException ();
+      throw* PointerProvider::getException ();
     }
 
     created = true;
@@ -179,7 +181,7 @@ void Direct3D::createResources ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The DGGI Adapter was unable to get the factory!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Getting the factory by the DGGI Adapter failed!" );
 #endif // !_NOT_DEBUGGING
 
     } else
@@ -187,7 +189,7 @@ void Direct3D::createResources ( void )
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Swap chain creation resulted to failure!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Creation of swap chain failed!" );
 #endif // !_NOT_DEBUGGING
 
       } else
@@ -207,15 +209,42 @@ void Direct3D::resize ( void )
 {
   try
   {
+
+
+    if ( theCore->initialized )
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"The resizing procedure successfully failed! :) " );
+#endif // !_NOT_DEBUGGING
+
+    // undone with used Direct3D 10 the resizing in an initialized state seems to be automatic
+    // Todo a needed research is due
     dev->ClearState ();
-    renderTargetView = nullptr;
-    depthStencilView = nullptr;
+    resized = true;
+      return;
+    }
+
+
+    HRESULT hResult;
+
+    // release and reset all resources
+    //if ( theCore->d2d )
+    //  theCore->d2d->devCon->Release ();
+
+    //if ( depthStencilView && renderTargetView )
+    //{
+    //  depthStencilView->Release ();
+    //  renderTargetView->Release ();
+    //}
+    //dev->ClearState ();
 
     // resizing the swap chain
     // BufferCount and SwapChainFlags: 0 do not change the current
-    // the next two parameters: adjust to current client size of the target window
+    // 0 for the next two parameters to adjust to the current client window size
     // next parameter: set to DXGI_FORMAT_UNKNOWN to preserve the current
-    if ( SUCCEEDED ( swapChain->ResizeBuffers ( 0, 0, 0, colourFormat, 0 ) ) )
+    hResult = swapChain->ResizeBuffers ( 0, 0, 0, colourFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH );
+    if ( SUCCEEDED ( hResult ) )
     {
 
 #ifndef _NOT_DEBUGGING
@@ -225,7 +254,7 @@ void Direct3D::resize ( void )
     } else
     {
       PointerProvider::getException ()->set ( "reS" );
-      throw PointerProvider::getException ();
+      throw* PointerProvider::getException ();
     }
 
     // the render target view recreation
@@ -234,67 +263,86 @@ void Direct3D::resize ( void )
     // the zero-th buffer is accessible, since already created using flip discarding effect.
     // second parameter: interface type (most cases 2D- texture)
     // the last parameter returns a pointer to the actual back buffer
-    if ( FAILED ( swapChain->GetBuffer ( 0, __uuidof( ID3D10Texture2D ), reinterpret_cast<void**>( backBuffer.GetAddressOf () ) ) ) )
+    hResult = swapChain->GetBuffer ( 0, __uuidof( ID3D10Texture2D ), reinterpret_cast<void**>( backBuffer.GetAddressOf () ) );
+    if ( SUCCEEDED ( hResult ) )
     {
-      PointerProvider::getException ()->set ( "backB" );
-      throw PointerProvider::getException ();
-    }
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Swap chain back buffer is obtained." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Swap chain back buffer is successfully obtained." );
 #endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "backB" );
+      throw* PointerProvider::getException ();
+    }
 
     // first parameter: the resource for which the render target is created for
     // second parameter describes data type of the specified resource (mipmap but 0 for now)
     // the last parameter returns a pointer to the created render target view
-    if ( FAILED ( dev->CreateRenderTargetView ( backBuffer.Get (), NULL, &renderTargetView ) ) )
+    hResult = dev->CreateRenderTargetView ( backBuffer.Get (), NULL, &renderTargetView );
+    if ( SUCCEEDED ( hResult ) )
     {
-      PointerProvider::getException ()->set ( "crR" );
-      throw PointerProvider::getException ();
-    }
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The swap chain is successfully recreated." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The swap chain is successfully recreated." );
 #endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "crR" );
+      throw* PointerProvider::getException ();
+    }
 
     // depth and stencil buffer creation
     CD3D10_TEXTURE2D_DESC dsd;
     Microsoft::WRL::ComPtr<ID3D10Texture2D> dsBuffer;
     backBuffer->GetDesc ( &dsd ); // retrieves the description of the back buffer and fill! :)
+    backBuffer->Release (); // not needed any more
     dsd.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24 bits for depth and 8 bits for stencil
     //dsd.SampleDesc // multi-sampling (anti-aliasing) match to settings of render target
     dsd.Usage = D3D10_USAGE_DEFAULT; // value: only GPU will be reading and writing to the resource
     dsd.BindFlags = D3D10_BIND_DEPTH_STENCIL; // how to bind to the different pipeline stages
     // texture creation:
     // the second parameter: pointer to initial data (zero for any data, since depth/stencil buffer)
-    if ( FAILED ( dev->CreateTexture2D ( &dsd, NULL, dsBuffer.GetAddressOf () ) ) )
+    hResult = dev->CreateTexture2D ( &dsd, NULL, dsBuffer.GetAddressOf () );
+    if ( SUCCEEDED ( hResult ) )
     {
-      PointerProvider::getException ()->set ( "cr2Dt" );
-      throw PointerProvider::getException ();
-    }
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The creation of texture was successful." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The texture is successfully created." );
 #endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "cr2Dt" );
+      throw* PointerProvider::getException ();
+    }
 
     // depth/stencil view creation
     // the second parameter: zero to access the mipmap level 0
-    if ( FAILED ( dev->CreateDepthStencilView ( dsBuffer.Get (), NULL, depthStencilView.GetAddressOf () ) ) )
+    hResult = dev->CreateDepthStencilView ( dsBuffer.Get (), NULL, depthStencilView.GetAddressOf () );
+    if ( SUCCEEDED ( hResult ) )
     {
-      PointerProvider::getException ()->set ( "crD-Sb" );
-      throw PointerProvider::getException ();
-    }
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The creation of depth/stencil view was successful." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The depth/stencil view is successfully created." );
 #endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "crD-Sb" );
+      throw* PointerProvider::getException ();
+    }
+
+    dsBuffer->Release (); // not needed any more
 
     // depth and stencil buffer activation (for now one render target view)
     // second parameter: pointer to first element of a list of render target view pointers
     dev->OMSetRenderTargets ( 1, renderTargetView.GetAddressOf (), depthStencilView.Get () );
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Depth/stencil buffer is now activated." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The Depth/stencil buffer is successfully activated." );
 #endif // !_NOT_DEBUGGING
 
     // set the viewpoint to entire back buffer (what area should be rendered to)
@@ -313,9 +361,13 @@ void Direct3D::resize ( void )
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The view port is successfully set." );
 #endif // !_NOT_DEBUGGING
 
-    resized = true;
-    //clearBuffers ();
+    // recreation of the Direct2D target bitmap associated with the swap chain back buffer
+    //if ( theCore->initialized )
+    //  theCore->d2d->createBitmapRenderTarget ();
 
+    clearBuffers ();
+
+    resized = true;
   }
   catch ( const std::exception& ex )
   {
@@ -323,7 +375,7 @@ void Direct3D::resize ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D could not resize the swap chain!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Resizing the swap chain failed!" );
 #endif // !_NOT_DEBUGGING
 
     } else
@@ -331,7 +383,7 @@ void Direct3D::resize ( void )
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D could not acquire the back buffer!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Acquiring the back buffer failed!" );
 #endif // !_NOT_DEBUGGING
 
       } else
@@ -339,7 +391,7 @@ void Direct3D::resize ( void )
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D could not create the render target view!" );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Creation of render target view failed!" );
 #endif // !_NOT_DEBUGGING
 
         } else
@@ -347,7 +399,7 @@ void Direct3D::resize ( void )
           {
 
 #ifndef _NOT_DEBUGGING
-            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D could not create a 2D-texture!" );
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Creation of 2D-texture failed!" );
 #endif // !_NOT_DEBUGGING
 
           } else
@@ -355,7 +407,7 @@ void Direct3D::resize ( void )
             {
 
 #ifndef _NOT_DEBUGGING
-              PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Direct3D could not create the depth and stencil buffer!" );
+              PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Getting the depth/stencil buffer failed!" );
 #endif // !_NOT_DEBUGGING
 
             } else
@@ -374,10 +426,6 @@ void Direct3D::clearBuffers ( void )
 {
   try
   {
-    dev->ClearState ();
-    renderTargetView = nullptr;
-    depthStencilView = nullptr;
-
     // make ready for the new scenes after each frame (clear all leftover artefacts)
     float black [] { 0.0f, 0.0f, 0.0f, 0.0f };
     // filling the entire back buffer with a single colour
@@ -387,7 +435,7 @@ void Direct3D::clearBuffers ( void )
     dev->ClearDepthStencilView ( depthStencilView.Get (), D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0 );
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"All leftover artefacts are now cleared from buffers." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"All leftover artefacts are now successfully cleared from the buffers." );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -418,7 +466,7 @@ void Direct3D::present ( void )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"The presentation of the scene failed." );
+      PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"The presentation of the scene failed!" );
 #endif // !_NOT_DEBUGGING
 
     }
