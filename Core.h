@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,07.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -12,8 +12,8 @@
 
 #include "Window.h"
 #include "Timer.h"
-#include "D3D.h"
-#include "D2D.h"
+#include "Direct3D.h"
+#include "Direct2D.h"
 
 
 class TheCore

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,07.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -18,7 +18,7 @@
 #include <sstream> // C++ standard string streams
 #include <fstream> // C++ standard file streams
 
-//#include <exception> // C++ standard exception
+#include <exception> // C++ standard exception
 
 #include <atomic> // C++ standard atomic objects (no data races)
 #include <thread> // C++ standard threads

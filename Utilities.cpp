@@ -259,9 +259,10 @@ void loggerEngine ( Logger<tType>* engine )
 
     do
     {
+      std::this_thread::sleep_for ( std::chrono::milliseconds ( 1000 ) );
       if ( engine->buffer.size () )
       {
-        if ( !lock.try_lock_for ( std::chrono::milliseconds { 30 } ) )
+        if ( !lock.try_lock_for ( std::chrono::milliseconds { 50 } ) )
           continue;
         for ( auto& element : engine->buffer )
           if ( !engine->policy.write ( element ) )
@@ -335,8 +336,7 @@ Configurations::Configurations ()
 #endif // !_NOT_DEBUGGING
 
         path = L"C:\\settings.lua";
-      }
-      else
+      } else
         path += L"\\settings.lua";
     } else
       pathToMyDocuments = docPath;

@@ -6,11 +6,11 @@
 /// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
-#include "D2D.h"
+#include "Direct2D.h"
 #include "Shared.h"
 
 
-Direct2D::Direct2D ( TheCore* coreObject ) : theCore ( coreObject ),
+Direct2D::Direct2D ( TheCore* coreObj ) : core ( coreObj ),
 initialized ( false )
 {
   try
@@ -59,7 +59,7 @@ initialized ( false )
     // note that the DXGI associated to the Direct3D device must be obtained.
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
     // returns a pointer to the interface being requested.
-    hResult = theCore->d3d->dev.Get ()->QueryInterface ( __uuidof( IDXGIDevice ), &dxgiDevice );
+    hResult = core->d3d->device.Get ()->QueryInterface ( __uuidof( IDXGIDevice ), &dxgiDevice );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -75,7 +75,7 @@ initialized ( false )
 
     // creation of the Direct2D device
     // threading mode will be inherited from the DXGI device.
-    hResult = factory->CreateDevice ( dxgiDevice.Get (), &dev );
+    hResult = factory->CreateDevice ( dxgiDevice.Get (), &device );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -93,7 +93,7 @@ initialized ( false )
 
     // creation of the Direct2D device context
     // the option: distribute all the rendering process across multiple threads.
-    hResult = dev->CreateDeviceContext ( D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &devCon );
+    hResult = device->CreateDeviceContext ( D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &deviceContext );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -190,7 +190,7 @@ void Direct2D::createBitmapRenderTarget ( void )
 
     // --retrieving the DXGI version of the Direct3D back buffer (Direct2D needs)
     Microsoft::WRL::ComPtr<IDXGISurface> dxgiBuffer;
-    hResult = theCore->d3d->swapChain->GetBuffer ( 0, __uuidof( IDXGISurface ), &dxgiBuffer );
+    hResult = core->d3d->swapChain->GetBuffer ( 0, __uuidof( IDXGISurface ), &dxgiBuffer );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -206,7 +206,7 @@ void Direct2D::createBitmapRenderTarget ( void )
 
     Microsoft::WRL::ComPtr<ID2D1Bitmap1> targetBitmap; // new bitmap object to hold the desired properties
     // --the actual creation of the render target (retrieve the back buffer and set)
-    hResult = devCon->CreateBitmapFromDxgiSurface ( dxgiBuffer.Get (), &bitMap, &targetBitmap );
+    hResult = deviceContext->CreateBitmapFromDxgiSurface ( dxgiBuffer.Get (), &bitMap, &targetBitmap );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -223,7 +223,7 @@ void Direct2D::createBitmapRenderTarget ( void )
     dxgiBuffer->Release (); // not needed any more
 
     // --finally set the bitmap as render target (the same back buffer as Direct3D)
-    devCon->SetTarget ( targetBitmap.Get () );
+    deviceContext->SetTarget ( targetBitmap.Get () );
 
     //targetBitmap->Release (); // not needed any more
 
@@ -264,7 +264,7 @@ void Direct2D::initializeTextFormats ( void )
     HRESULT hResult;
 
     // creation of standard brushes
-    hResult = devCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Yellow ), &brushYellow );
+    hResult = deviceContext->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Yellow ), &brushYellow );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -278,7 +278,7 @@ void Direct2D::initializeTextFormats ( void )
       throw* PointerProvider::getException ();
     }
 
-    hResult = devCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::White ), &brushWhite );
+    hResult = deviceContext->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::White ), &brushWhite );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -292,7 +292,7 @@ void Direct2D::initializeTextFormats ( void )
       throw* PointerProvider::getException ();
     }
 
-    hResult = devCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Black ), &brushBlack );
+    hResult = deviceContext->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Black ), &brushBlack );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -416,13 +416,13 @@ void Direct2D::printFPS ( void )
 {
   try
   {
-    if ( theCore->showFPS && textLayoutFPS )
+    if ( core->showFPS && textLayoutFPS )
     {
       // drawing operations must be issued between a BeginDraw and EndDraw calls
-      devCon->BeginDraw ();
+      deviceContext->BeginDraw ();
       // drawing a fully formatted text
-      devCon->DrawTextLayout ( D2D1::Point2F ( 2.0f, 5.0f ), textLayoutFPS.Get (), brushYellow.Get (), D2D1_DRAW_TEXT_OPTIONS_NONE );
-      if ( FAILED ( devCon->EndDraw () ) )
+      deviceContext->DrawTextLayout ( D2D1::Point2F ( 2.0f, 5.0f ), textLayoutFPS.Get (), brushYellow.Get (), D2D1_DRAW_TEXT_OPTIONS_NONE );
+      if ( FAILED ( deviceContext->EndDraw () ) )
       {
         PointerProvider::getException ()->set ( "drFPS" );
         throw* PointerProvider::getException ();
@@ -454,10 +454,10 @@ void Direct2D::shutdown ( void )
 {
   try
   {
-    if ( theCore )
+    if ( core )
     {
-      theCore = nullptr;
-      delete theCore;
+      core = nullptr;
+      delete core;
     }
 
 #ifndef _NOT_DEBUGGING

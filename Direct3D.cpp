@@ -6,11 +6,11 @@
 /// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
-#include "D3D.h"
+#include "Direct3D.h"
 #include "Shared.h"
 
 
-Direct3D::Direct3D ( TheCore* coreObject ) : theCore ( coreObject ),
+Direct3D::Direct3D ( TheCore* coreObj ) : core ( coreObj ),
 // reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
 colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
 initialized ( false ), created ( false ), resized ( false )
@@ -29,7 +29,7 @@ initialized ( false ), created ( false ), resized ( false )
 
     // the actual device creation
     D3D10_FEATURE_LEVEL1 featureLevel { D3D10_FEATURE_LEVEL_10_1 };
-    hResult = D3D10CreateDevice1 ( nullptr, D3D10_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, featureLevel, D3D10_1_SDK_VERSION, &dev );
+    hResult = D3D10CreateDevice1 ( nullptr, D3D10_DRIVER_TYPE_HARDWARE, NULL, deviceFlags, featureLevel, D3D10_1_SDK_VERSION, &device );
 
     if ( SUCCEEDED ( hResult ) )
     {
@@ -101,7 +101,7 @@ void Direct3D::createResources ( void )
     scd.SampleDesc.Quality = 0;
     scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // back buffer as render output target
     scd.BufferCount = 3; // including the front buffer (one front buffer and two back buffers)
-    scd.OutputWindow = theCore->getHandle (); // handle to main window
+    scd.OutputWindow = core->getHandle (); // handle to main window
     scd.Windowed = true; // recommendation: windowed creation and switch to full screen
     // flip (in windowed mode: blit) and discard the content of back buffer after presentation
     scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -112,7 +112,7 @@ void Direct3D::createResources ( void )
     Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
     Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
     // ---- retrieving the underlying DXGI device
-    hResult = dev.As ( &dxgiDevice );
+    hResult = device.As ( &dxgiDevice );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -156,7 +156,7 @@ void Direct3D::createResources ( void )
     }
 
     // -- now create the swap chain
-    hResult = dxgiFactory->CreateSwapChain ( dev.Get (), &scd, swapChain.GetAddressOf () );
+    hResult = dxgiFactory->CreateSwapChain ( device.Get (), &scd, swapChain.GetAddressOf () );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -211,7 +211,7 @@ void Direct3D::resize ( void )
   {
 
 
-    if ( theCore->initialized )
+    if ( core->initialized )
     {
 
 #ifndef _NOT_DEBUGGING
@@ -220,7 +220,7 @@ void Direct3D::resize ( void )
 
     // undone with used Direct3D 10 the resizing in an initialized state seems to be automatic
     // Todo a needed research is due
-    dev->ClearState ();
+    device->ClearState ();
     resized = true;
       return;
     }
@@ -280,7 +280,7 @@ void Direct3D::resize ( void )
     // first parameter: the resource for which the render target is created for
     // second parameter describes data type of the specified resource (mipmap but 0 for now)
     // the last parameter returns a pointer to the created render target view
-    hResult = dev->CreateRenderTargetView ( backBuffer.Get (), NULL, &renderTargetView );
+    hResult = device->CreateRenderTargetView ( backBuffer.Get (), NULL, &renderTargetView );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -305,7 +305,7 @@ void Direct3D::resize ( void )
     dsd.BindFlags = D3D10_BIND_DEPTH_STENCIL; // how to bind to the different pipeline stages
     // texture creation:
     // the second parameter: pointer to initial data (zero for any data, since depth/stencil buffer)
-    hResult = dev->CreateTexture2D ( &dsd, NULL, dsBuffer.GetAddressOf () );
+    hResult = device->CreateTexture2D ( &dsd, NULL, dsBuffer.GetAddressOf () );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -321,7 +321,7 @@ void Direct3D::resize ( void )
 
     // depth/stencil view creation
     // the second parameter: zero to access the mipmap level 0
-    hResult = dev->CreateDepthStencilView ( dsBuffer.Get (), NULL, depthStencilView.GetAddressOf () );
+    hResult = device->CreateDepthStencilView ( dsBuffer.Get (), NULL, depthStencilView.GetAddressOf () );
     if ( SUCCEEDED ( hResult ) )
     {
 
@@ -339,7 +339,7 @@ void Direct3D::resize ( void )
 
     // depth and stencil buffer activation (for now one render target view)
     // second parameter: pointer to first element of a list of render target view pointers
-    dev->OMSetRenderTargets ( 1, renderTargetView.GetAddressOf (), depthStencilView.Get () );
+    device->OMSetRenderTargets ( 1, renderTargetView.GetAddressOf (), depthStencilView.Get () );
 
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The Depth/stencil buffer is successfully activated." );
@@ -355,7 +355,7 @@ void Direct3D::resize ( void )
     vp.MaxDepth = 1.0f;
     // setting the viewport
     // the second parameter is a pointer to an array of viewports
-    dev->RSSetViewports ( 1, &vp );
+    device->RSSetViewports ( 1, &vp );
 
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The view port is successfully set." );
@@ -429,10 +429,10 @@ void Direct3D::clearBuffers ( void )
     // make ready for the new scenes after each frame (clear all leftover artefacts)
     float black [] { 0.0f, 0.0f, 0.0f, 0.0f };
     // filling the entire back buffer with a single colour
-    dev->ClearRenderTargetView ( renderTargetView.Get (), black );
+    device->ClearRenderTargetView ( renderTargetView.Get (), black );
     // second parameter: the type of data to clear (obviously set to clear both depth and stencil)
     // the values are used to override the entire depth/stencil buffer with
-    dev->ClearDepthStencilView ( depthStencilView.Get (), D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0 );
+    device->ClearDepthStencilView ( depthStencilView.Get (), D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0 );
 
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"All leftover artefacts are now successfully cleared from the buffers." );
@@ -486,10 +486,10 @@ void Direct3D::shutdown ( void )
 {
   try
   {
-    if ( theCore )
+    if ( core )
     {
-      theCore = nullptr;
-      delete theCore;
+      core = nullptr;
+      delete core;
     }
 
 #ifndef _NOT_DEBUGGING

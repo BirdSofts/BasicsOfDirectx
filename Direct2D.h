@@ -3,11 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,06.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
-#ifndef D2D_H
-#define D2D_H
+#ifndef DIRECT2D_H
+#define DIRECT2D_H
 
 
 #include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
@@ -18,7 +18,7 @@
 
 
 #include "Core.h"
-#include "D3D.h"
+#include "Direct3D.h"
 
 
 class Direct2D
@@ -26,12 +26,12 @@ class Direct2D
   friend class TheCore;
   friend class Direct3D;
 private:
-  TheCore* theCore; // pointer to DirectX core application
+  TheCore* core; // pointer to the application core
 
   Microsoft::WRL::ComPtr<IDWriteFactory1> writeFactory; // DirectWrite factory
   Microsoft::WRL::ComPtr<ID2D1Factory1> factory; // Direct2D factory
-  Microsoft::WRL::ComPtr<ID2D1Device> dev; // Direct2D device
-  Microsoft::WRL::ComPtr<ID2D1DeviceContext> devCon; // Direct2D device context
+  Microsoft::WRL::ComPtr<ID2D1Device> device; // Direct2D device
+  Microsoft::WRL::ComPtr<ID2D1DeviceContext> deviceContext; // Direct2D device context
 
   bool initialized; // true if the initialization was successful
 public:
@@ -51,4 +51,4 @@ public:
 };
 
 
-#endif // !D2D_H
+#endif // !DIRECT2D_H

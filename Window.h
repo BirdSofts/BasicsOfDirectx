@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,08.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -22,8 +22,8 @@ class Window
   friend class TheCore;
 private:
   HINSTANCE appInstance; // handle to the application instance
-  HWND theHandle; // handle to game window (main window)
-  TheCore* theCore; // pointer to DirectX core application
+  HWND handle; // handle to game window (main window)
+  TheCore* core; // pointer to the application core
   bool initialized; // true if the initialization was successful
   unsigned int clientWidth; // desired window resolution
   unsigned int clientHeight;

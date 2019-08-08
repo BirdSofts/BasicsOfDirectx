@@ -20,7 +20,7 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 
 
 Window::Window ( TheCore* coreObject ) :
-  theHandle ( NULL ), theCore ( coreObject ), initialized ( false ),
+  handle ( NULL ), core ( coreObject ), initialized ( false ),
   minimized ( false ), maximized ( false ), resizing ( false )
 {
   try
@@ -100,7 +100,7 @@ Window::Window ( TheCore* coreObject ) :
 
     // after the properties of a window class is known to Windows, it can finally be created.
     // the below function returns a handle to the newly created window, or NULL in case of failure.
-    theHandle = CreateWindowEx (
+    handle = CreateWindowEx (
       WS_EX_OVERLAPPEDWINDOW, // extended window style (for game NULL)
       wClass.lpszClassName, // a long pointer to a constant literal representing the registered window class name
       L"The Game", // a long pointer to a constant literal representing the name or title of the window
@@ -116,7 +116,7 @@ Window::Window ( TheCore* coreObject ) :
       NULL // pointer to window-creation data (advanced)
     );
 
-    if ( !theHandle )
+    if ( !handle )
     {
       PointerProvider::getException ()->set ( "crW" );
       throw* PointerProvider::getException ();
@@ -132,10 +132,10 @@ Window::Window ( TheCore* coreObject ) :
     // show the window: the second parameter controls how the window is to be shown,
     // it can be passed the last parameter of the main function (nShowCmd) of the program,
     // or SW_SWOW, for example, activates the window and displays it in its current size and position.
-    ShowWindow ( theHandle, SW_SHOW );
+    ShowWindow ( handle, SW_SHOW );
     // using the function below, Windows is forced to update the window content,
     // additionally generating a WM_PAINT message that needs to be handled by the event handler.
-    UpdateWindow ( theHandle );
+    UpdateWindow ( handle );
     initialized = true;
   }
   catch ( const std::exception& ex )
@@ -186,7 +186,7 @@ const bool& Window::isInitialized ()
 
 const HWND& Window::getHandle ()
 {
-  return theHandle;
+  return handle;
 }
 
 
@@ -194,13 +194,13 @@ void Window::shutdown ( void )
 {
   try
   {
-    if ( theCore )
+    if ( core )
     {
-      theCore = nullptr;
-      delete theCore;
+      core = nullptr;
+      delete core;
     }
-    if ( theHandle )
-      theHandle = NULL;
+    if ( handle )
+      handle = NULL;
     if ( appInstance )
       appInstance = NULL;
 
@@ -243,21 +243,21 @@ LRESULT CALLBACK Window::msgProc (
         if ( gameState == L"gaming" )
           if ( ( LOWORD ( wPrm ) == WA_INACTIVE ) ) // activation flag
           {
-            theCore->paused = true; // the game is paused
-            theCore->timer->event ( "pause" );
+            core->paused = true; // the game is paused
+            core->timer->event ( "pause" );
           } else
           {
-            theCore->timer->event ( "start" );
-            theCore->paused = false; // the game is running
+            core->timer->event ( "start" );
+            core->paused = false; // the game is running
           }
           return 0;
 
       case WM_KEYDOWN: // if a key is pressed
         if ( wPrm == VK_ESCAPE ) // the ESC key identification
         {
-          theCore->paused = true;
-          theCore->timer->event ( "pause" );
-          if ( MessageBoxA ( theHandle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+          core->paused = true;
+          core->timer->event ( "pause" );
+          if ( MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
           {
             // next expression simply indicates to the system intention to terminate the window,
             // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
@@ -272,17 +272,17 @@ LRESULT CALLBACK Window::msgProc (
             return 0; // the message was useful and is handled.
           } else
           {
-            theCore->timer->event ( "start" );
-            theCore->paused = false;
+            core->timer->event ( "start" );
+            core->paused = false;
             return 0; // the message was useful and is handled.
           }
         }
 
         //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
       case WM_CLOSE: // the user tries to somehow close the application
-        theCore->paused = true;
-        theCore->timer->event ( "pause" );
-        if ( MessageBoxA ( theHandle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+        core->paused = true;
+        core->timer->event ( "pause" );
+        if ( MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
         {
           PostQuitMessage ( 0 );
           running = false;
@@ -292,11 +292,11 @@ LRESULT CALLBACK Window::msgProc (
           PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is successfully flagged for destruction." );
 #endif // !_NOT_DEBUGGING
 
-          return DefWindowProc ( theHandle, msg, wPrm, lPrm ); // so the window behaves logical! :)
+          return DefWindowProc ( handle, msg, wPrm, lPrm ); // so the window behaves logical! :)
         } else
         {
-          theCore->timer->event ( "start" );
-          theCore->paused = false;
+          core->timer->event ( "start" );
+          core->paused = false;
           return 0;
         }
 
@@ -312,49 +312,49 @@ LRESULT CALLBACK Window::msgProc (
           {
             minimized = true;
             maximized = false;
-            theCore->timer->event ( "pause" );
-            theCore->paused = true;
+            core->timer->event ( "pause" );
+            core->paused = true;
           } else
             if ( wPrm == SIZE_MAXIMIZED ) // window is maximized
             {
               minimized = false;
               maximized = true;
-              theCore->paused = false;
-              theCore->timer->event ( "start" );
+              core->paused = false;
+              core->timer->event ( "start" );
             } else
               if ( wPrm == SIZE_RESTORED ) // window is restored, find the previous state:
               {
                 if ( minimized )
                 {
                   minimized = false;
-                  theCore->d3d->resize ();
-                  theCore->timer->event ( "pause" );
-                  theCore->paused = true;
+                  core->d3d->resize ();
+                  core->timer->event ( "pause" );
+                  core->paused = true;
                 } else
                   if ( maximized )
                   {
                     maximized = false;
-                    theCore->d3d->resize ();
-                    theCore->paused = false;
-                    theCore->timer->event ( "start" );
+                    core->d3d->resize ();
+                    core->paused = false;
+                    core->timer->event ( "start" );
                   } else
                     if ( resizing )
                     {
                       if ( gameState == L"gaming" )
-                        if ( !theCore->paused )
+                        if ( !core->paused )
                         {
-                          theCore->timer->event ( "pause" );
-                          theCore->paused = true;
+                          core->timer->event ( "pause" );
+                          core->paused = true;
                         }
                       // a game window get seldom resized or dragged, even when such a case occur,
                       // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
                     } else // response when resized
                     {
-                      theCore->d3d->resize ();
+                      core->d3d->resize ();
                       if ( gameState == L"gaming" )
                       {
-                        theCore->paused = false;
-                        theCore->timer->event ( "start" );
+                        core->paused = false;
+                        core->timer->event ( "start" );
                       }
                     }
               }
@@ -364,18 +364,18 @@ LRESULT CALLBACK Window::msgProc (
         resizing = true;
         if ( gameState == L"gaming" )
         {
-          theCore->timer->event ( "pause" );
-          theCore->paused = true;
+          core->timer->event ( "pause" );
+          core->paused = true;
         }
         return 0;
 
       case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
         resizing = false;
-        theCore->d3d->resize ();
+        core->d3d->resize ();
         if ( gameState == L"gaming" )
         {
-          theCore->paused = false;
-          theCore->timer->event ( "start" );
+          core->paused = false;
+          core->timer->event ( "start" );
         }
         return 0;
 

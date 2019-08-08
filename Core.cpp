@@ -239,8 +239,8 @@ void TheCore::frameStatistics ( void )
 
 void TheCore::testDirect3D ( float arg [] )
 {
-  d3d->dev->ClearRenderTargetView ( d3d->renderTargetView.Get (), arg );
-  d3d->dev->ClearDepthStencilView ( d3d->depthStencilView.Get (), D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0 );
+  d3d->device->ClearRenderTargetView ( d3d->renderTargetView.Get (), arg );
+  d3d->device->ClearDepthStencilView ( d3d->depthStencilView.Get (), D3D10_CLEAR_DEPTH | D3D10_CLEAR_STENCIL, 1.0f, 0 );
 
   //d3d->present ();
 };
