@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,08.08.2019</changed>
+/// <changed>ʆϒʅ,09.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -31,10 +31,14 @@ private:
   bool minimized; // true if minimized
   bool maximized; // true if maximized
   bool resizing; // true while being dragged around
+  bool resized; // true when resized
 public:
   Window ( TheCore* ); // constructor and initializer
   const bool& isInitialized (); // get the initialized state
   const HWND& getHandle (); // get the handle to main window
+  unsigned int& getWidth (); // get/set current window width
+  unsigned int& getHeight (); // get/set current window height
+  bool& isResized (); // get/set the resized state
   void shutdown ( void ); // destruction preparations
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM ); // Windows callback procedure
 };

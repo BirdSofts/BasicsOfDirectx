@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,08.08.2019</changed>
+/// <changed>ʆϒʅ,10.08.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -30,7 +30,7 @@ private:
   Window* appWindow; // pointer to game window (main window)
   bool initialized; // true if the initialization was successful
   bool paused; // true if the game is paused
-  bool showFPS; // if true FPS to screen (true in debug mode)
+  bool debug; // if true FPS to screen (true in debug mode)
   Direct3D* d3d;
   Direct2D* d2d;
 public:
@@ -40,6 +40,7 @@ public:
   const HWND& getHandle ( void ); // get the handle to main window
   const bool& isPaused ( void ); // get the paused state
   Timer* getTimer ( void ); // get the pointer to application timer
+  const int& getFPS ( void ); // get the FPS
   Direct3D* getd3d ( void ); // get the pointer to application Direct3D
   Direct2D* getd2d ( void ); // get the pointer to application Direct2D
   void frameStatistics ( void ); // frame statistics calculations

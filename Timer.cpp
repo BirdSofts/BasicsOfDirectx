@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,07.08.2019</changed>
+/// <changed>ʆϒʅ,10.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
@@ -27,14 +27,15 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
     // usable in time-interval measurements.
     // note that the function returns zero if an error is occurred.
     // Todo implement C++ standard chrono
-    if ( QueryPerformanceFrequency ( ( LARGE_INTEGER*) & frequency ) )
+    if (QueryPerformanceFrequency ( ( LARGE_INTEGER*) & frequency ))
     {
       // once calculated seconds per count (reciprocal of the number of counts per seconds)
       // TimeValueInSeconds = ActualTimeValue / Frequency
       secondsPerCount = double ( 1 ) / frequency;
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The high-precision timer is successfully instantiated." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The high-precision timer is successfully instantiated." );
 #endif // !_NOT_DEBUGGING
 
       initialized = true;
@@ -45,19 +46,21 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
       initialized = false;
     }
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
-    if ( ex.what () == "crT" )
+    if (ex.what () == "crT")
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The high-precision timer instantiation failed!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"The high-precision timer instantiation failed!" );
 #endif // !_NOT_DEBUGGING
 
     else
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -74,10 +77,10 @@ const double Timer::getTotal ()
 {
   // total running time from the start of the game
   double temp;
-  if ( paused )
-    temp = ( timeLastStopped - timeStart - timeTotalIdle ) * secondsPerCount;
+  if (paused)
+    temp = (timeLastStopped - timeStart - timeTotalIdle) * secondsPerCount;
   else
-    temp = ( timeCurrentFrame - timeStart - timeTotalIdle ) * secondsPerCount;
+    temp = (timeCurrentFrame - timeStart - timeTotalIdle) * secondsPerCount;
   return temp;
 };
 
@@ -99,37 +102,39 @@ void Timer::event ( const char* type )
   long long current;
   try
   {
-    if ( QueryPerformanceCounter ( ( LARGE_INTEGER*) & current ) )
+    if (QueryPerformanceCounter ( ( LARGE_INTEGER*) & current ))
     {
       // if start is requested as event (invoked at game reactivation)
-      if ( ( type == "start" ) && ( paused ) )
+      if ((type == "start") && (paused))
       {
-        timeTotalIdle += ( current - timeLastStopped ); // calculate total ideal
+        timeTotalIdle += (current - timeLastStopped); // calculate total ideal
         timePreviousFrame = current; // prepare the calculation of this frame
         // make ready for next stop:
         timeLastStopped = 0;
         paused = false;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully started." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                  L"The timer is successfully started." );
 #endif // !_NOT_DEBUGGING
 
       }
 
       // if pause is requested as event (invoked at game deactivation)
-      if ( ( type == "pause" ) && ( !paused ) )
+      if ((type == "pause") && (!paused))
       {
         timeLastStopped = current; // store the time for later use
         paused = true;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully stopped." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                  L"The timer is successfully stopped." );
 #endif // !_NOT_DEBUGGING
 
       }
 
       // if reset is requested as event (start of the game loop)
-      if ( type == "reset" )
+      if (type == "reset")
       {
         // prepare the timer:
         timeStart = current;
@@ -138,7 +143,8 @@ void Timer::event ( const char* type )
         paused = false;
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The timer is successfully reset." );
+        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                  L"The timer is successfully reset." );
 #endif // !_NOT_DEBUGGING
 
       }
@@ -147,16 +153,19 @@ void Timer::event ( const char* type )
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"A Timer functionality failed! Requested event: " + Converter::strConverter ( type ) );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"One timer functionality failed! Requested event: "
+                                                + Converter::strConverter ( type ) );
 #endif // !_NOT_DEBUGGING
 
     }
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -168,32 +177,34 @@ void Timer::tick ()
   // tick and calculate the time between two frames
   try
   {
-    if ( paused )
+    if (paused)
       timeDelta = 0; // the elapsed time in a stopped state (for calculations in an idle time)
     else
-      if ( QueryPerformanceCounter ( ( LARGE_INTEGER*) & timeCurrentFrame ) )
+      if (QueryPerformanceCounter ( ( LARGE_INTEGER*) & timeCurrentFrame ))
       {
-        timeDelta = ( timeCurrentFrame - timePreviousFrame ) * secondsPerCount; // the elapsed time of one frame
+        timeDelta = (timeCurrentFrame - timePreviousFrame) * secondsPerCount; // the elapsed time of one frame
         timePreviousFrame = timeCurrentFrame; // preparation for the next tick
 
         // in case, a negative delta means that the processor goes idle. the cause can be an overflow,
         // a power save mode or the movement of the process to another processor.
-        if ( timeDelta < 0 )
+        if (timeDelta < 0)
           timeDelta = 0;
       } else
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Timer failed to tick!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  L"Timer failed to tick!" );
 #endif // !_NOT_DEBUGGING
 
       }
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }

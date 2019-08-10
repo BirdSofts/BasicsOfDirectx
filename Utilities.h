@@ -58,7 +58,7 @@ private:
 public:
   theException ();
   void set ( const char* );
-  const char* what () const throw( );
+  const char* what () const throw();
 };
 
 
@@ -67,14 +67,16 @@ enum logType { info = 0, debug, warning, error };
 
 
 // log container structure
-struct Log
+struct LogEntity
 {
   unsigned int id;
+  std::wstring arrivedAt;
   logType type;
-  std::wstring cMoment;
   std::thread::id threadId;
   std::wstring threadName;
   std::wstring message;
+  LogEntity ();
+  LogEntity operator=( LogEntity& );
 };
 
 
@@ -88,12 +90,12 @@ public:
   toFile ();
   ~toFile ();
   const bool& state ();
-  bool write ( const Log& );
+  bool write ( const std::wstring& );
 };
 
 
-// Todo screen stream policy
-//class toScreen {};
+// Todo other stream policy
+//class toStream {};
 
 
 // logging engine
@@ -101,9 +103,10 @@ template<class tType>
 class Logger
 {
 private:
-  Log logEntity;
-  std::list<Log> buffer; // buffer list container
-  tType policy; // output stream policy
+  LogEntity theLog;
+  std::wstring theLogRawStr;
+  std::list<std::wstring> buffer; // buffer list container
+  tType filePolicy; // output stream policy
   std::timed_mutex writeGuard; // write guard
   std::thread commit; // write engine thread
   // lock-free atomic flag (checking the running state) (standard initialization):
@@ -117,14 +120,13 @@ public:
               const std::thread::id&,
               const std::wstring&,
               const std::wstring& );
+  const LogEntity& getLog ( void );
+  const std::wstring& getLogRawStr ( void );
 
   template<class tType>
   friend void loggerEngine ( Logger<tType>* ); // write engine
 };
-
-
-// don't call this function: solution for linker error, when using templates.
-void problemSolver ();
+void problemSolver (); // don't call this function: solution for linker error, when using templates.
 
 
 // configurations container

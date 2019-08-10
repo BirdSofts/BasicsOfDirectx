@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,08.08.2019</changed>
+/// <changed>ʆϒʅ,10.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -43,20 +43,20 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
   {
 
     // Todo add exception handle (initialization state)
-    std::shared_ptr<theException> anException { new ( std::nothrow ) theException () };
+    std::shared_ptr<theException> anException { new (std::nothrow) theException () };
     PointerProvider::exceptionProvider ( anException );
 
 #ifndef _NOT_DEBUGGING
     // Todo add exception handle (initialization state)
-    std::shared_ptr<Logger<toFile>> fileLoggerEngine ( new ( std::nothrow ) Logger<toFile> () );
+    std::shared_ptr<Logger<toFile>> fileLoggerEngine ( new (std::nothrow) Logger<toFile> () );
     PointerProvider::fileLoggerProvider ( fileLoggerEngine );
 #endif // !_NOT_DEBUGGING
 
     // Todo add exception handle (initialization state)
-    std::shared_ptr<Configurations> settings ( new ( std::nothrow ) Configurations () );
+    std::shared_ptr<Configurations> settings ( new (std::nothrow) Configurations () );
     PointerProvider::configurationProvider ( settings );
 
-    if ( ( anException ) && ( settings ) )
+    if ((anException) && (settings))
       running = true;
     else
     {
@@ -65,10 +65,11 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     }
 
 #ifndef _NOT_DEBUGGING
-    if ( fileLoggerEngine )
+    if (fileLoggerEngine)
     {
       debugger = true;
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Exception, file logger and configuration providers are successfully initialized." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"Exception, file logger and configuration providers are successfully initialized." );
     } else
     {
       PointerProvider::getException ()->set ( "appDebug" );
@@ -79,11 +80,12 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
     TheCore theCore ( hInstance );
 
-    if ( theCore.isInitialized () )
+    if (theCore.isInitialized ())
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The application core is successfully initialized." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The application core is successfully initialized." );
 #endif // !_NOT_DEBUGGING
 
     } else
@@ -96,13 +98,15 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The game is successfully initialized." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                              L"The game is successfully initialized." );
 #endif // !_NOT_DEBUGGING
 
     gameState = L"initialized";
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread", L"Entering the game loop: the colour is going to change constantly, pay attention to your nose!" );
+    PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
+                                              L"Entering the game loop: the colour is going to change constantly." );
 #endif // !_NOT_DEBUGGING
 
 
@@ -123,7 +127,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     {
 
 #pragma region peekLoop
-      if ( ( counter % 500 ) == 0 )
+      if ((counter % 500) == 0)
         // check and peek (get) window messages already placed in an event queue.
         // note the difference between the below two functions:
         // the get function, once called, actually waits for a message,
@@ -141,7 +145,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
                   // removal flags specify how the messages are to be handled:
                   // additionally to below introduced argument, PM_NOREMOVE prevents the removal of messages in the queue,
                   // therefore after it is passed, the get function is additionally needed to actually retrieve the messages.
-                  PM_REMOVE ) )
+                  PM_REMOVE ))
           //while ( GetMessage ( &msg, NULL, 0, 0 ) ) // not a good one for a game, which needs to deliver 30 F/S
         {
           // translation of the virtual-key messages into character messages
@@ -153,8 +157,8 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 #pragma endregion
 
 
-      // ***********************************************************************************************************
-      // -----------------------------------------------------------------------------------------------------------
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       // Todo: research for a robust game loop:
       // mathematical simulation of time and reality, physics, multithreading
       //
@@ -164,34 +168,32 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
       // -- fps calculation
       theCore.frameStatistics ();
 
-      if ( !theCore.isPaused () )
+      if (!theCore.isPaused ())
       {
 
         // -----------------------------------------------------------------------------------------------------------
         // a game loop purpose:
         // -- process inputted data
 
-        //theCore.getd3d ()->clearBuffers ();
-
 
         // -----------------------------------------------------------------------------------------------------------
         // -- update the game universe/logic
         // Note the needed delta time
 
-        r += colourMod_r * 0.00001f;
-        g += colourMod_g * 0.00003f;
         b += colourMod_b * 0.00006f;
-        if ( ( r >= 1.0f ) || ( r <= 0.0f ) )
-          colourMod_r *= -1;
-        if ( ( g >= 1.0f ) || ( g <= 0.0f ) )
-          colourMod_g *= -1;
-        if ( ( b >= 1.0f ) || ( b <= 0.0f ) )
+        g += colourMod_g * 0.00003f;
+        r += colourMod_r * 0.00001f;
+        if ((b >= 1.0f) || (b <= 0.0f))
           colourMod_b *= -1;
-        float backColor [4] { r, g, b, 1.0f };
+        if ((g >= 1.0f) || (g <= 0.0f))
+          colourMod_g *= -1;
+        if ((r >= 1.0f) || (r <= 0.0f))
+          colourMod_r *= -1;
+        float backColor [4] { b, g, r, 1.0f };
         theCore.testDirect3D ( backColor );
 
         // -- fps on screen representation
-        theCore.getd2d ()->printFPS ();
+        theCore.getd2d ()->debugPrint ();
 
 
         // -----------------------------------------------------------------------------------------------------------
@@ -200,29 +202,30 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
 
         counter++;
         // my environment could manage 10! :)
-        if ( ( counter % 2000 ) == 0 )
+        if ((counter % 2000) == 0)
         {
           std::wstring str { L"" };
-          for ( unsigned char i = 0; i < 4; i++ )
+          for (unsigned char i = 0; i < 4; i++)
           {
-            if ( i == 0 )
+            if (i == 0)
               str += std::to_wstring ( backColor [i] );
             else
               str += L", " + std::to_wstring ( backColor [i] );
           }
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The colour is now: RGBA ( " + str + L" )" );
+          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                    L"The colour is now: BGRA (" + str + L')' );
 #endif // !_NOT_DEBUGGING
 
           counter = 0;
         }
 
       }
-      // ***********************************************************************************************************
-      // ***********************************************************************************************************
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    } while ( running == true );
+    } while (running == true);
 
     theCore.shutdown ();
 
@@ -235,31 +238,33 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     return EXIT_SUCCESS;
 
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
-    if ( ex.what () == "appSone" )
+    if (ex.what () == "appSone")
       MessageBoxA ( NULL, "The Game could not be started...", "Error", MB_OK | MB_ICONERROR );
     else
-      if ( ex.what () == "appDebug" )
+      if (ex.what () == "appDebug")
         MessageBoxA ( NULL, "The debug service failed to start.", "Error", MB_OK | MB_ICONERROR );
       else
-        if ( ex.what () == "appStwo" )
+        if (ex.what () == "appStwo")
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The initialization of application core failed!" );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                    L"The initialization of application core failed!" );
 #endif // !_NOT_DEBUGGING
 
           MessageBoxA ( NULL, "The Game functionality failed to start...", "Critical-Error", MB_OK | MB_ICONERROR );
         } else
         {
           MessageBoxA ( NULL, ex.what (), "Error", MB_OK | MB_ICONERROR );
-          if ( debugger )
+          if (debugger)
           {
 
 #ifndef _NOT_DEBUGGING
-            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                      Converter::strConverter ( ex.what () ) );
             std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
 #endif // !_NOT_DEBUGGING
 

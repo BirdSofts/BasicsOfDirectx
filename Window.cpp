@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,07.08.2019</changed>
+/// <changed>ʆϒʅ,10.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -21,7 +21,7 @@ LRESULT CALLBACK mainWndProc ( HWND handle, UINT msg, WPARAM wPrm, LPARAM lPrm )
 
 Window::Window ( TheCore* coreObject ) :
   handle ( NULL ), core ( coreObject ), initialized ( false ),
-  minimized ( false ), maximized ( false ), resizing ( false )
+  minimized ( false ), maximized ( false ), resizing ( false ), resized ( false )
 {
   try
   {
@@ -29,7 +29,7 @@ Window::Window ( TheCore* coreObject ) :
 
     appInstance = coreObject->getInstance ();
 
-    if ( PointerProvider::getConfiguration ()->getSettings ().Width == 640 )
+    if (PointerProvider::getConfiguration ()->getSettings ().Width == 640)
       PointerProvider::getConfiguration ()->apply ();
 
     clientWidth = PointerProvider::getConfiguration ()->getSettings ().Width;
@@ -63,7 +63,7 @@ Window::Window ( TheCore* coreObject ) :
     // and returns a class atom that uniquely identifies the class being registered.
     // note that since all the registered window classes by a program are unregistered,
     // when it terminates, no manual cleaning is necessary.
-    if ( !RegisterClassEx ( &wClass ) )
+    if (!RegisterClassEx ( &wClass ))
     {
       PointerProvider::getException ()->set ( "regW" );
       throw* PointerProvider::getException ();
@@ -71,7 +71,8 @@ Window::Window ( TheCore* coreObject ) :
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window is successfully registered." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The client window is successfully registered." );
 #endif // !_NOT_DEBUGGING
 
     }
@@ -80,12 +81,12 @@ Window::Window ( TheCore* coreObject ) :
     // therefore the exact dimension needs to be calculated.
     // rectangle structure to store the coordinates (top-left and bottom-right)
     RECT rectangle { 0, 0, long ( clientWidth ), long ( clientHeight ) };
-    if ( !AdjustWindowRectEx (
+    if (!AdjustWindowRectEx (
       // long pointer to the rectangle structure to be filled with the calculated coordinates
       &rectangle,
       WS_OVERLAPPEDWINDOW, // current window style (is needed to calculated the client size)
       false, // window contains a menu or not
-      WS_EX_OVERLAPPEDWINDOW ) ) // current extended window style (is needed to calculated the client size)
+      WS_EX_OVERLAPPEDWINDOW )) // current extended window style (is needed to calculated the client size)
     {
       PointerProvider::getException ()->set ( "adjustW" );
       throw* PointerProvider::getException ();
@@ -93,7 +94,8 @@ Window::Window ( TheCore* coreObject ) :
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window size is successfully calculated." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The client window size is successfully calculated." );
 #endif // !_NOT_DEBUGGING
 
     }
@@ -116,7 +118,7 @@ Window::Window ( TheCore* coreObject ) :
       NULL // pointer to window-creation data (advanced)
     );
 
-    if ( !handle )
+    if (!handle)
     {
       PointerProvider::getException ()->set ( "crW" );
       throw* PointerProvider::getException ();
@@ -124,7 +126,8 @@ Window::Window ( TheCore* coreObject ) :
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The client window is successfully created." );
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The client window is successfully created." );
 #endif // !_NOT_DEBUGGING
 
     }
@@ -138,37 +141,41 @@ Window::Window ( TheCore* coreObject ) :
     UpdateWindow ( handle );
     initialized = true;
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
     initialized = false;
-    if ( ex.what () == "regW" )
+    if (ex.what () == "regW")
     {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window registration failed!" );
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Window registration failed!" );
 #endif // !_NOT_DEBUGGING
 
     } else
-      if ( ex.what () == "adjustW" )
+      if (ex.what () == "adjustW")
       {
 
 #ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The calculation of the client window size failed!" );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  L"The calculation of the client window size failed!" );
 #endif // !_NOT_DEBUGGING
 
       } else
-        if ( ex.what () == "crW" )
+        if (ex.what () == "crW")
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", L"Window creation failed!" );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                    L"Window creation failed!" );
 #endif // !_NOT_DEBUGGING
 
         } else
         {
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                    Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
         }
@@ -190,30 +197,50 @@ const HWND& Window::getHandle ()
 }
 
 
+unsigned int& Window::getWidth ()
+{
+  return clientWidth;
+};
+
+
+unsigned int& Window::getHeight ()
+{
+  return clientHeight;
+};
+
+
+bool& Window::isResized ()
+{
+  return resized;
+};
+
+
 void Window::shutdown ( void )
 {
   try
   {
-    if ( core )
+    if (core)
     {
       core = nullptr;
       delete core;
     }
-    if ( handle )
+    if (handle)
       handle = NULL;
-    if ( appInstance )
+    if (appInstance)
       appInstance = NULL;
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"Application main window class is successfully destructed." );
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                              L"Application main window class is successfully destructed." );
 #endif // !_NOT_DEBUGGING
 
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
   }
@@ -237,11 +264,11 @@ LRESULT CALLBACK Window::msgProc (
 {
   try
   {
-    switch ( msg )
+    switch (msg)
     {
       case WM_ACTIVATE: // if window activation state changes
-        if ( gameState == L"gaming" )
-          if ( ( LOWORD ( wPrm ) == WA_INACTIVE ) ) // activation flag
+        if (gameState == L"gaming")
+          if ((LOWORD ( wPrm ) == WA_INACTIVE)) // activation flag
           {
             core->paused = true; // the game is paused
             core->timer->event ( "pause" );
@@ -253,11 +280,11 @@ LRESULT CALLBACK Window::msgProc (
           return 0;
 
       case WM_KEYDOWN: // if a key is pressed
-        if ( wPrm == VK_ESCAPE ) // the ESC key identification
+        if (wPrm == VK_ESCAPE) // the ESC key identification
         {
           core->paused = true;
           core->timer->event ( "pause" );
-          if ( MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+          if (MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES)
           {
             // next expression simply indicates to the system intention to terminate the window,
             // which puts a WM_QUIT message in the message queue, subsequently causing the main event loop to bail.
@@ -266,7 +293,8 @@ LRESULT CALLBACK Window::msgProc (
             gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-            PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The destruction of the window class is acknowledged." );
+            PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                      L"The destruction of the window class is acknowledged." );
 #endif // !_NOT_DEBUGGING
 
             return 0; // the message was useful and is handled.
@@ -282,14 +310,15 @@ LRESULT CALLBACK Window::msgProc (
       case WM_CLOSE: // the user tries to somehow close the application
         core->paused = true;
         core->timer->event ( "pause" );
-        if ( MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES )
+        if (MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES)
         {
           PostQuitMessage ( 0 );
           running = false;
           gameState = L"shutting down";
 
 #ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread", L"The main window is successfully flagged for destruction." );
+          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                    L"The main window is successfully flagged for destruction." );
 #endif // !_NOT_DEBUGGING
 
           return DefWindowProc ( handle, msg, wPrm, lPrm ); // so the window behaves logical! :)
@@ -307,41 +336,45 @@ LRESULT CALLBACK Window::msgProc (
         return 0;
 
       case WM_SIZE: // important for games in windowed mode (resizing the client size and game universe)
-        if ( gameState == L"gaming" )
-          if ( wPrm == SIZE_MINIMIZED ) // window is minimized
+        if (gameState == L"gaming")
+          if (wPrm == SIZE_MINIMIZED) // window is minimized
           {
             minimized = true;
-            maximized = false;
             core->timer->event ( "pause" );
             core->paused = true;
           } else
-            if ( wPrm == SIZE_MAXIMIZED ) // window is maximized
+            if (wPrm == SIZE_MAXIMIZED) // window is maximized
             {
-              minimized = false;
               maximized = true;
+              if (!minimized)
+              {
+                resized = true;
+                core->d3d->resize ();
+              }
+              minimized = false;
               core->paused = false;
               core->timer->event ( "start" );
             } else
-              if ( wPrm == SIZE_RESTORED ) // window is restored, find the previous state:
+              if (wPrm == SIZE_RESTORED) // window is restored, find the previous state:
               {
-                if ( minimized )
+                if (minimized)
                 {
                   minimized = false;
-                  core->d3d->resize ();
                   core->timer->event ( "pause" );
                   core->paused = true;
                 } else
-                  if ( maximized )
+                  if (maximized)
                   {
                     maximized = false;
+                    resized = true;
                     core->d3d->resize ();
                     core->paused = false;
                     core->timer->event ( "start" );
                   } else
-                    if ( resizing )
+                    if (resizing)
                     {
-                      if ( gameState == L"gaming" )
-                        if ( !core->paused )
+                      if (gameState == L"gaming")
+                        if (!core->paused)
                         {
                           core->timer->event ( "pause" );
                           core->paused = true;
@@ -350,8 +383,9 @@ LRESULT CALLBACK Window::msgProc (
                       // constant response to so many WM_SIZE messages while resizing, dragging is pointless.
                     } else // response when resized
                     {
+                      resized = true;
                       core->d3d->resize ();
-                      if ( gameState == L"gaming" )
+                      if (gameState == L"gaming")
                       {
                         core->paused = false;
                         core->timer->event ( "start" );
@@ -362,7 +396,7 @@ LRESULT CALLBACK Window::msgProc (
 
       case WM_ENTERSIZEMOVE: // the edge of the window is being dragged around to resize it
         resizing = true;
-        if ( gameState == L"gaming" )
+        if (gameState == L"gaming")
         {
           core->timer->event ( "pause" );
           core->paused = true;
@@ -371,8 +405,9 @@ LRESULT CALLBACK Window::msgProc (
 
       case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
         resizing = false;
+        resized = true;
         core->d3d->resize ();
-        if ( gameState == L"gaming" )
+        if (gameState == L"gaming")
         {
           core->paused = false;
           core->timer->event ( "start" );
@@ -382,9 +417,10 @@ LRESULT CALLBACK Window::msgProc (
         // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
       case WM_GETMINMAXINFO:
         // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
-        ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
-        ( ( MINMAXINFO*) lPrm )->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
+        (( MINMAXINFO*) lPrm)->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
+        (( MINMAXINFO*) lPrm)->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
         return 0;
+
     }
 
     // it is very important to let Window handle other for the program irrelevant messages,
@@ -392,11 +428,12 @@ LRESULT CALLBACK Window::msgProc (
     return DefWindowProc ( handle, msg, wPrm, lPrm );
 
   }
-  catch ( const std::exception& ex )
+  catch (const std::exception& ex)
   {
 
 #ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread", Converter::strConverter ( ex.what () ) );
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
     return DefWindowProc ( handle, msg, wPrm, lPrm );
