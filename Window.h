@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,09.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -23,7 +23,7 @@ class Window
 private:
   HINSTANCE appInstance; // handle to the application instance
   HWND handle; // handle to game window (main window)
-  TheCore* core; // pointer to the application core
+  TheCore* core; // pointer to the framework core
   bool initialized; // true if the initialization was successful
   unsigned int clientWidth; // desired window resolution
   unsigned int clientHeight;
@@ -39,7 +39,6 @@ public:
   unsigned int& getWidth (); // get/set current window width
   unsigned int& getHeight (); // get/set current window height
   bool& isResized (); // get/set the resized state
-  void shutdown ( void ); // destruction preparations
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM ); // Windows callback procedure
 };
 

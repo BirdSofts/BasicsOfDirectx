@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,16.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -17,14 +17,35 @@
 
 #include "Core.h"
 #include "Direct2D.h"
+#include "Shared.h"
+#include "Game.h"
 
 
+// vertex data (positions)
+struct Vertex
+{
+  float x, y, z;
+};
+
+
+// shader buffer
+struct ShaderBuffer
+{
+  byte* buffer;
+  long long size;
+  ShaderBuffer ();
+  ~ShaderBuffer ();
+};
+
+
+// Direct3D wrapper
 class Direct3D
 {
   friend class TheCore;
   friend class Direct2D;
+  friend class GameWrapper;
 private:
-  TheCore* core; // pointer to the application core
+  TheCore* core; // pointer to the framework core
 
   // note that this application put the power of Direct3d 10 into practice.
   // to easily handle the life cycle of COM objects, they can be defined using smart pointers known as COM pointers,
@@ -34,7 +55,13 @@ private:
   // -- the device object: virtual representation of the video adapter
   // purpose: access to GPU memory and creation of Direct3D COM objects.
   Microsoft::WRL::ComPtr<ID3D10Device1> device; // Direct3D device
-  Microsoft::WRL::ComPtr<ID3D10Debug> debug; // live report is available from Direct3D 11
+  Microsoft::WRL::ComPtr<IDXGIDevice1> dxgiDevice; // DXGI device
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter; // DXGI Adapter
+  Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory; // DXGI Factory
+
+#ifndef _NOT_DEBUGGING
+  Microsoft::WRL::ComPtr<ID3D10Debug> debug; // Device Debug layer
+#endif // !_NOT_DEBUGGING
 
   // -- the device context: the structure defining a set of graphic objects
   // and their associated attributes, additionally graphic modes that affect output,
@@ -46,9 +73,6 @@ private:
   // The COM interface representing the swap chain:
   // purpose: swapping the back buffers (double or triple) and drawing to the display surface
   Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain; // the swap chain
-  Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice; // swap chain creation needs
-  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter; // swap chain creation needs
-  Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory; // swap chain creation needs
 
   DXGI_FORMAT colourFormat; // colour format
 
@@ -58,17 +82,22 @@ private:
   Microsoft::WRL::ComPtr<ID3D10DepthStencilView> dsView; // depth-stencil view
   Microsoft::WRL::ComPtr<ID3D10Texture2D> dsBuffer; // depth-stencil view buffer
 
-  bool initialized; // true if the initialization was successful
-  bool created; // true if the creation was successful
-  bool resized; // true if the resizing was successful
+  Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
+  Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
+  //static ShaderBuffer csoBuffer; // vertex/pixel shaders need
+  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout;
+
+  bool initialized; // true if initialization was successful
+  bool allocated; // true if resources allocation was successful
 public:
-  Direct3D ( TheCore* ); // device creation plus swapping the chain
+  Direct3D ( TheCore* ); // creation of the device and resources
   const bool& isInitialized (); // get the initialized state
-  void createResources ( void ); // create the device resources
-  void resize ( void ); // resize the resources
+  void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
+  void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
+  void initializePipeline ( void ); // rendering (GPU) pipeline initialization
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
-  void shutdown ( void ); // destruction preparations
+  const ID3D10Device1& getDevice ( void ); // get the pointer to application Direct3D
 };
 
 

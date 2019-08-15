@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
@@ -11,7 +11,7 @@
 
 
 Direct2D::Direct2D ( TheCore* coreObj ) : core ( coreObj ),
-initialized ( false )
+initialized ( false ), allocated ( false )
 {
   try
   {
@@ -57,27 +57,9 @@ initialized ( false )
       throw* PointerProvider::getException ();
     }
 
-    // retrieving the DXGI device (Direct2D device needs)
-    // note that the DXGI associated to the Direct3D device must be obtained.
-    // returns a pointer to the interface being requested.
-    hResult = core->d3d->device.Get ()->QueryInterface ( __uuidof(IDXGIDevice), &dxgiDevice );
-    if (SUCCEEDED ( hResult ))
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"The DXGI device is successfully retrieved." );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-      PointerProvider::getException ()->set ( "getDd" );
-      throw* PointerProvider::getException ();
-    }
-
     // creation of the Direct2D device
     // threading mode will be inherited from the DXGI device.
-    hResult = factory->CreateDevice ( dxgiDevice.Get (), &device );
+    hResult = factory->CreateDevice ( core->d3d->dxgiDevice.Get (), &device );
     if (SUCCEEDED ( hResult ))
     {
 
@@ -92,11 +74,9 @@ initialized ( false )
       throw* PointerProvider::getException ();
     }
 
-    dxgiDevice->Release (); // not needed any more
-
-    createResources ();
-
     initialized = true;
+
+    allocateResources ();
 
 #ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
@@ -124,49 +104,41 @@ initialized ( false )
 #endif // !_NOT_DEBUGGING
 
       } else
-        if (ex.what () == "getDd")
+        if (ex.what () == "crD2Dd")
         {
 
 #ifndef _NOT_DEBUGGING
           PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                    L"Retrieving the DXGI device failed!" );
+                                                    L"Creation of Direct2D device failed!" );
 #endif // !_NOT_DEBUGGING
 
         } else
-          if (ex.what () == "crD2Dd")
+          if (ex.what () == "crD2Ddc")
           {
 
 #ifndef _NOT_DEBUGGING
             PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                      L"Creation of Direct2D device failed!" );
+                                                      L"Creation of Direct2D device context failed!" );
 #endif // !_NOT_DEBUGGING
 
           } else
-            if (ex.what () == "crD2Ddc")
-            {
+          {
 
 #ifndef _NOT_DEBUGGING
-              PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                        L"Creation of Direct2D device context failed!" );
+            PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                      Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
-            } else
-            {
-
-#ifndef _NOT_DEBUGGING
-              PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                        Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-            }
+          }
   }
 };
 
 
-void Direct2D::createResources ( void )
+void Direct2D::allocateResources ( void )
 {
   try
   {
+    allocated = false;
     HRESULT hResult;
 
     // creation of the Direct2D device context
@@ -199,7 +171,7 @@ void Direct2D::createResources ( void )
     bitMap.colorContext = nullptr; // a colour context interface
 
     // --retrieving the DXGI version of the Direct3D back buffer (Direct2D needs)
-    hResult = core->d3d->swapChain->GetBuffer ( 0, __uuidof(IDXGISurface), &dcBuffer );
+    hResult = core->d3d->swapChain->GetBuffer ( 0, __uuidof(IDXGISurface1), &dcBuffer );
     if (SUCCEEDED ( hResult ))
     {
 
@@ -356,6 +328,8 @@ void Direct2D::initializeTextFormats ( void )
       throw* PointerProvider::getException ();
     }
 
+    allocated = true;
+
   }
   catch (const std::exception& ex)
   {
@@ -413,7 +387,7 @@ const bool& Direct2D::isInitialized ()
 };
 
 
-void Direct2D::debugPrint ( void )
+void Direct2D::debugInfos ( void )
 {
   try
   {
@@ -454,41 +428,5 @@ void Direct2D::debugPrint ( void )
 #endif // !_NOT_DEBUGGING
 
     }
-  }
-};
-
-
-void Direct2D::shutdown ( void )
-{
-  try
-  {
-    dcBitmap.Reset ();
-    dcBuffer.Reset ();
-    deviceCon.Reset ();
-    dxgiDevice.Reset ();
-    device.Reset ();
-    factory.Reset ();
-    writeFac.Reset ();
-    initialized = false;
-    if (core)
-    {
-      core = nullptr;
-      delete core;
-    }
-
-#ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                              L"Direct2D is successfully destructed." );
-#endif // !_NOT_DEBUGGING
-
-  }
-  catch (const std::exception& ex)
-  {
-
-#ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                              Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
   }
 };

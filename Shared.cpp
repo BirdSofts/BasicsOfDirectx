@@ -3,11 +3,10 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,13.08.2019</changed>
 // ********************************************************************************
 
 #include "Shared.h"
-#include "Utilities.h"
 
 
 //template<class tType>

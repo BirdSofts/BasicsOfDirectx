@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
@@ -141,13 +141,6 @@ Logger<tType>::Logger () : theLogRawStr ( L"" ), filePolicy (), writeGuard ()
 template<class tType>
 Logger<tType>::~Logger ()
 {
-
-#ifndef _NOT_DEBUGGING
-  PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                            L"The logging engine is going to successfully shut down..." );
-  std::this_thread::sleep_for ( std::chrono::milliseconds { 100 } );
-#endif // !_NOT_DEBUGGING
-
   operating.clear ();
   commit.join ();
   buffer.clear ();
@@ -272,8 +265,7 @@ void loggerEngine ( Logger<tType>* engine )
     std::this_thread::sleep_for ( std::chrono::milliseconds { 20 } );
     PointerProvider::getFileLogger ()->push (
       logType::info, std::this_thread::get_id (), L"logThread",
-      L"Logging engine is successfully started:\n\nFull-featured surveillance is the utter most \
-      goal in a digital world, and frankly put, it is well justified! ^,^\n" );
+      L"Logging engine is successfully started:\n\nFull-featured surveillance is the utter most goal in a digital world, and frankly put, it is well justified! ^,^\n" );
 #endif // !_NOT_DEBUGGING
 
     // Todo robust lock
@@ -319,10 +311,14 @@ void loggerEngine ( Logger<tType>* engine )
 
 void problemSolver () // don't call this function: solution for linker error, when using templates.
 {
+
+#ifndef _NOT_DEBUGGING
   Logger<toFile> tempObj;
   tempObj.push ( logType::error, std::this_thread::get_id (), L"mainThread", L"The problem solver... :)" );
   tempObj.getLog ();
   tempObj.getLogRawStr ();
+#endif // !_NOT_DEBUGGING
+
 }
 
 

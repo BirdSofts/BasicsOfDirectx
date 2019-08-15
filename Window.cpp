@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -36,9 +36,11 @@ Window::Window ( TheCore* coreObject ) :
     clientHeight = PointerProvider::getConfiguration ()->getSettings ().Height;
     fullScreen = PointerProvider::getConfiguration ()->getSettings ().fullscreen;
 
+    LPCWSTR windowName = { L"The Game" };
+
     // filling the instantiation of the extended version of window class,
     // a structure that handles properties and actions of a window:
-    WNDCLASSEX wClass;
+    WNDCLASSEXW wClass;
     wClass.cbClsExtra = 0; // extra class runtime information
     wClass.cbSize = sizeof ( WNDCLASSEX ); // the size of the structure itself (usable when passed as pointer)
     wClass.cbWndExtra = 0; // extra window runtime information
@@ -52,7 +54,7 @@ Window::Window ( TheCore* coreObject ) :
     wClass.lpfnWndProc = mainWndProc;
     // a long pointer to a constant literal representing the name of the window class itself,
     // useful when the application opens more than one window, so Windows is able to keep track of them
-    wClass.lpszClassName = L"The Game";
+    wClass.lpszClassName = windowName;
     // a long pointer to a constant literal representing the name of the menu to attach
     wClass.lpszMenuName = 0;
     // object style flags: below arguments are usable to redraw the window, when moving it vertically or horizontally,
@@ -63,7 +65,7 @@ Window::Window ( TheCore* coreObject ) :
     // and returns a class atom that uniquely identifies the class being registered.
     // note that since all the registered window classes by a program are unregistered,
     // when it terminates, no manual cleaning is necessary.
-    if (!RegisterClassEx ( &wClass ))
+    if (!RegisterClassExW ( &wClass ))
     {
       PointerProvider::getException ()->set ( "regW" );
       throw* PointerProvider::getException ();
@@ -102,10 +104,10 @@ Window::Window ( TheCore* coreObject ) :
 
     // after the properties of a window class is known to Windows, it can finally be created.
     // the below function returns a handle to the newly created window, or NULL in case of failure.
-    handle = CreateWindowEx (
+    handle = CreateWindowExW (
       WS_EX_OVERLAPPEDWINDOW, // extended window style (for game NULL)
       wClass.lpszClassName, // a long pointer to a constant literal representing the registered window class name
-      L"The Game", // a long pointer to a constant literal representing the name or title of the window
+      windowName, // a long pointer to a constant literal representing the name or title of the window
       WS_OVERLAPPEDWINDOW, // window style (an overlapped window has a title bar and a border)
       // note that the below arguments can be set to default if the actual location is of no importance
       CW_USEDEFAULT, // window horizontal position in pixel (x)
@@ -215,38 +217,6 @@ bool& Window::isResized ()
 };
 
 
-void Window::shutdown ( void )
-{
-  try
-  {
-    if (core)
-    {
-      core = nullptr;
-      delete core;
-    }
-    if (handle)
-      handle = NULL;
-    if (appInstance)
-      appInstance = NULL;
-
-#ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                              L"Application main window class is successfully destructed." );
-#endif // !_NOT_DEBUGGING
-
-  }
-  catch (const std::exception& ex)
-  {
-
-#ifndef _NOT_DEBUGGING
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                              Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-  }
-};
-
-
 // the event handler, a callback function, also known as Windows Procedure,
 // is called by Windows from main event loop of the system at the occurrence of an event,
 // which the running window must handle, before it continues its normal flow.
@@ -349,7 +319,7 @@ LRESULT CALLBACK Window::msgProc (
               if (!minimized)
               {
                 resized = true;
-                core->d3d->resize ();
+                core->resizeResources ();
               }
               minimized = false;
               core->paused = false;
@@ -367,7 +337,7 @@ LRESULT CALLBACK Window::msgProc (
                   {
                     maximized = false;
                     resized = true;
-                    core->d3d->resize ();
+                    core->resizeResources ();
                     core->paused = false;
                     core->timer->event ( "start" );
                   } else
@@ -384,7 +354,7 @@ LRESULT CALLBACK Window::msgProc (
                     } else // response when resized
                     {
                       resized = true;
-                      core->d3d->resize ();
+                      core->resizeResources ();
                       if (gameState == L"gaming")
                       {
                         core->paused = false;
@@ -406,7 +376,7 @@ LRESULT CALLBACK Window::msgProc (
       case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
         resizing = false;
         resized = true;
-        core->d3d->resize ();
+        core->resizeResources ();
         if (gameState == L"gaming")
         {
           core->paused = false;

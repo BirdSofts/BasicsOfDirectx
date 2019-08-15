@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
@@ -50,19 +50,22 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
   {
 
     if (ex.what () == "crT")
+    {
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"The high-precision timer instantiation failed!" );
 #endif // !_NOT_DEBUGGING
 
-    else
+    } else
+    {
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 Converter::strConverter ( ex.what () ) );
 #endif // !_NOT_DEBUGGING
 
+    }
   }
 };
 

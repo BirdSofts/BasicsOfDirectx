@@ -86,4 +86,8 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="graphics\PixelShader.hlsl" />
+    <FxCompile Include="graphics\VertexShader.hlsl" />
+  </ItemGroup>
 </Project>

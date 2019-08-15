@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,10.08.2019</changed>
+/// <changed>ʆϒʅ,15.08.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -14,13 +14,16 @@
 #include "Timer.h"
 #include "Direct3D.h"
 #include "Direct2D.h"
+#include "Game.h"
 
 
+// Game Framework wrapper
 class TheCore
 {
   friend class Window;
   friend class Direct3D;
   friend class Direct2D;
+  friend class GameWrapper;
 private:
   HINSTANCE appInstance; // handle to the application instance
   Timer* timer; // pointer to DirectX high-precision timer application
@@ -33,9 +36,12 @@ private:
   bool debug; // if true FPS to screen (true in debug mode)
   Direct3D* d3d;
   Direct2D* d2d;
+  GameWrapper* game;
+  bool resized; // true if the resizing was successful
 public:
-  TheCore ( HINSTANCE& ); // constructor and initializer
+  TheCore ( HINSTANCE&, GameWrapper* ); // constructor and initializer
   const bool& isInitialized ( void ); // get the initialized state
+  void resizeResources ( void ); // free and resize the resources 
   const HINSTANCE& getInstance ( void ); // get the handle to application instance
   const HWND& getHandle ( void ); // get the handle to main window
   const bool& isPaused ( void ); // get the paused state
@@ -44,7 +50,6 @@ public:
   Direct3D* getd3d ( void ); // get the pointer to application Direct3D
   Direct2D* getd2d ( void ); // get the pointer to application Direct2D
   void frameStatistics ( void ); // frame statistics calculations
-  void testDirect3D ( float [] ); // tester
   void shutdown ( void ); // destruction preparations
 };
 
