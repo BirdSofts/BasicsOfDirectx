@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,16.08.2019</changed>
+/// <changed>ʆϒʅ,17.08.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
@@ -66,41 +66,81 @@ void GameWrapper::allocateResources ( void )
     allocated = false;
 
     // a triangle
-    Vertex triangle [] {
-      {0.0f, 0.1f, 0.3f},
-      {0.11f, -0.1f, 0.3f},
-      {-0.11f, -0.1f, 0.3f}
+    Vertex triangles [] {
+      {-0.95f, 0.0f, 0.0f, 0.13f, 0.13f, 0.13f},
+      {-0.9f, -0.12f, 0.0f, 0.53f, 0.53f, 0.53f},
+      {-1.0f, -0.12f, 0.0f, 0.93f, 0.93f, 0.93f},
+
+      {-0.75f, 0.0f, 0.0f, 0.13f, 0.13f, 0.13f},
+      {-0.7f, -0.12f, 0.0f, 0.13f, 0.13f, 0.13f},
+      {-0.8f, -0.12f, 0.0f, 0.13f, 0.13f, 0.13f},
+
+      {-0.55f, 0.2f,  0.0f, 0.13f, 0.13f, 0.13f},
+      {-0.5f, -0.12f, 0.0f, 00.53f, 0.53f, 0.53f},
+      {-0.6f, -0.12f, 0.0f, 0.93f, 0.93f, 0.93f}
     };
 
     // buffer description
-    D3D10_BUFFER_DESC descBuffer;
-    descBuffer.ByteWidth = sizeof ( Vertex ) * ARRAYSIZE ( triangle ); // buffer size
-    descBuffer.Usage = D3D10_USAGE_DEFAULT; // default: only GPC can read and write
-    descBuffer.BindFlags = D3D10_BIND_VERTEX_BUFFER; // how to bound to graphics pipeline
-    descBuffer.CPUAccessFlags = 0; // CPU access
-    //descBuffer.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
-    descBuffer.MiscFlags = 0; // for now
-    //descBuffer.StructureByteStride = 0; // Direct3D 11: structured buffer (the size of each element)
+    D3D10_BUFFER_DESC descBufferTriangle;
+    descBufferTriangle.ByteWidth = sizeof ( Vertex ) * ARRAYSIZE ( triangles ); // buffer size
+    descBufferTriangle.Usage = D3D10_USAGE_DEFAULT; // default: only GPC can read and write
+    descBufferTriangle.BindFlags = D3D10_BIND_VERTEX_BUFFER; // how to bound to graphics pipeline
+    descBufferTriangle.CPUAccessFlags = 0; // CPU access
+    //descBufferTriangle.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+    descBufferTriangle.MiscFlags = 0; // for now
+    //descBufferTriangle.StructureByteStride = 0; // Direct3D 11: structured buffer (the size of each element)
 
     // data, with which the buffer is initialized
-    D3D10_SUBRESOURCE_DATA subResourceDate = {
-      triangle, // pointer to data in system memory (copy to GPU)
+    D3D10_SUBRESOURCE_DATA subResourceDateTriangle = {
+      triangles, // pointer to data in system memory (copy to GPU)
       0, // distance between the lines of the texture in bytes (not needed for vertex buffer)
       0 }; // distance between the depth levels in bytes (not needed for vertex buffer)
 
     // vertex buffer: purpose: maintain system and video memory
     // note E_OUTOFMEMORY: self-explanatory
-    if (SUCCEEDED ( core->d3d->device->CreateBuffer ( &descBuffer, &subResourceDate, &vertexBuffer ) ))
+    if (SUCCEEDED ( core->d3d->device->CreateBuffer ( &descBufferTriangle, &subResourceDateTriangle, &vertexBufferTriangle ) ))
     {
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"Vertex buffer is successfully created." );
+                                                L"Triangle vertex buffer is successfully created." );
 #endif // !_NOT_DEBUGGING
 
     } else
     {
-      PointerProvider::getException ()->set ( "crVb" );
+      PointerProvider::getException ()->set ( "crTvB" );
+      throw* PointerProvider::getException ();
+    }
+
+    Vertex line [] {
+      {-.2f, 0.0f, 0.0f, 0.13f, 0.13f, 0.13f},
+      {0.2f, 0.0f, 0.0f, 0.13f, 0.13f, 0.13f},
+    };
+
+    // buffer description
+    D3D10_BUFFER_DESC descBufferLine;
+    descBufferLine.ByteWidth = sizeof ( Vertex ) * ARRAYSIZE ( line );
+    descBufferLine.Usage = D3D10_USAGE_DYNAMIC; // data is going to change (GPU read only, CPU write only)
+    descBufferLine.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+    descBufferLine.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE; // mappable data for write access through CPU
+    //descBufferLine.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+    descBufferLine.MiscFlags = 0;
+    //descBufferLine.StructureByteStride = 0; // Direct3D 11
+
+    // data, with which the buffer is initialized
+    D3D10_SUBRESOURCE_DATA subResourceDateLine = { line, 0, 0 };
+
+    if (SUCCEEDED ( core->d3d->device->CreateBuffer ( &descBufferLine, &subResourceDateLine, &vertexBufferLine ) ))
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"Line vertex buffer is successfully created." );
+#endif // !_NOT_DEBUGGING
+
+    } else
+    {
+      PointerProvider::getException ()->set ( "crLvB" );
       throw* PointerProvider::getException ();
     }
 
@@ -109,23 +149,32 @@ void GameWrapper::allocateResources ( void )
   }
   catch (const std::exception& ex)
   {
-    if (ex.what () == "crVb")
+    if (ex.what () == "crTvB")
     {
 
 #ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Creation of vertex buffer failed!" );
+                                                L"Creation of triangle vertex buffer failed!" );
 #endif // !_NOT_DEBUGGING
 
     } else
-    {
+      if (ex.what () == "crLvB")
+      {
 
 #ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  L"Creation of line vertex buffer failed!" );
 #endif // !_NOT_DEBUGGING
 
-    }
+      } else
+      {
+
+#ifndef _NOT_DEBUGGING
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+      }
   }
 };
 
@@ -140,7 +189,7 @@ void GameWrapper::render ( void )
 {
   try
   {
-    core->d3d->clearBuffers ();
+    core->d3d->clearBuffers (); // note 
 
 #ifndef _NOT_DEBUGGING
     core->d2d->debugInfos (); // -- fps on screen representation
@@ -152,14 +201,118 @@ void GameWrapper::render ( void )
     unsigned int offset = 0;
     // fourth parameter: constant array of stride values (one stride for each buffer in the vertex-buffer array)
     // fifth parameter: number of bytes between the first element and the element to use (usually zero)
-    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer.GetAddressOf (), &strides, &offset );
+    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBufferTriangle.GetAddressOf (), &strides, &offset );
 
     // set primitive topology (Direct3D has no idea about the mathematical conventions to use)
     // basically how to render the resource (vertex data) to screen
     core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
-    // draw 3 vertices, starting from vertex 0
-    core->d3d->device->Draw ( 3, 0 );
+    // draw 9 vertices, starting from vertex 0
+    core->d3d->device->Draw ( 9, 0 );
+
+    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBufferLine.GetAddressOf (), &strides, &offset );
+    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_LINELIST );
+    core->d3d->device->Draw ( 2, 0 );
+
+  }
+  catch (const std::exception& ex)
+  {
+    //    if (ex.what () == "")
+    //    {
+    //
+    //#ifndef _NOT_DEBUGGING
+    //      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+    //                                                L"!" );
+    //#endif // !_NOT_DEBUGGING
+    //
+    //    } else
+    {
+
+#ifndef _NOT_DEBUGGING
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                Converter::strConverter ( ex.what () ) );
+#endif // !_NOT_DEBUGGING
+
+    }
+  }
+};
+
+
+void GameWrapper::update ( void )
+{
+  try
+  {
+    // update line vertex buffer
+    HRESULT hResult;
+    char modeX_1 { 0 };
+    char modeY_1 { 0 };
+    char modeX_2 { 0 };
+    char modeY_2 { 0 };
+
+    // map the data back to system memory using a sub-resource
+    // second parameter: what CPU does when GPU is busy
+    // note that in Direct3D11 a resource may contain sub-resources (additional parameters of device context method)
+    // after the resource is mapped, any change to it is reflected to the vertex buffer.
+    hResult = vertexBufferLine->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
+    if (FAILED ( hResult ))
+    {
+      PointerProvider::getException ()->set ( "crLvB" );
+      throw* PointerProvider::getException ();
+    }
+
+    // update the sub-resource:
+
+    // turn the line clockwise
+    Vertex* vertexData = reinterpret_cast<Vertex*>(mappedLine.pData);
+    //{ -0.2f, 0.0f, 0.0f, 0.13f, 0.13f, 0.13f },
+    //{ 0.2f, 0.0f, 0.0f, 0.93f, 0.93f, 0.93f },
+
+    static float temp { vertexData->x };
+
+    if (vertexData->x < (vertexData + 1)->x)
+    {
+      modeX_1 = 1 ;
+      modeY_1 = 1 ;
+      modeX_2 = -1 ;
+      modeY_2 = -1 ;
+    } else
+      if (vertexData->x > ( vertexData + 1 )->x)
+      {
+        modeX_1 = 1;
+        modeY_1 = -1;
+        modeX_2 = -1;
+        modeY_2 = 1;
+      }
+
+    if ((vertexData + 1)->x < temp)
+    {
+      temp = vertexData->x;
+      vertexData->x = (vertexData + 1)->x;
+      (vertexData + 1)->x = temp;
+      temp = vertexData->y;
+      vertexData->y = (vertexData + 1)->y;
+      (vertexData + 1)->y = temp;
+      temp = vertexData->x ;
+    }
+
+    vertexData->x += modeX_1 * 0.0001f;
+    vertexData->y += modeY_1 * 0.0001f;
+    (vertexData + 1)->x += modeX_2 * 0.0001f;
+    (vertexData + 1)->y += modeY_2 * 0.0001f;
+
+    // randomize the vertex colours
+    float rnd_1 { 0.0f };
+    float rnd_2 { 0.0f };
+    float rnd_3 { 0.0f };
+    rnd_1 = ((rand () % 100) / static_cast<float>(100));
+    rnd_2 = ((rand () % 100) / static_cast<float>(100));
+    rnd_3 = ((rand () % 100) / static_cast<float>(100));
+    vertexData->r = (vertexData + 1)->r = rnd_1;
+    vertexData->g = (vertexData + 1)->g = rnd_2;
+    vertexData->b = rnd_1 = (vertexData + 1)->b = rnd_3;
+
+    // validates the pointer of the vertex buffer's resource and enables the GPU's read access upon.
+    vertexBufferLine->Unmap ();
 
   }
   catch (const std::exception& ex)
@@ -258,12 +411,11 @@ const bool GameWrapper::run ( void )
         // Note the needed delta time
         render ();
 
+        update ();
+
         // -----------------------------------------------------------------------------------------------------------
         // -- output a frame
         core->d3d->present ();
-
-        // rebind: the process is needed after each call to present, since in flip and discard mode the view targets are released.
-        core->d3d->device->OMSetRenderTargets ( 1, core->d3d->rtView.GetAddressOf (), core->d3d->dsView.Get () );
 
       } else
       {
@@ -309,9 +461,10 @@ void GameWrapper::shutdown ( void )
   try
   {
     initialized = false;
-    //unsigned long refCounts { 0 };
+    unsigned long refCounts { 0 };
     //HRESULT hResult;
-    vertexBuffer.Reset ();
+    refCounts = vertexBufferLine.Reset ();
+    refCounts = vertexBufferTriangle.Reset ();
     if (core)
     {
       core->shutdown ();

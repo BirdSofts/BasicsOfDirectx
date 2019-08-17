@@ -3,12 +3,14 @@
 /// 
 /// </summary>
 /// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,16.08.2019</changed>
+/// <changed>}Y{,17.08.2019</changed>
 // ********************************************************************************
 
 // pixel shader
-float4 main () : SV_TARGET
+float4 main ( float4 pos : SV_POSITION, float4 col : COLOR ) : SV_TARGET
 {
+  
   // SV_TARGET: the semantic indicates that the return value of pixel shader should match the render target format
-  return float4 ( 0.13f, 0.13f, 0.13f, 1.0f ); // colour
+  
+  return col; // colour
 }

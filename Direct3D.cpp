@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,16.08.2019</changed>
+/// <changed>ʆϒʅ,17.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct3D.h"
@@ -621,6 +621,8 @@ void Direct3D::initializePipeline ( void )
     // teaching the GPU how to read a custom vertex structure.
     // note that to improve the rendering speed,
     // the GPU can be told what information with each vertex needs to be stored.
+    // note flag D3D10_APPEND_ALIGNED_ELEMENT: introduce the elements one after each other including any packing if necessary,
+    // thus no need to define the offset
     D3D10_INPUT_ELEMENT_DESC descInputE [] { {
         "POSITION", // SemanticName: (what a certain value is used for)
         0, // SemanticIndex: modifies the semantic with an integer index (multiple elements with same semantic)
@@ -628,7 +630,10 @@ void Direct3D::initializePipeline ( void )
         0, // InputSlot: imput-assembler or input slot through which data is fed to GPU (Direct3D supports sixteen input slots)
         0, // AlignedByteOffset: the offset between each element in the structure
         D3D10_INPUT_PER_VERTEX_DATA, // InputSlotClass: input data class for a single input slot
-        0} }; // InstanceDataStepRate // for now
+        0}, // InstanceDataStepRate // for now
+    {
+      "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, // offset: 3*4 byte of float type
+      D3D10_INPUT_PER_VERTEX_DATA, 0} };
 
     // input layout creation (how to handle the defined vertices)
     // the interface holds definition of how to feed vertex data into the input-assembler stage of the graphics rendering pipeline
@@ -722,6 +727,10 @@ void Direct3D::present ( void )
 #endif // !_NOT_DEBUGGING
 
     }
+
+    // rebind: the process is needed after each call to present, since in flip and discard mode the view targets are released.
+    core->d3d->device->OMSetRenderTargets ( 1, core->d3d->rtView.GetAddressOf (), core->d3d->dsView.Get () );
+
   }
   catch (const std::exception& ex)
   {

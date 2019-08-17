@@ -21,10 +21,11 @@
 #include "Game.h"
 
 
-// vertex data (positions)
+// vertex data
 struct Vertex
 {
-  float x, y, z;
+  float x, y, z; // position
+  float r, g, b; // colour
 };
 
 

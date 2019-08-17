@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,17.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
@@ -110,6 +110,9 @@ void Timer::event ( const char* type )
       // if start is requested as event (invoked at game reactivation)
       if ((type == "start") && (paused))
       {
+        // Todo Bug, important: in new hibernation state of the game engine, time jumps on a time machine and rides away,
+        // and since it is essential to have the correct timing, the timer functionality needs to be rewritten.
+
         timeTotalIdle += (current - timeLastStopped); // calculate total ideal
         timePreviousFrame = current; // prepare the calculation of this frame
         // make ready for next stop:

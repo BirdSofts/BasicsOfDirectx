@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,17.08.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -148,37 +148,39 @@ void TheCore::resizeResources ( void )
 
     if (initialized)
     {
-      unsigned long refCountsCounts { 0 };
+      unsigned long refCounts { 0 };
       HRESULT hResult;
 
       // free game resources
-      if (game->vertexBuffer)
+      if (game->vertexBufferTriangle)
       {
-        auto refCountsCounts = game->vertexBuffer.Reset ();
+        refCounts = game->vertexBufferLine.Reset ();
+        if (!refCounts)
+          refCounts = game->vertexBufferTriangle.Reset ();
         //if (!refCountsCounts)
       }
 
       // free Direct2D resources
-      if (d2d && !refCountsCounts)
+      if (d2d && !refCounts)
       {
-        refCountsCounts = d2d->textLayoutLogs.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->textLayoutFPS.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->textFormatLogs.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->textFormatFPS.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->brushBlack.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->brushWhite.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->brushYellow.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->dcBitmap.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d2d->deviceCon.Reset ();
-        if (!refCountsCounts)
+        refCounts = d2d->textLayoutLogs.Reset ();
+        if (!refCounts)
+          refCounts = d2d->textLayoutFPS.Reset ();
+        if (!refCounts)
+          refCounts = d2d->textFormatLogs.Reset ();
+        if (!refCounts)
+          refCounts = d2d->textFormatFPS.Reset ();
+        if (!refCounts)
+          refCounts = d2d->brushBlack.Reset ();
+        if (!refCounts)
+          refCounts = d2d->brushWhite.Reset ();
+        if (!refCounts)
+          refCounts = d2d->brushYellow.Reset ();
+        if (!refCounts)
+          refCounts = d2d->dcBitmap.Reset ();
+        if (!refCounts)
+          refCounts = d2d->deviceCon.Reset ();
+        if (!refCounts)
         {
           HDC deviceConHandle; // HDC handle to the current device context
           // true: discard the Direct3D contents in the GDI device context
@@ -189,10 +191,10 @@ void TheCore::resizeResources ( void )
           hResult = d2d->dcBuffer->ReleaseDC ( nullptr );
         }
         //if (SUCCEEDED ( hResult ))
-        refCountsCounts = d2d->dcBuffer.Reset ();
-        if (refCountsCounts)
+        refCounts = d2d->dcBuffer.Reset ();
+        if (refCounts)
         {
-          refCountsCounts = 0; // HACK Todo more research
+          refCounts = 0; // HACK Todo more research
 
 #ifndef _NOT_DEBUGGING
           PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
@@ -203,22 +205,22 @@ void TheCore::resizeResources ( void )
       }
 
       // free Direct3D resources
-      if (d3d->dsView && d3d->rtView && !refCountsCounts)
+      if (d3d->dsView && d3d->rtView && !refCounts)
       {
-        refCountsCounts = d3d->inputLayout.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d3d->pixelShader.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d3d->vertexShader.Reset ();
+        refCounts = d3d->inputLayout.Reset ();
+        if (!refCounts)
+          refCounts = d3d->pixelShader.Reset ();
+        if (!refCounts)
+          refCounts = d3d->vertexShader.Reset ();
         d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
-        if (!refCountsCounts)
-          refCountsCounts = d3d->dsBuffer.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d3d->dsView.Reset ();
-        if (!refCountsCounts)
-          refCountsCounts = d3d->rtView.Reset ();
+        if (!refCounts)
+          refCounts = d3d->dsBuffer.Reset ();
+        if (!refCounts)
+          refCounts = d3d->dsView.Reset ();
+        if (!refCounts)
+          refCounts = d3d->rtView.Reset ();
         //if (!refCountsCounts)
-        refCountsCounts = d3d->rtBuffer.Reset ();
+        refCounts = d3d->rtBuffer.Reset ();
         d3d->device->ClearState ();
 
 #ifndef _NOT_DEBUGGING
@@ -229,7 +231,7 @@ void TheCore::resizeResources ( void )
       }
 
       // reallocation procedures
-      if (!refCountsCounts)
+      if (!refCounts)
       {
         d3d->allocateResources ();
         d2d->allocateResources ();
