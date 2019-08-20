@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -27,7 +27,6 @@ private:
   bool initialized; // true if the initialization was successful
   unsigned int clientWidth; // desired window resolution
   unsigned int clientHeight;
-  bool fullScreen; // true if now windowed
   bool minimized; // true if minimized
   bool maximized; // true if maximized
   bool resizing; // true while being dragged around

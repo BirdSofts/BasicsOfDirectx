@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,17.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
 #include "Shared.h"
 
 
-GameWrapper::GameWrapper ( HINSTANCE& h_instance ) : initialized ( false )
+GameWrapper::GameWrapper ( HINSTANCE& h_instance ) : initialized ( false ), allocated ( false )
 {
   try
   {
@@ -18,43 +18,26 @@ GameWrapper::GameWrapper ( HINSTANCE& h_instance ) : initialized ( false )
     // the game framework instantiation
     core = new (std::nothrow) TheCore ( h_instance, this );
 
-    if (core->isInitialized ())
+    if (!core->isInitialized ())
     {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"The framework is successfully initialized." );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-      PointerProvider::getException ()->set ( "inFc" );
-      throw* PointerProvider::getException ();
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Initialization of framework failed!" );
     }
 
+    mappedLine.pData = nullptr;
+    mappedLine.RowPitch = 0;
+
     initialized = true;
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                              L"The game is successfully initialized." );
 
     allocateResources ();
 
   }
   catch (const std::exception& ex)
   {
-    if (ex.what () == "crFc")
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Initialization of framework failed!" );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-    }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -63,6 +46,7 @@ void GameWrapper::allocateResources ( void )
 {
   try
   {
+
     allocated = false;
 
     // a triangle
@@ -98,18 +82,11 @@ void GameWrapper::allocateResources ( void )
 
     // vertex buffer: purpose: maintain system and video memory
     // note E_OUTOFMEMORY: self-explanatory
-    if (SUCCEEDED ( core->d3d->device->CreateBuffer ( &descBufferTriangle, &subResourceDateTriangle, &vertexBufferTriangle ) ))
+    if (FAILED ( core->d3d->device->CreateBuffer ( &descBufferTriangle, &subResourceDateTriangle, &vertexBufferTriangle ) ))
     {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"Triangle vertex buffer is successfully created." );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-      PointerProvider::getException ()->set ( "crTvB" );
-      throw* PointerProvider::getException ();
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Creation of triangle vertex buffer failed!" );
+      return;
     }
 
     Vertex line [] {
@@ -130,51 +107,21 @@ void GameWrapper::allocateResources ( void )
     // data, with which the buffer is initialized
     D3D10_SUBRESOURCE_DATA subResourceDateLine = { line, 0, 0 };
 
-    if (SUCCEEDED ( core->d3d->device->CreateBuffer ( &descBufferLine, &subResourceDateLine, &vertexBufferLine ) ))
+    if (FAILED ( core->d3d->device->CreateBuffer ( &descBufferLine, &subResourceDateLine, &vertexBufferLine ) ))
     {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"Line vertex buffer is successfully created." );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-      PointerProvider::getException ()->set ( "crLvB" );
-      throw* PointerProvider::getException ();
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Creation of line vertex buffer failed!" );
     }
 
     allocated = true;
+    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                              L"The game resources is successfully allocated." );
 
   }
   catch (const std::exception& ex)
   {
-    if (ex.what () == "crTvB")
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Creation of triangle vertex buffer failed!" );
-#endif // !_NOT_DEBUGGING
-
-    } else
-      if (ex.what () == "crLvB")
-      {
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                  L"Creation of line vertex buffer failed!" );
-#endif // !_NOT_DEBUGGING
-
-      } else
-      {
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                  Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-      }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -189,11 +136,11 @@ void GameWrapper::render ( void )
 {
   try
   {
+
     core->d3d->clearBuffers (); // note 
 
-#ifndef _NOT_DEBUGGING
-    core->d2d->debugInfos (); // -- fps on screen representation
-#endif // !_NOT_DEBUGGING
+    if (core->d2d && core->debug)
+      core->d2d->debugInfos (); // -- fps on screen representation
 
     // set vertex buffer (binds an array of vertex buffers to input-assembler stage)
     // basically, which vertices to read from when rendering
@@ -217,23 +164,8 @@ void GameWrapper::render ( void )
   }
   catch (const std::exception& ex)
   {
-    //    if (ex.what () == "")
-    //    {
-    //
-    //#ifndef _NOT_DEBUGGING
-    //      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-    //                                                L"!" );
-    //#endif // !_NOT_DEBUGGING
-    //
-    //    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-    }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -242,6 +174,7 @@ void GameWrapper::update ( void )
 {
   try
   {
+
     // update line vertex buffer
     HRESULT hResult;
     char modeX_1 { 0 };
@@ -256,8 +189,8 @@ void GameWrapper::update ( void )
     hResult = vertexBufferLine->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
     if (FAILED ( hResult ))
     {
-      PointerProvider::getException ()->set ( "crLvB" );
-      throw* PointerProvider::getException ();
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Mapping the resource data failed!" );
     }
 
     // update the sub-resource:
@@ -317,23 +250,8 @@ void GameWrapper::update ( void )
   }
   catch (const std::exception& ex)
   {
-    //    if (ex.what () == "")
-    //    {
-    //
-    //#ifndef _NOT_DEBUGGING
-    //      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-    //                                                L"!" );
-    //#endif // !_NOT_DEBUGGING
-    //
-    //    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-    }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -343,13 +261,19 @@ const bool GameWrapper::run ( void )
   try
   {
 
-
     MSG msg { 0 }; // a new message structure
     unsigned short counter { 0 };
 
     core->timer->event ( "reset" ); // reset (start)
 
+
+
     // main part (game engine)
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // Todo: research for a robust game loop:
+    // mathematical simulation of time and reality, physics, multithreading
+    //
     do // continuous loop
     {
 
@@ -387,11 +311,6 @@ const bool GameWrapper::run ( void )
 #pragma endregion
 
 
-      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      // Todo: research for a robust game loop:
-      // mathematical simulation of time and reality, physics, multithreading
-      //
 
       // tick the timer to calculate a frame
       core->timer->tick ();
@@ -424,35 +343,22 @@ const bool GameWrapper::run ( void )
         // if there is no suitable processing for paused state, set the engine at hibernation:
         std::this_thread::sleep_for ( std::chrono::milliseconds ( 100 ) );
       }
-      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       counter++;
     } while (running == true);
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
     return true;
   }
   catch (const std::exception& ex)
   {
-    //    if (ex.what () == "")
-    //    {
-    //
-    //#ifndef _NOT_DEBUGGING
-    //      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-    //                                                L"" );
-    //#endif // !_NOT_DEBUGGING
-    //
-    //    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-    }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+    return false;
   }
-  return false;
 };
 
 
@@ -460,6 +366,7 @@ void GameWrapper::shutdown ( void )
 {
   try
   {
+
     initialized = false;
     unsigned long refCounts { 0 };
     //HRESULT hResult;
@@ -471,19 +378,13 @@ void GameWrapper::shutdown ( void )
       delete core;
     }
 
-#ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                               L"The Game is successfully shut down." );
-#endif // !_NOT_DEBUGGING
 
   }
   catch (const std::exception& ex)
   {
-
-#ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
   }
 };

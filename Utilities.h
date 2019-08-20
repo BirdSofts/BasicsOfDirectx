@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -152,8 +152,8 @@ public:
   const bool& isValid ();
   const ConfigsContainer& getDefaults ( void );
   const ConfigsContainer& getSettings ( void );
-  void apply ();
-  void apply ( const ConfigsContainer& );
+  void apply (); // test
+  const bool apply ( const ConfigsContainer& ); // apply method
 };// application configurations container
 
 

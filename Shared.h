@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #ifndef SHARED_H
@@ -17,8 +17,6 @@
 
 // global:
 extern bool running;
-
-extern bool debugger;
 
 extern std::wstring gameState;
 

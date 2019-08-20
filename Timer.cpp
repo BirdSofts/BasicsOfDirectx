@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,17.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
@@ -16,6 +16,7 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
 {
   try
   {
+
     long long frequency { 0 };
     // Windows high performance timer: 'QueryPerformanceFrequency' 'QueryPerformanceCounter':
     // note that, if the system doesn't support it, C++ 11 standard chrono is the replacement.
@@ -33,39 +34,21 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
       // TimeValueInSeconds = ActualTimeValue / Frequency
       secondsPerCount = double ( 1 ) / frequency;
 
-#ifndef _NOT_DEBUGGING
+      initialized = true;
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                                 L"The high-precision timer is successfully instantiated." );
-#endif // !_NOT_DEBUGGING
 
-      initialized = true;
     } else
     {
-      PointerProvider::getException ()->set ( "crT" );
-      throw* PointerProvider::getException ();
       initialized = false;
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"The high-precision timer instantiation failed!" );
     }
   }
   catch (const std::exception& ex)
   {
-
-    if (ex.what () == "crT")
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"The high-precision timer instantiation failed!" );
-#endif // !_NOT_DEBUGGING
-
-    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-    }
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -105,6 +88,7 @@ void Timer::event ( const char* type )
   long long current;
   try
   {
+
     if (QueryPerformanceCounter ( ( LARGE_INTEGER*) & current ))
     {
       // if start is requested as event (invoked at game reactivation)
@@ -118,12 +102,6 @@ void Timer::event ( const char* type )
         // make ready for next stop:
         timeLastStopped = 0;
         paused = false;
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                  L"The timer is successfully started." );
-#endif // !_NOT_DEBUGGING
-
       }
 
       // if pause is requested as event (invoked at game deactivation)
@@ -131,12 +109,6 @@ void Timer::event ( const char* type )
       {
         timeLastStopped = current; // store the time for later use
         paused = true;
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                  L"The timer is successfully stopped." );
-#endif // !_NOT_DEBUGGING
-
       }
 
       // if reset is requested as event (start of the game loop)
@@ -147,42 +119,30 @@ void Timer::event ( const char* type )
         timePreviousFrame = current;
         timeLastStopped = 0;
         paused = false;
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                  L"The timer is successfully reset." );
-#endif // !_NOT_DEBUGGING
-
       }
 
     } else
     {
-
-#ifndef _NOT_DEBUGGING
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"One timer functionality failed! Requested event: "
                                                 + Converter::strConverter ( type ) );
-#endif // !_NOT_DEBUGGING
-
     }
+
   }
   catch (const std::exception& ex)
   {
-
-#ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
   }
 };
 
 
 void Timer::tick ()
 {
-  // tick and calculate the time between two frames
   try
   {
+
+    // tick and calculate the time between two frames
     if (paused)
       timeDelta = 0; // the elapsed time in a stopped state (for calculations in an idle time)
     else
@@ -197,21 +157,14 @@ void Timer::tick ()
           timeDelta = 0;
       } else
       {
-
-#ifndef _NOT_DEBUGGING
         PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                   L"Timer failed to tick!" );
-#endif // !_NOT_DEBUGGING
-
       }
+
   }
   catch (const std::exception& ex)
   {
-
-#ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
   }
 };

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -25,16 +25,16 @@ Window::Window ( TheCore* coreObject ) :
 {
   try
   {
+
     wnd = this; // necessary to forward messages
 
     appInstance = coreObject->getInstance ();
 
-    if (PointerProvider::getConfiguration ()->getSettings ().Width == 640)
-      PointerProvider::getConfiguration ()->apply ();
+    //if (PointerProvider::getConfiguration ()->getSettings ().Width == 640)
+    //  PointerProvider::getConfiguration ()->apply (); // 800*600 resolution to file
 
     clientWidth = PointerProvider::getConfiguration ()->getSettings ().Width;
     clientHeight = PointerProvider::getConfiguration ()->getSettings ().Height;
-    fullScreen = PointerProvider::getConfiguration ()->getSettings ().fullscreen;
 
     LPCWSTR windowName = { L"The Game" };
 
@@ -67,16 +67,8 @@ Window::Window ( TheCore* coreObject ) :
     // when it terminates, no manual cleaning is necessary.
     if (!RegisterClassExW ( &wClass ))
     {
-      PointerProvider::getException ()->set ( "regW" );
-      throw* PointerProvider::getException ();
-    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"The client window is successfully registered." );
-#endif // !_NOT_DEBUGGING
-
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"The registration of the client window failed!" );
     }
 
     // client size: all the raw window size can't be tampered with as working area,
@@ -90,16 +82,8 @@ Window::Window ( TheCore* coreObject ) :
       false, // window contains a menu or not
       WS_EX_OVERLAPPEDWINDOW )) // current extended window style (is needed to calculated the client size)
     {
-      PointerProvider::getException ()->set ( "adjustW" );
-      throw* PointerProvider::getException ();
-    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"The client window size is successfully calculated." );
-#endif // !_NOT_DEBUGGING
-
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"The calculation of the client window size failed!" );
     }
 
     // after the properties of a window class is known to Windows, it can finally be created.
@@ -122,16 +106,8 @@ Window::Window ( TheCore* coreObject ) :
 
     if (!handle)
     {
-      PointerProvider::getException ()->set ( "crW" );
-      throw* PointerProvider::getException ();
-    } else
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"The client window is successfully created." );
-#endif // !_NOT_DEBUGGING
-
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"The creation of the client failed!" );
     }
 
     // show the window: the second parameter controls how the window is to be shown,
@@ -142,47 +118,12 @@ Window::Window ( TheCore* coreObject ) :
     // additionally generating a WM_PAINT message that needs to be handled by the event handler.
     UpdateWindow ( handle );
     initialized = true;
+
   }
   catch (const std::exception& ex)
   {
-    initialized = false;
-    if (ex.what () == "regW")
-    {
-
-#ifndef _NOT_DEBUGGING
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Window registration failed!" );
-#endif // !_NOT_DEBUGGING
-
-    } else
-      if (ex.what () == "adjustW")
-      {
-
-#ifndef _NOT_DEBUGGING
-        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                  L"The calculation of the client window size failed!" );
-#endif // !_NOT_DEBUGGING
-
-      } else
-        if (ex.what () == "crW")
-        {
-
-#ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                    L"Window creation failed!" );
-#endif // !_NOT_DEBUGGING
-
-        } else
-        {
-
-#ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                    Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
-        }
-
-        initialized = false;
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
   }
 };
 
@@ -234,10 +175,12 @@ LRESULT CALLBACK Window::msgProc (
 {
   try
   {
+
     switch (msg)
     {
       case WM_ACTIVATE: // if window activation state changes
         if (gameState == L"gaming")
+        {
           if ((LOWORD ( wPrm ) == WA_INACTIVE)) // activation flag
           {
             core->paused = true; // the game is paused
@@ -247,7 +190,8 @@ LRESULT CALLBACK Window::msgProc (
             core->timer->event ( "start" );
             core->paused = false; // the game is running
           }
-          return 0;
+        }
+        break;
 
       case WM_KEYDOWN: // if a key is pressed
         if (wPrm == VK_ESCAPE) // the ESC key identification
@@ -261,23 +205,31 @@ LRESULT CALLBACK Window::msgProc (
             PostQuitMessage ( 0 ); // send the corresponding quite message
             running = false;
             gameState = L"shutting down";
-
-#ifndef _NOT_DEBUGGING
-            PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                      L"The destruction of the window class is acknowledged." );
-#endif // !_NOT_DEBUGGING
-
-            return 0; // the message was useful and is handled.
           } else
           {
             core->timer->event ( "start" );
             core->paused = false;
-            return 0; // the message was useful and is handled.
           }
-        }
+        } else
+          if (wPrm == VK_PRIOR) // the page up key identification
+          {
+            if (!core->d3d->isFullscreen ())
+              core->setResolution ( true ); // switch to fullscreen mode and set to highest resolution
+          } else
+            if (wPrm == VK_NEXT) // the page down key identification
+            {
+              if (core->d3d->isFullscreen ())
+                core->setResolution ( false ); // switch to windowed mode and set the lowest resolution
+            }
+          break;
 
-        //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
       case WM_CLOSE: // the user tries to somehow close the application
+      //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
+        //if (core->fullscreen)
+        //{ // Todo make sure
+        //  core->fullscreen = false;
+        //  //core->resizeResources ( false );
+        //}
         core->paused = true;
         core->timer->event ( "pause" );
         if (MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES)
@@ -285,28 +237,22 @@ LRESULT CALLBACK Window::msgProc (
           PostQuitMessage ( 0 );
           running = false;
           gameState = L"shutting down";
-
-#ifndef _NOT_DEBUGGING
-          PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                    L"The main window is successfully flagged for destruction." );
-#endif // !_NOT_DEBUGGING
-
-          return DefWindowProc ( handle, msg, wPrm, lPrm ); // so the window behaves logical! :)
         } else
         {
           core->timer->event ( "start" );
           core->paused = false;
-          return 0;
         }
+        break;
 
-      case WM_MENUCHAR: // handling none mnemonic or accelerator key and preventing constant beeping
-        // the games don't have a menu, this fact can easily be used to deceive the Windows,
-        // binding this not-needed feature to close the non-existent menu.
-        return MAKELRESULT ( 0, MNC_CLOSE );
-        return 0;
+        //case WM_MENUCHAR: // handling none mnemonic or accelerator key and preventing constant beeping
+        //  // the games don't have a menu, this fact can easily be used to deceive the Windows,
+        //  // binding this not-needed feature to close the non-existent menu.
+        //  return MAKELRESULT ( 0, MNC_CLOSE );
+        //  break;
 
       case WM_SIZE: // important for games in windowed mode (resizing the client size and game universe)
         if (gameState == L"gaming")
+        {
           if (wPrm == SIZE_MINIMIZED) // window is minimized
           {
             minimized = true;
@@ -319,7 +265,7 @@ LRESULT CALLBACK Window::msgProc (
               if (!minimized)
               {
                 resized = true;
-                core->resizeResources ();
+                core->resizeResources ( false );
               }
               minimized = false;
               core->paused = false;
@@ -337,7 +283,7 @@ LRESULT CALLBACK Window::msgProc (
                   {
                     maximized = false;
                     resized = true;
-                    core->resizeResources ();
+                    core->resizeResources ( false );
                     core->paused = false;
                     core->timer->event ( "start" );
                   } else
@@ -354,7 +300,7 @@ LRESULT CALLBACK Window::msgProc (
                     } else // response when resized
                     {
                       resized = true;
-                      core->resizeResources ();
+                      core->resizeResources ( false );
                       if (gameState == L"gaming")
                       {
                         core->paused = false;
@@ -362,7 +308,8 @@ LRESULT CALLBACK Window::msgProc (
                       }
                     }
               }
-            return 0;
+        }
+        break;
 
       case WM_ENTERSIZEMOVE: // the edge of the window is being dragged around to resize it
         resizing = true;
@@ -371,25 +318,25 @@ LRESULT CALLBACK Window::msgProc (
           core->timer->event ( "pause" );
           core->paused = true;
         }
-        return 0;
+        break;
 
       case WM_EXITSIZEMOVE: // the dragging is finished and the window is now resized
         resizing = false;
         resized = true;
-        core->resizeResources ();
+        core->resizeResources ( false );
         if (gameState == L"gaming")
         {
           core->paused = false;
           core->timer->event ( "start" );
         }
-        return 0;
+        break;
 
         // setting the possible minimum size of the window (the message is sent when a window size is about to changed)
       case WM_GETMINMAXINFO:
         // a pointer to the 'MINMAXINFO' structure is provided by the message parameter 'lPrm'
         (( MINMAXINFO*) lPrm)->ptMinTrackSize.x = PointerProvider::getConfiguration ()->getDefaults ().Width;
         (( MINMAXINFO*) lPrm)->ptMinTrackSize.y = PointerProvider::getConfiguration ()->getDefaults ().Height;
-        return 0;
+        break;
 
     }
 
@@ -400,12 +347,8 @@ LRESULT CALLBACK Window::msgProc (
   }
   catch (const std::exception& ex)
   {
-
-#ifndef _NOT_DEBUGGING
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
-#endif // !_NOT_DEBUGGING
-
     return DefWindowProc ( handle, msg, wPrm, lPrm );
 
   }

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT2D_H
@@ -49,6 +49,7 @@ public:
   Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormatLogs;
   Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayoutFPS; // text layouts
   Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayoutLogs;
+  bool textLayoutsDebug;
 
   Direct2D ( TheCore* ); // creation of the device
   void allocateResources ( void ); // Direct2D resources resize/creation

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,16.08.2019</changed>
+/// <changed>ʆϒʅ,20.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -74,14 +74,20 @@ private:
   // The COM interface representing the swap chain:
   // purpose: swapping the back buffers (double or triple) and drawing to the display surface
   Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain; // the swap chain
+  Microsoft::WRL::ComPtr<IDXGIOutput> output; // output adapter
 
   DXGI_FORMAT colourFormat; // colour format
+  unsigned int displayModesCount; // the number of supported display modes
+  DXGI_MODE_DESC* displayModes; // list of supported display modes
+  unsigned int displayModeIndex; // the index of current display mode
+  DXGI_MODE_DESC displayMode; // current display mode
 
   Microsoft::WRL::ComPtr<ID3D10RenderTargetView> rtView; // render target view
   Microsoft::WRL::ComPtr<ID3D10Texture2D> rtBuffer; // render target view buffer
 
   Microsoft::WRL::ComPtr<ID3D10DepthStencilView> dsView; // depth-stencil view
   Microsoft::WRL::ComPtr<ID3D10Texture2D> dsBuffer; // depth-stencil view buffer
+  Microsoft::WRL::ComPtr<IDXGISurface1> dsSurface; // depth-stencil surface
 
   Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
   Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
@@ -90,15 +96,18 @@ private:
 
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful
+  bool fullscreen; // application configuration
 public:
   Direct3D ( TheCore* ); // creation of the device and resources
   const bool& isInitialized (); // get the initialized state
+  const ID3D10Device1& getDevice ( void ); // get the pointer to application Direct3D
+  const bool& isFullscreen (); // get the display mode state
+  void displayModeSetter ( void ); // Direct3D display mode change/adjust
   void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
   void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
   void initializePipeline ( void ); // rendering (GPU) pipeline initialization
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
-  const ID3D10Device1& getDevice ( void ); // get the pointer to application Direct3D
 };
 
 
