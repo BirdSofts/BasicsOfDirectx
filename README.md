@@ -33,6 +33,8 @@ Compilable! :)
 
 2.	Software dependencies:
 Dependent on Windows APIs
+Dependent on Dirext3D, DXGI, DirectXMath, Direct2D and DirectWrite APIs
+Dependent on Lua and Sol script language APIs
 
 3.	Latest releases:
 Still no release, just coding and debugging

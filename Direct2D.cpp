@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,24.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
@@ -16,12 +16,13 @@ initialized ( false ), allocated ( false ), textLayoutsDebug ( false )
   try
   {
 
-    HRESULT hResult;
+    HRESULT hR;
+    unsigned long rC { 0 }; // reference counts
 
     // creation of DirectWrite factory
     // properties options: --shared (reuse of cached font data, thus better performance), --isolated
-    hResult = DWriteCreateFactory ( DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &writeFac );
-    if (FAILED ( hResult ))
+    hR = DWriteCreateFactory ( DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &writeFac );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"The creation of DirectWrite factory failed!" );
@@ -38,29 +39,44 @@ initialized ( false ), allocated ( false ), textLayoutsDebug ( false )
 
     // creation of Direct2D factory
     // multi threaded flag: safe access to the factory from multiple threads
-    hResult = D2D1CreateFactory ( D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), &options, &factory );
-    if (FAILED ( hResult ))
+    hR = D2D1CreateFactory ( D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory1), &options, &factory );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"The creation of Direct2D factory failed!" );
       return;
     }
 
+    // acquiring the underlying DXGI factory used to create the Dirext3D device (resources needs)
+    IDXGIDevice1* dxgiDevice;
+    hR = core->d3d->device->QueryInterface ( __uuidof(IDXGIDevice1), ( void**) & dxgiDevice );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Acquiring the DXGI device failed!" );
+      return;
+    }
+
     // creation of the Direct2D device
     // threading mode will be inherited from the DXGI device.
-    hResult = factory->CreateDevice ( core->d3d->dxgiDevice.Get (), &device );
-    if (FAILED ( hResult ))
+    hR = factory->CreateDevice ( dxgiDevice, &device );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of Direct2D device failed!" );
       return;
     }
+    rC = dxgiDevice->Release ();
 
     initialized = true;
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                               L"Direct2D is successfully initialized." );
 
     allocateResources ();
+
+    if (!allocated)
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"Allocation of Direct2D resources failed." );
 
   }
   catch (const std::exception& ex)
@@ -77,12 +93,12 @@ void Direct2D::allocateResources ( void )
   {
 
     allocated = false;
-    HRESULT hResult;
+    HRESULT hR;
 
     // Direct2D device context creation
     // the option: distribute all the rendering process across multiple threads.
-    hResult = device->CreateDeviceContext ( D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &deviceCon );
-    if (FAILED ( hResult ))
+    hR = device->CreateDeviceContext ( D2D1_DEVICE_CONTEXT_OPTIONS_ENABLE_MULTITHREADED_OPTIMIZATIONS, &deviceCon );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of Direct2D device context failed!" );
@@ -92,10 +108,10 @@ void Direct2D::allocateResources ( void )
     // setting the render target of Direct2D to the same back buffer as Direct3D
 
     // --retrieving the DXGI version of the Direct3D back buffer (Direct2D needs)
-    hResult = core->d3d->swapChain->GetBuffer ( 0, __uuidof(IDXGISurface1), &dcBuffer );
-    //hResult = dcBuffer->QueryInterface ( __uuidof(IDXGISurface1), &dcBuffer );
-    //auto refCounts = dcBuffer->Release ();
-    if (FAILED ( hResult ))
+    hR = core->d3d->swapChain->GetBuffer ( 0, __uuidof(IDXGISurface1), &dcBuffer );
+    //hR = dcBuffer->QueryInterface ( __uuidof(IDXGISurface1), &dcBuffer );
+    //auto rC = dcBuffer->Release ();
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Retrieving the back buffer needed for Direct2D failed!" );
@@ -114,8 +130,8 @@ void Direct2D::allocateResources ( void )
     bitMap.colorContext = nullptr; // a colour context interface
 
     // --the actual creation of the render target (retrieve the back buffer and set)
-    hResult = deviceCon->CreateBitmapFromDxgiSurface ( dcBuffer.Get (), &bitMap, &dcBitmap );
-    if (FAILED ( hResult ))
+    hR = deviceCon->CreateBitmapFromDxgiSurface ( dcBuffer.Get (), &bitMap, &dcBitmap );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of Direct2D bitmap from the DXGI surface failed!" );
@@ -141,17 +157,17 @@ void Direct2D::initializeTextFormats ( void )
   try
   {
 
-    HRESULT hResult;
+    HRESULT hR;
 
     // creation of standard brushes
-    hResult = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Yellow ), &brushYellow );
+    hR = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Yellow ), &brushYellow );
 
-    if (SUCCEEDED ( hResult ))
-      hResult = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::White ), &brushWhite );
+    if (SUCCEEDED ( hR ))
+      hR = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::White ), &brushWhite );
 
-    if (SUCCEEDED ( hResult ))
-      hResult = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Black ), &brushBlack );
-    if (FAILED ( hResult ))
+    if (SUCCEEDED ( hR ))
+      hR = deviceCon->CreateSolidColorBrush ( D2D1::ColorF ( D2D1::ColorF::Black ), &brushBlack );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of one or more brushes failed!" );
@@ -160,15 +176,15 @@ void Direct2D::initializeTextFormats ( void )
 
     // text formats creation
     // second parameter: nullptr: use system font collection
-    hResult = writeFac.Get ()->CreateTextFormat ( L"Lucida Console", nullptr,
-                                                  DWRITE_FONT_WEIGHT_EXTRA_LIGHT, DWRITE_FONT_STYLE_NORMAL,
-                                                  DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-GB", &textFormatFPS );
+    hR = writeFac.Get ()->CreateTextFormat ( L"Lucida Console", nullptr,
+                                             DWRITE_FONT_WEIGHT_EXTRA_LIGHT, DWRITE_FONT_STYLE_NORMAL,
+                                             DWRITE_FONT_STRETCH_NORMAL, 12.0f, L"en-GB", &textFormatFPS );
 
-    if (SUCCEEDED ( hResult ))
-      hResult = writeFac.Get ()->CreateTextFormat ( L"Lucida Console", nullptr,
-                                                    DWRITE_FONT_WEIGHT_EXTRA_LIGHT, DWRITE_FONT_STYLE_NORMAL,
-                                                    DWRITE_FONT_STRETCH_NORMAL, 10.0f, L"en-GB", &textFormatLogs );
-    if (FAILED ( hResult ))
+    if (SUCCEEDED ( hR ))
+      hR = writeFac.Get ()->CreateTextFormat ( L"Lucida Console", nullptr,
+                                               DWRITE_FONT_WEIGHT_EXTRA_LIGHT, DWRITE_FONT_STYLE_NORMAL,
+                                               DWRITE_FONT_STRETCH_NORMAL, 10.0f, L"en-GB", &textFormatLogs );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of one or more text formats failed!" );
@@ -176,10 +192,10 @@ void Direct2D::initializeTextFormats ( void )
     }
 
     // text alignment
-    hResult = textFormatFPS->SetTextAlignment ( DWRITE_TEXT_ALIGNMENT_LEADING );
-    if (SUCCEEDED ( hResult ))
-      hResult = textFormatLogs->SetTextAlignment ( DWRITE_TEXT_ALIGNMENT_LEADING );
-    if (FAILED ( hResult ))
+    hR = textFormatFPS->SetTextAlignment ( DWRITE_TEXT_ALIGNMENT_LEADING );
+    if (SUCCEEDED ( hR ))
+      hR = textFormatLogs->SetTextAlignment ( DWRITE_TEXT_ALIGNMENT_LEADING );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Alignment of one or more text formats failed!" );
@@ -187,10 +203,10 @@ void Direct2D::initializeTextFormats ( void )
     }
 
     // paragraph alignment
-    hResult = textFormatFPS->SetParagraphAlignment ( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
-    if (SUCCEEDED ( hResult ))
-      hResult = textFormatLogs->SetParagraphAlignment ( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
-    if (FAILED ( hResult ))
+    hR = textFormatFPS->SetParagraphAlignment ( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
+    if (SUCCEEDED ( hR ))
+      hR = textFormatLogs->SetParagraphAlignment ( DWRITE_PARAGRAPH_ALIGNMENT_NEAR );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Alignment of one or more text paragraphs failed!" );
@@ -198,8 +214,6 @@ void Direct2D::initializeTextFormats ( void )
     }
 
     allocated = true;
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                              L"Direct2D resources is successfully allocated." );
 
   }
   catch (const std::exception& ex)

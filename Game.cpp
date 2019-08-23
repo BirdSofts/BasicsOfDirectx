@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,24.08.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
@@ -32,6 +32,10 @@ GameWrapper::GameWrapper ( HINSTANCE& h_instance ) : initialized ( false ), allo
                                               L"The game is successfully initialized." );
 
     allocateResources ();
+
+    if (!allocated)
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"The game resources is successfully allocated." );
 
   }
   catch (const std::exception& ex)
@@ -114,8 +118,6 @@ void GameWrapper::allocateResources ( void )
     }
 
     allocated = true;
-    PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                              L"The game resources is successfully allocated." );
 
   }
   catch (const std::exception& ex)
@@ -176,7 +178,7 @@ void GameWrapper::update ( void )
   {
 
     // update line vertex buffer
-    HRESULT hResult;
+    HRESULT hR;
     char modeX_1 { 0 };
     char modeY_1 { 0 };
     char modeX_2 { 0 };
@@ -186,8 +188,8 @@ void GameWrapper::update ( void )
     // second parameter: what CPU does when GPU is busy
     // note that in Direct3D11 a resource may contain sub-resources (additional parameters of device context method)
     // after the resource is mapped, any change to it is reflected to the vertex buffer.
-    hResult = vertexBufferLine->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
-    if (FAILED ( hResult ))
+    hR = vertexBufferLine->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
+    if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Mapping the resource data failed!" );
@@ -368,10 +370,10 @@ void GameWrapper::shutdown ( void )
   {
 
     initialized = false;
-    unsigned long refCounts { 0 };
-    //HRESULT hResult;
-    refCounts = vertexBufferLine.Reset ();
-    refCounts = vertexBufferTriangle.Reset ();
+    unsigned long rC { 0 };
+    //HRESULT hR;
+    rC = vertexBufferLine.Reset ();
+    rC = vertexBufferTriangle.Reset ();
     if (core)
     {
       core->shutdown ();

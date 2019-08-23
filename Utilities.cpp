@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,23.08.2019</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
@@ -322,9 +322,9 @@ Configurations::Configurations ()
     currents.fullscreen = false;
 
     PWSTR docPath { NULL };
-    HRESULT hResult = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
+    HRESULT hR = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
     std::wstring path { L"" };
-    if (FAILED ( hResult ))
+    if (FAILED ( hR ))
     {
       MessageBoxA ( NULL, "The path to document directory is unknown! Please contact your OS support.",
                     "Critical-Error", MB_OK | MB_ICONERROR );
@@ -334,8 +334,8 @@ Configurations::Configurations ()
 
       pathToMyDocuments = L"";
       path = L"C:\\TheGame";
-      hResult = SHCreateDirectory ( NULL, path.c_str () );
-      if (FAILED ( hResult ))
+      hR = SHCreateDirectory ( NULL, path.c_str () );
+      if (FAILED ( hR ))
       {
         PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                   L"The creation of directory failed!" );

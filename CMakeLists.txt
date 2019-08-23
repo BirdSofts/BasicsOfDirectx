@@ -3,7 +3,7 @@
 #/ 
 #/ </summary>
 #/ <created>ʆϒʅ,19.07.2019</created>
-#/ <changed>ʆϒʅ,14.08.2019</changed>
+#/ <changed>ʆϒʅ,23.08.2019</changed>
 # *******************************************************************************************
 
 # CMakeList.txt : CMake project for LearningDirectX, include source and define
@@ -50,28 +50,43 @@ list(APPEND SOURCE_FILES
           Window.cpp
 )
 
-set(INCLUDE_DIRECTORY C:/Lua/x64/include)
-set(LIBRAY_DIRECTORY C:/Lua/x64)
-
 if(WIN32)
-          list(APPEND HEADER_FILES ${INCLUDE_DIRECTORY}/sol.hpp)
           list(APPEND SOURCE_FILES ${HEADER_FILES})
+endif()
+
+# Lua and Sol third party library inclusion and linkage
+set(LUA_ROOT_DIR "C:/Lua/x64")
+if(NOT LUA_ROOT_DIR)
+message(FATAL_ERROR "Lua root path couldn't be found!")
+endif()
+set(INCLUDE_DIRECTORY ${LUA_ROOT_DIR}/include)
+set(LIBRARY_DIRECTORY ${LUA_ROOT_DIR})
+message(${INCLUDE_DIRECTORY})
+message(${LIBRARY_DIRECTORY})
+
+find_file(LUA_LIBRARY liblua53.a HINTS ${LIBRARY_DIRECTORY} PATH_SUFFIXES lib)
+if (NOT LUA_LIBRARY)
+message(FATAL_ERROR "liblua53.a couldn't be found!")
 endif()
 
 # Add source to this project's executable.
 add_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCES})
 
-target_link_libraries(${TARGET_NAME}
-          PUBLIC ${LIBRAY_DIRECTORY}/liblua53.a
-)
-
 target_include_directories(${TARGET_NAME} BEFORE
           PUBLIC ${INCLUDE_DIRECTORY}
 )
 
+target_link_libraries(${TARGET_NAME}
+          PUBLIC ${LUA_LIBRARY}
+)
+
+set_target_properties(${TARGET_NAME} PROPERTIES
+          LINK_FLAGS /SUBSYSTEM:WINDOWS
+)
+
 add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
           COMMAND cmake -E copy_if_different
-          ${LIBRAY_DIRECTORY}/lua53.dll
+          ${LUA_ROOT_DIR}/lua53.dll
           $<TARGET_FILE_DIR:${TARGET_NAME}>
 )
 

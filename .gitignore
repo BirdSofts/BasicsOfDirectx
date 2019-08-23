@@ -13,6 +13,9 @@
 # build results in build directory
 build/
 
+# build results in cmake-build-debug directory (CLion)
+cmake-build-debug/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

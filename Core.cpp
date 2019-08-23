@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,24.08.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -124,7 +124,7 @@ void TheCore::frameStatistics ( void )
   try
   {
 
-    HRESULT hResult;
+    HRESULT hR;
 
     // a static local variable retains its state between the calls:
     static int frameCounter; // frame counter (a frame is a full cycle of the game loop)
@@ -152,14 +152,15 @@ void TheCore::frameStatistics ( void )
         outFPS.precision ( 6 );
         outFPS << "Resolution: " << d3d->displayMode.Width << " x " << d3d->displayMode.Height;
         outFPS << " - Display mode #" << d3d->displayModeIndex + 1 << " of " << d3d->displayModesCount << " @ ";
-        outFPS << d3d->displayMode.RefreshRate.Numerator / d3d->displayMode.RefreshRate.Denominator << " Hz" << std::endl;
+        outFPS << d3d->displayMode.RefreshRate.Numerator / d3d->displayMode.RefreshRate.Denominator << " Hz - ";
+        outFPS << d3d->videoCardDescription << std::endl;
         outFPS << "^_^ - FPS: " << fps << L" - mSPF: " << mspf << std::endl;
 
         // before rendering a text to a bitmap: the creation of the text layout
-        hResult = d2d->writeFac->CreateTextLayout ( outFPS.str ().c_str (), ( UINT32) outFPS.str ().size (),
-                                                    d2d->textFormatFPS.Get (), ( float) appWindow->clientWidth,
-                                                    ( float) appWindow->clientHeight, &d2d->textLayoutFPS );
-        if (FAILED ( hResult ))
+        hR = d2d->writeFac->CreateTextLayout ( outFPS.str ().c_str (), ( UINT32) outFPS.str ().size (),
+                                               d2d->textFormatFPS.Get (), ( float) appWindow->clientWidth,
+                                               ( float) appWindow->clientHeight, &d2d->textLayoutFPS );
+        if (FAILED ( hR ))
         {
           PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                     L"The Creation of text layout for FPS information failed!" );
@@ -168,10 +169,10 @@ void TheCore::frameStatistics ( void )
 
         std::wstring out { L"Last event: " };
         out += PointerProvider::getFileLogger ()->getLogRawStr ();
-        hResult = d2d->writeFac->CreateTextLayout ( out.c_str (), ( UINT32) ( UINT32) out.size (),
-                                                    d2d->textFormatLogs.Get (), ( float) appWindow->clientWidth,
-                                                    ( float) appWindow->clientHeight, &d2d->textLayoutLogs );
-        if (FAILED ( hResult ))
+        hR = d2d->writeFac->CreateTextLayout ( out.c_str (), ( UINT32) ( UINT32) out.size (),
+                                               d2d->textFormatLogs.Get (), ( float) appWindow->clientWidth,
+                                               ( float) appWindow->clientHeight, &d2d->textLayoutLogs );
+        if (FAILED ( hR ))
         {
           PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                     L"The Creation of text layout for Logs failed!" );
@@ -236,79 +237,73 @@ void TheCore::resizeResources ( const bool& displayMode )
 
     if (initialized)
     {
-      unsigned long refCounts { 0 };
-      //HRESULT hResult;
+      unsigned long rC { 0 };
+      //HRESULT hR;
 
       // free game resources
       if (game->vertexBufferTriangle)
       {
-        refCounts = game->vertexBufferLine.Reset ();
-        refCounts = game->vertexBufferTriangle.Reset ();
+        rC = game->vertexBufferLine.Reset ();
+        rC = game->vertexBufferTriangle.Reset ();
       }
 
       // free Direct2D resources
-      if (d2d && !refCounts)
+      if (d2d && !rC)
       {
-        refCounts = d2d->dcBitmap.Reset ();
-        refCounts = d2d->deviceCon.Reset ();
-        refCounts = d2d->dcBuffer.Reset ();
-        if (refCounts)
-        {
-          refCounts = 0; // HACK Todo more research
-          PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
-                                                    L"Problem while releasing one or more resources!" );
-        }
+        rC = d2d->dcBitmap.Reset ();
+        rC = d2d->deviceCon.Reset ();
+        rC = d2d->dcBuffer.Reset ();
+        //if (rC)
+        //{
+        //  rC = 0; // HACK debug
+        //  PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
+        //                                            L"Problem while releasing one or more resources!" );
+        //}
       }
 
       // free Direct3D resources
-      if (d3d->dsView && d3d->rtView && !refCounts)
+      if (d3d->dSview && d3d->rTview && !rC)
       {
-        refCounts = d3d->inputLayout.Reset ();
-        refCounts = d3d->pixelShader.Reset ();
-        refCounts = d3d->vertexShader.Reset ();
-        d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
-        refCounts = d3d->dsBuffer.Reset ();
-        refCounts = d3d->dsSurface.Reset ();
-        refCounts = d3d->dsView.Reset ();
-        refCounts = d3d->rtView.Reset ();
-        if (refCounts)
-        {
-          refCounts = 0; // HACK Todo more research
-          PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
-                                                    L"Problem while releasing one or more resources!" );
-        }
-        refCounts = d3d->rtBuffer.Reset ();
         d3d->device->ClearState ();
+        rC = d3d->inputLayout.Reset ();
+        rC = d3d->pixelShader.Reset ();
+        rC = d3d->vertexShader.Reset ();
+        rC = d3d->rasterizerState.Reset ();
+        d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
+        rC = d3d->dSview.Reset ();
+        rC = d3d->dSstate.Reset ();
+        rC = d3d->dSbuffer.Reset ();
+        rC = d3d->rTview.Reset ();
+        //if (rC)
+        //{
+        //  rC = 0; // HACK debug
+        //  PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
+        //                                            L"Problem while releasing one or more resources!" );
+        //}
 
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                  L"Deallocation of resources is successfully complete." );
       }
 
       // reallocation procedures
-      if (!refCounts)
+      if (!rC)
       {
         if (displayMode)
         {
           d3d->displayModeSetter ();
-          std::this_thread::sleep_for ( std::chrono::milliseconds ( 2000 ) );
+          std::this_thread::sleep_for ( std::chrono::milliseconds ( 500 ) );
         }
         d3d->allocateResources ();
         if (d2d)
         {
           d2d->allocateResources ();
-          d2d->initializeTextFormats ();
         }
         game->allocateResources ();
         appWindow->isResized () = false;
         resized = true;
 
-        PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                  L"Reallocation of resources is successfully complete." );
-
       } else
       {
         PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                  L"Deallocation of resources failed!" );
+                                                  L"Resources' deallocation failed!" );
       }
     }
 
@@ -326,44 +321,25 @@ void TheCore::shutdown ( void )
   try
   {
 
-    unsigned long refCounts { 0 };
-    //HRESULT hResult;
+    unsigned long rC { 0 };
+    //HRESULT hR;
 
     initialized = false;
 
-    // application main window destruction
-    if (appWindow)
-    {
-      appWindow->initialized = false;
-      if (appWindow->core)
-      {
-        appWindow->core = nullptr;
-        delete appWindow->core;
-      }
-      if (appWindow->handle)
-        appWindow->handle = NULL;
-      if (appWindow->appInstance)
-        appWindow->appInstance = NULL;
-      delete appWindow;
-      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
-                                                L"Application main window class is successfully destructed." );
-    }
+    if (d3d)
+      d3d->swapChain->SetFullscreenState ( false, nullptr );
 
     // Direct2D application destruction
     if (d2d)
     {
       d2d->initialized = false;
-      refCounts = d2d->dcBitmap.Reset ();
-      refCounts = d2d->deviceCon.Reset ();
-      //refCounts = d2d->dcBuffer.Reset ();
-      refCounts = d2d->device.Reset ();
-      refCounts = d2d->factory.Reset ();
-      //refCounts = d2d->writeFac.Reset ();
-      if (d2d->core)
-      {
-        d2d->core = nullptr;
-        delete d2d->core;
-      }
+      rC = d2d->dcBitmap.Reset ();
+      rC = d2d->deviceCon.Reset ();
+      //rC = d2d->dcBuffer.Reset ();
+      rC = d2d->device.Reset ();
+      rC = d2d->factory.Reset ();
+      //rC = d2d->writeFac.Reset ();
+      d2d->core = nullptr;
       delete d2d;
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                                 L"Direct2D is successfully destructed." );
@@ -374,31 +350,23 @@ void TheCore::shutdown ( void )
     {
       d3d->initialized = false;
       d3d->device->ClearState ();
-      refCounts = d3d->inputLayout.Reset ();
-      refCounts = d3d->pixelShader.Reset ();
-      refCounts = d3d->vertexShader.Reset ();
+      rC = d3d->inputLayout.Reset ();
+      rC = d3d->pixelShader.Reset ();
+      rC = d3d->vertexShader.Reset ();
+      rC = d3d->rasterizerState.Reset ();
       d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
-      refCounts = d3d->dsSurface.Reset ();
-      refCounts = d3d->dsBuffer.Reset ();
-      refCounts = d3d->dsView.Reset ();
-      refCounts = d3d->rtBuffer.Reset ();
-      refCounts = d3d->rtView.Reset ();
-      refCounts = d3d->output.Reset ();
-      refCounts = d3d->swapChain.Reset ();
+      rC = d3d->dSview.Reset ();
+      rC = d3d->dSstate.Reset ();
+      rC = d3d->dSbuffer.Reset ();
+      rC = d3d->rTview.Reset ();
+      rC = d3d->swapChain.Reset ();
 
 #ifndef _NOT_DEBUGGING
-      refCounts = d3d->debug.Reset ();
+      rC = d3d->debug.Reset ();
 #endif // !_NOT_DEBUGGING
 
-      refCounts = d3d->dxgiDevice.Reset ();
-      refCounts = d3d->dxgiAdapter.Reset ();
-      refCounts = d3d->dxgiFactory.Reset ();
-      //refCounts = d3d->device.Reset ();
-      if (d3d->core)
-      {
-        d3d->core = nullptr;
-        delete d3d->core;
-      }
+      rC = d3d->device.Reset ();
+      d3d->core = nullptr;
       //xx d3d = nullptr;
       //xx debug exception while freeing the dynamic memory.
       delete d3d;
@@ -406,11 +374,23 @@ void TheCore::shutdown ( void )
                                                 L"Direct3D is successfully destructed." );
     }
 
+    // application main window destruction
+    if (appWindow)
+    {
+      appWindow->initialized = false;
+      appWindow->handle = NULL;
+      appWindow->appInstance = NULL;
+      appWindow->core = nullptr;
+      delete appWindow;
+      PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
+                                                L"Application main window class is successfully destructed." );
+    }
+
     // timer application destruction
     if (timer)
       delete timer;
-    if (appInstance)
-      appInstance = NULL;
+
+    appInstance = NULL;
 
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                               L"The Application Core is successfully shut down." );
