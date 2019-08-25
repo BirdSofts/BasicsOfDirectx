@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,13.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Shared.h"
@@ -33,19 +33,19 @@ std::shared_ptr<Logger<toFile>> PointerProvider::fileLogger = nullptr;
 std::exception_ptr PointerProvider::exceptionPointer = nullptr;
 
 
-theException* PointerProvider::getException ()
+theException* PointerProvider::getException ( void )
 {
   return exception.get ();
 };
 
 
-Configurations* PointerProvider::getConfiguration ()
+Configurations* PointerProvider::getConfiguration ( void )
 {
   return configuration.get ();
 };
 
 
-Logger<toFile>* PointerProvider::getFileLogger ()
+Logger<toFile>* PointerProvider::getFileLogger ( void )
 {
   return fileLogger.get ();
 };

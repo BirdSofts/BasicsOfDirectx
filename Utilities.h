@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -56,9 +56,9 @@ class theException : public std::exception
 private:
   const char* expected;
 public:
-  theException ();
+  theException ( void );
   void set ( const char* );
-  const char* what () const throw();
+  const char* what ( void ) const throw();
 };
 
 
@@ -75,7 +75,7 @@ struct LogEntity
   std::thread::id threadId;
   std::wstring threadName;
   std::wstring message;
-  LogEntity ();
+  LogEntity ( void );
   LogEntity operator=( LogEntity& );
 };
 
@@ -87,9 +87,9 @@ private:
   std::ofstream fileStream;
   bool ready;
 public:
-  toFile ();
-  ~toFile ();
-  const bool& state ();
+  toFile ( void );
+  ~toFile ( void );
+  const bool& state ( void );
   bool write ( const std::wstring& );
 };
 
@@ -114,8 +114,8 @@ private:
 
   static unsigned int counter;
 public:
-  Logger ();
-  ~Logger ();
+  Logger ( void );
+  ~Logger ( void );
   void push ( const logType&,
               const std::thread::id&,
               const std::wstring&,
@@ -126,7 +126,7 @@ public:
   template<class tType>
   friend void loggerEngine ( Logger<tType>* ); // write engine
 };
-void problemSolver (); // don't call this function: solution for linker error, when using templates.
+void problemSolver ( void ); // don't call this function: solution for linker error, when using templates.
 
 
 // configurations container
@@ -148,11 +148,11 @@ private:
   ConfigsContainer defaults;
   ConfigsContainer currents;
 public:
-  Configurations ();
-  const bool& isValid ();
+  Configurations ( void );
+  const bool& isValid ( void );
   const ConfigsContainer& getDefaults ( void );
   const ConfigsContainer& getSettings ( void );
-  void apply (); // test
+  void apply ( void ); // test
   const bool apply ( const ConfigsContainer& ); // apply method
 };// application configurations container
 

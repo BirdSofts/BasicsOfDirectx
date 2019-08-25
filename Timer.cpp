@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
 #include "Shared.h"
 
 
-Timer::Timer () : initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ), timePreviousFrame ( 0 ),
+Timer::Timer ( void ) : initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ), timePreviousFrame ( 0 ),
 timeLastStopped ( 0 ), timeTotalIdle ( 0 ),
 secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
 {
@@ -53,13 +53,13 @@ secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
 };
 
 
-const bool& Timer::isInitialized ()
+const bool& Timer::isInitialized ( void )
 {
   return initialized;
 };
 
 
-const double Timer::getTotal ()
+const double Timer::getTotal ( void )
 {
   // total running time from the start of the game
   double temp;
@@ -71,13 +71,13 @@ const double Timer::getTotal ()
 };
 
 
-const double& Timer::getDelta ()
+const double& Timer::getDelta ( void )
 {
   return timeDelta;
 };
 
 
-const bool& Timer::isPaused ()
+const bool& Timer::isPaused ( void )
 {
   return paused;
 };
@@ -137,7 +137,7 @@ void Timer::event ( const char* type )
 };
 
 
-void Timer::tick ()
+void Timer::tick ( void )
 {
   try
   {

@@ -3,25 +3,25 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,23.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
 #include "Shared.h"
 
 
-theException::theException () : expected ( "null" ) {};
+theException::theException ( void ) : expected ( "null" ) {};
 void theException::set ( const char* prm )
 {
   expected = prm;
 };
-const char* theException::what () const throw()
+const char* theException::what ( void ) const throw()
 {
   return expected;
 };
 
 
-LogEntity::LogEntity ()
+LogEntity::LogEntity ( void )
 {
   id = 0;
   type = logType::info;
@@ -44,7 +44,7 @@ LogEntity LogEntity::operator=( LogEntity& logObj )
 };
 
 
-toFile::toFile () : ready ( false )
+toFile::toFile ( void ) : ready ( false )
 {
   try
   {
@@ -65,14 +65,14 @@ toFile::toFile () : ready ( false )
 };
 
 
-toFile::~toFile ()
+toFile::~toFile ( void )
 {
   ready = false;
   fileStream.close ();
 };
 
 
-const bool& toFile::state ()
+const bool& toFile::state ( void )
 {
   return ready;
 }
@@ -111,7 +111,7 @@ unsigned int Logger<tType>::counter { 0 };
 template<class tType>
 void loggerEngine ( Logger<tType>* engine );
 template<class tType>
-Logger<tType>::Logger () : theLogRawStr ( L"" ), filePolicy (), writeGuard ()
+Logger<tType>::Logger ( void ) : theLogRawStr ( L"" ), filePolicy (), writeGuard ()
 {
   try
   {
@@ -133,7 +133,7 @@ Logger<tType>::Logger () : theLogRawStr ( L"" ), filePolicy (), writeGuard ()
 
 
 template<class tType>
-Logger<tType>::~Logger ()
+Logger<tType>::~Logger ( void )
 {
   operating.clear ();
   commit.join ();
@@ -292,7 +292,7 @@ void loggerEngine ( Logger<tType>* engine )
 };
 
 
-void problemSolver () // don't call this function: solution for linker error, when using templates.
+void problemSolver ( void ) // don't call this function: solution for linker error, when using templates.
 {
 
   Logger<toFile> tempObj;
@@ -303,7 +303,7 @@ void problemSolver () // don't call this function: solution for linker error, wh
 }
 
 
-Configurations::Configurations ()
+Configurations::Configurations ( void )
 {
   try
   {
@@ -411,7 +411,7 @@ Configurations::Configurations ()
 };
 
 
-const bool& Configurations::isValid ()
+const bool& Configurations::isValid ( void )
 {
   return valid;
 };
@@ -429,7 +429,7 @@ const ConfigsContainer& Configurations::getSettings ( void )
 };
 
 
-void Configurations::apply ()
+void Configurations::apply ( void )
 {
   try
   {

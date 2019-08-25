@@ -3,20 +3,20 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,24.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct3D.h"
 
 
-ShaderBuffer::ShaderBuffer ()
+ShaderBuffer::ShaderBuffer ( void )
 {
   buffer = nullptr;
   size = 0;
 };
 
 
-ShaderBuffer::~ShaderBuffer ()
+ShaderBuffer::~ShaderBuffer ( void )
 {
   if (buffer)
     delete buffer;
@@ -29,7 +29,6 @@ Direct3D::Direct3D ( TheCore* coreObj ) : core ( coreObj ),
 colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
 displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ),
 fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false )
-
 {
   try
   {
@@ -231,7 +230,7 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
 };
 
 
-const bool& Direct3D::isInitialized ()
+const bool& Direct3D::isInitialized ( void )
 {
   return initialized;
 };
@@ -243,7 +242,7 @@ const ID3D10Device1& Direct3D::getDevice ( void )
 };
 
 
-const bool& Direct3D::isFullscreen ()
+const bool& Direct3D::isFullscreen ( void )
 {
   return fullscreen;
 };
@@ -543,10 +542,10 @@ void Direct3D::initializePipeline ( void )
     // load and encapsulate .cso shaders into usable shader objects
 
     HRESULT hR;
-    std::string fileName { "" };
+    //std::string fileName { "" };
 
-    ShaderBuffer vertexBuffer; // vertex shader buffer
-    ShaderBuffer pixelBuffer; // pixel shader buffer
+    //ShaderBuffer vertexShaderBuffer; // vertex shader buffer
+    //ShaderBuffer pixelShaderBuffer; // pixel shader buffer
 
     // shaders, introduced in several different types,
     // are used to actually render vertices or pixels to the screen in the render process,
@@ -558,10 +557,25 @@ void Direct3D::initializePipeline ( void )
     // Visual Studio is able to create HLSL programs, and after compiling,
     // the HLSL file is compiled into CSO (Compiled Shader Objects), usable by the running program.
 
-    // Direct3D interface for vertex shaders: creation of the vertex shader
-    fileName = "VertexShader.cso";
-    loadShader ( fileName, &vertexBuffer ); // load process
-    hR = device->CreateVertexShader ( vertexBuffer.buffer, vertexBuffer.size, &vertexShader );
+    // Direct3D interface for vertex shaders: vertex shader creation
+
+    //fileName = "VertexShader.cso";
+    //loadShader ( fileName, &vertexBuffer ); // load process
+
+    ID3D10Blob* vertexShaderBuffer;
+    ID3D10Blob* error;
+    hR = D3DCompileFromFile ( L"./graphics/vertex.hlsl", nullptr, nullptr,
+                              "main", "vs_4_1", D3D10_SHADER_ENABLE_STRICTNESS,
+                              0, &vertexShaderBuffer, &error );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Compilation of vertex shader file failed!" );
+      return;
+    }
+
+    hR = device->CreateVertexShader ( vertexShaderBuffer->GetBufferPointer (),
+                                      vertexShaderBuffer->GetBufferSize (), &vertexShader );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -569,10 +583,24 @@ void Direct3D::initializePipeline ( void )
       return;
     }
 
-    // Direct3D interface for pixel shaders: creation of the pixel shader interface
-    fileName = "PixelShader.cso";
-    loadShader ( fileName, &pixelBuffer );
-    hR = device->CreatePixelShader ( pixelBuffer.buffer, pixelBuffer.size, &pixelShader );
+    // Direct3D interface for pixel shaders: pixel shader creation
+
+    //fileName = "PixelShader.cso";
+    //loadShader ( fileName, &pixelShaderBuffer );
+
+    ID3D10Blob* pixelShaderBuffer;
+    hR = D3DCompileFromFile ( L"./graphics/pixel.hlsl", nullptr, nullptr,
+                              "main", "ps_4_1", D3D10_SHADER_ENABLE_STRICTNESS,
+                              0, &pixelShaderBuffer, &error );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Compilation of pixel shader file failed!" );
+      return;
+    }
+
+    hR = device->CreatePixelShader ( pixelShaderBuffer->GetBufferPointer (),
+                                     pixelShaderBuffer->GetBufferSize (), &pixelShader );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -584,29 +612,33 @@ void Direct3D::initializePipeline ( void )
     device->VSSetShader ( vertexShader.Get () );
     device->PSSetShader ( pixelShader.Get () );
 
-    // input layout description
+    // input layout description (passed into the shader)
+    // note that the description must match to the vertex types defined in game and shader
     // teaching the GPU how to read a custom vertex structure.
     // note that to improve the rendering speed,
     // the GPU can be told what information with each vertex needs to be stored.
     // note flag D3D10_APPEND_ALIGNED_ELEMENT: introduce the elements one after each other including any packing if necessary,
     // thus no need to define the offset
-    D3D10_INPUT_ELEMENT_DESC descInputE [] { {
-        "POSITION", // SemanticName: (what a certain value is used for)
-        0, // SemanticIndex: modifies the semantic with an integer index (multiple elements with same semantic)
-        DXGI_FORMAT_R32G32B32_FLOAT, // 32 bits for each x, y and z
-        0, // InputSlot: imput-assembler or input slot through which data is fed to GPU (Direct3D supports sixteen input slots)
-        0, // AlignedByteOffset: the offset between each element in the structure
-        D3D10_INPUT_PER_VERTEX_DATA, // InputSlotClass: input data class for a single input slot
-        0}, // InstanceDataStepRate // for now
-    {
-      "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, // offset: 3*4 byte of float type
-      D3D10_INPUT_PER_VERTEX_DATA, 0} };
+    D3D10_INPUT_ELEMENT_DESC polygonLayout [2];
+    polygonLayout->SemanticName = "POSITION"; // what a certain value is used for
+    polygonLayout->SemanticIndex = 0; // modifies the semantic with an integer index (multiple elements with same semantic)
+    polygonLayout->Format = DXGI_FORMAT_R32G32B32_FLOAT; // 32 bits for each x, y and z
+    polygonLayout->InputSlot = 0; // imput - assembler or input slot through which data is fed to GPU ( Direct3D supports sixteen input slots )
+    polygonLayout->AlignedByteOffset = 0; // the offset between each element in the structure
+    polygonLayout->InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA; // input data class for a single input slot
+    polygonLayout->InstanceDataStepRate = 0; // for now
+
+    polygonLayout [1] = D3D10_INPUT_ELEMENT_DESC
+    { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
+      D3D10_APPEND_ALIGNED_ELEMENT, // offset: 3*4 byte of float type
+      D3D10_INPUT_PER_VERTEX_DATA, 0 };
 
     // input layout creation (how to handle the defined vertices)
     // the interface holds definition of how to feed vertex data into the input-assembler stage of the graphics rendering pipeline
-    hR = device->CreateInputLayout ( descInputE, ARRAYSIZE ( descInputE ),
-                                     vertexBuffer.buffer, vertexBuffer.size,
-                                     &inputLayout );
+    unsigned int numElements { sizeof ( polygonLayout ) / sizeof ( polygonLayout [0] ) };
+    hR = device->CreateInputLayout ( polygonLayout, numElements,
+                                     vertexShaderBuffer->GetBufferPointer (),
+                                     vertexShaderBuffer->GetBufferSize (), &inputLayout );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -617,7 +649,78 @@ void Direct3D::initializePipeline ( void )
     // setting the active input layout
     device->IASetInputLayout ( inputLayout.Get () );
 
+    vertexShaderBuffer->Release ();
+    pixelShaderBuffer->Release ();
+    if (error)
+      error->Release ();
+
+    // dynamic matrix constant buffer description (introduced in vertex shader)
+    D3D10_BUFFER_DESC matrixBufferDesc;
+    matrixBufferDesc.Usage = D3D10_USAGE_DYNAMIC;
+    matrixBufferDesc.ByteWidth = sizeof ( MatrixBuffer );
+    matrixBufferDesc.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
+    matrixBufferDesc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+    matrixBufferDesc.MiscFlags = 0;
+
+    // matrix constant buffer creation (usable to access vertex shader constant buffer)
+    hR = device->CreateBuffer ( &matrixBufferDesc, nullptr, &matrixBuffer );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Creation of matrix buffer failed!" );
+      return;
+    }
+
     allocated = true;
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+void Direct3D::renderMatrices ( void )
+{
+  try
+  {
+
+    HRESULT hR;
+
+    void* mappedResource;
+    MatrixBuffer* dataPtr;
+
+    // transpose process (preparation for shader)
+    DirectX::XMMATRIX world, view, projection;
+    world = DirectX::XMMatrixTranspose ( matrixWorld );
+    view = DirectX::XMMatrixTranspose ( core->camera->matrixView );
+    projection = DirectX::XMMatrixTranspose ( matrixProjection );
+
+    // prepare for write (lock the constant buffer)
+    hR = matrixBuffer->Map ( D3D10_MAP_WRITE_DISCARD, 0, &mappedResource );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Mapping the matrix buffer failed!" );
+      return;
+    }
+
+    // initialize the pointer to the data already in the constant buffer
+    dataPtr = ( MatrixBuffer*) mappedResource;
+
+    // copy the matrices to the constant buffer
+    dataPtr->world = world;
+    dataPtr->view = view;
+    dataPtr->projection = projection;
+
+    // unlock and make the buffer usable
+    matrixBuffer->Unmap ();
+
+    // activate the updated constant matrix buffer in the vertex shader
+    // first parameter: position of the constant buffer in the vertex shader
+    device->VSSetConstantBuffers ( 0, 1, matrixBuffer.GetAddressOf () );
 
   }
   catch (const std::exception& ex)

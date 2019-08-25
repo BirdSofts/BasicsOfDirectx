@@ -113,6 +113,7 @@
     <PreBuildEvent>
       <Command>xcopy /y /d "C:\Lua\x64\lua53.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
+    <FxCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -149,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Direct2D.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="Core.cpp" />
@@ -160,6 +162,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Direct2D.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Core.h" />
@@ -183,13 +186,13 @@
     <ResourceCompile Include="LearningDirectX.rc" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="graphics\PixelShader.hlsl">
+    <FxCompile Include="graphics\pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="graphics\VertexShader.hlsl">
+    <FxCompile Include="graphics\vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

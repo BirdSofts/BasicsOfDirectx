@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,25.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT2D_H
@@ -38,9 +38,6 @@ private:
   Microsoft::WRL::ComPtr<IDXGISurface1> dcBuffer; // Direct2D device context buffer
   Microsoft::WRL::ComPtr<ID2D1Bitmap1> dcBitmap; // render target bitmap (desired properties)
 
-  bool initialized; // true if initialization was successful
-  bool allocated; // true if resources allocation was successful
-public:
   Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brushYellow; // brushes
   Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brushWhite;
   Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> brushBlack;
@@ -51,6 +48,9 @@ public:
   Microsoft::WRL::ComPtr<IDWriteTextLayout> textLayoutLogs;
   bool textLayoutsDebug;
 
+  bool initialized; // true if initialization was successful
+  bool allocated; // true if resources allocation was successful
+public:
   Direct2D ( TheCore* ); // creation of the device
   void allocateResources ( void ); // Direct2D resources resize/creation
   void initializeTextFormats ( void ); // different formats initialization

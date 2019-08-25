@@ -32,9 +32,17 @@ The project is just learning materials, which tries very hard to bring learning 
 Compilable! :)
 
 2.	Software dependencies:
-Dependent on Windows APIs
-Dependent on Dirext3D, DXGI, DirectXMath, Direct2D and DirectWrite APIs
-Dependent on Lua and Sol script language APIs
+<table>
+<tr>
+<td>Dependent on Windows APIs</td>
+</tr>
+<tr>
+<td>Dependent on Dirext3D, DXGI, DirectXMath, Direct2D and DirectWrite APIs</td>
+</tr>
+<tr>
+<td>Dependent on Lua and Sol script language APIs</td>
+</tr>
+</table>
 
 3.	Latest releases:
 Still no release, just coding and debugging

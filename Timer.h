@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,15.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef TIMER_H
@@ -24,13 +24,13 @@ private:
   double timeDelta; // the automatically updated time between two frames (essential for a robust physics engine)
   bool paused; // true if the timer is paused
 public:
-  Timer ();
-  const bool& isInitialized (); // get the initialized state
-  const double getTotal (); // total time minus the idle time
-  const double& getDelta (); // get the delta time
-  const bool& isPaused (); // get the paused state
+  Timer ( void );
+  const bool& isInitialized ( void ); // get the initialized state
+  const double getTotal ( void ); // total time minus the idle time
+  const double& getDelta ( void ); // get the delta time
+  const bool& isPaused ( void ); // get the paused state
   void event ( const char* type ); // start, reset, stop
-  void tick (); // the time never stops! (the time of every frame i.e. a cycle of game loop)
+  void tick ( void ); // the time never stops! (the time of every frame i.e. a cycle of game loop)
 };
 
 

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -14,6 +14,7 @@
 #include "Timer.h"
 #include "Direct3D.h"
 #include "Direct2D.h"
+#include "Camera.h"
 #include "Game.h"
 
 
@@ -23,20 +24,27 @@ class TheCore
   friend class Window;
   friend class Direct3D;
   friend class Direct2D;
+  friend class Camera;
   friend class GameWrapper;
 private:
   HINSTANCE appInstance; // handle to the application instance
+
   Timer* timer; // pointer to DirectX high-precision timer application
   int fps; // frames per second
   double mspf; // render time of a frame in milliseconds
-  HWND appHandle; // handle to game window (main window)
+
   Window* appWindow; // pointer to game window (main window)
+  HWND appHandle; // handle to game window (main window)
+
+  Direct3D* d3d; // pointer to Direct3D application
+  Direct2D* d2d; // pointer to Direct2D application
+  Camera* camera; // pointer to the camera application
+
+  GameWrapper* game; // pointer to the game wrapper class
+
+  bool debug; // if true FPS to screen (true in debug mode)
   bool initialized; // true if the initialization was successful
   bool paused; // true if the game is paused
-  bool debug; // if true FPS to screen (true in debug mode)
-  Direct3D* d3d;
-  Direct2D* d2d;
-  GameWrapper* game;
   bool resized; // true if the resizing was successful
 public:
   TheCore ( HINSTANCE&, GameWrapper* ); // constructor and initializer
@@ -46,8 +54,8 @@ public:
   const bool& isPaused ( void ); // get the paused state
   Timer* getTimer ( void ); // get the pointer to application timer
   const int& getFPS ( void ); // get the FPS
-  Direct3D* getd3d ( void ); // get the pointer to application Direct3D
-  Direct2D* getd2d ( void ); // get the pointer to application Direct2D
+  //Direct3D* getd3d ( void ); // get the pointer to application Direct3D
+  //Direct2D* getd2d ( void ); // get the pointer to application Direct2D
   void frameStatistics ( void ); // frame statistics calculations
   void setResolution ( const bool& ); // resolution changer
   void resizeResources ( const bool& ); // free and resize the resources

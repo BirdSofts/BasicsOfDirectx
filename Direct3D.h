@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,24.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -16,6 +16,7 @@
 #include <dxgi.h> // standard DXGI APIs
 #pragma comment (lib, "dxgi.lib") // linkage to the 'dxgi' library
 #include <DirectXMath.h> // standard DirectX3D mathematics APIs
+#include <d3dcompiler.h> // standard DirectX3D compiler APIs
 #pragma comment (lib, "d3dcompiler.lib") // linkage to the 'd3dcompiler' library
 
 
@@ -25,21 +26,22 @@
 #include "Game.h"
 
 
-// vertex data
-struct Vertex
-{
-  float x, y, z; // position
-  float r, g, b; // colour
-};
-
-
 // shader buffer
 struct ShaderBuffer
 {
   byte* buffer;
   long long size;
-  ShaderBuffer ();
-  ~ShaderBuffer ();
+  ShaderBuffer ( void );
+  ~ShaderBuffer ( void );
+};
+
+
+// matrix buffer
+struct MatrixBuffer
+{
+  DirectX::XMMATRIX world;
+  DirectX::XMMATRIX view;
+  DirectX::XMMATRIX projection;
 };
 
 
@@ -82,7 +84,7 @@ private:
   unsigned int displayModeIndex; // the index of current display mode
   DXGI_MODE_DESC displayMode; // current display mode
   unsigned int videoCardMemory; // dedicated video card memory (megabytes)
-  std::wstring videoCardDescription;
+  std::wstring videoCardDescription; // string representing the physical adapter name
 
   Microsoft::WRL::ComPtr<ID3D10RenderTargetView> rTview; // render target view
 
@@ -92,30 +94,33 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D10RasterizerState> rasterizerState; // rasterizer state
 
-  DirectX::XMMATRIX matrixWorld;
-  DirectX::XMMATRIX matrixOrtho;
-  DirectX::XMMATRIX matrixProjection;
+  DirectX::XMMATRIX matrixWorld; // game world matrix
+  DirectX::XMMATRIX matrixOrtho; // orthographic matrix (2D rendering)
+  DirectX::XMMATRIX matrixProjection; // projection matrix (3D rendering)
+  const float screenDepth { 1000.0f };
+  const float screenNear { 0.1f };
 
   Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
   Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
-  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout;
+  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout; // 
+
+  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer
 
   bool fullscreen; // application configuration
   bool vSync; // application configuration
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful
-  const float screenDepth { 1000.0f };
-  const float screenNear { 0.1f };
 public:
   Direct3D ( TheCore* ); // creation of the device and resources
-  const bool& isInitialized (); // get the initialized state
+  const bool& isInitialized ( void ); // get the initialized state
   const ID3D10Device1& getDevice ( void ); // get the pointer to application Direct3D
-  const bool& isFullscreen (); // get the display mode state
+  const bool& isFullscreen ( void ); // get the display mode state
   void displayModeSetter ( void ); // Direct3D display mode change/adjust
   void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
   void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
   void initializePipeline ( void ); // rendering (GPU) pipeline initialization
+  void renderMatrices ( void ); // map matrix buffer and update
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
 };
 

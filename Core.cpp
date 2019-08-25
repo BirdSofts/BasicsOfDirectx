@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,24.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -11,16 +11,16 @@
 
 
 TheCore::TheCore ( HINSTANCE& hInstance, GameWrapper* gameObj ) :
-  appInstance ( hInstance ), timer ( nullptr ),
-  fps ( 0 ), mspf ( 0 ), appHandle ( NULL ), appWindow ( nullptr ),
-  initialized ( false ), paused ( false ), debug ( false ),
-  d3d ( nullptr ), d2d ( nullptr ), game ( gameObj ), resized ( false )
+  appInstance ( hInstance ), timer ( nullptr ), fps ( 0 ), mspf ( 0 ),
+  appWindow ( nullptr ), appHandle ( NULL ),
+  d3d ( nullptr ), d2d ( nullptr ), camera ( nullptr ), game ( gameObj ),
+  debug ( false ), initialized ( false ), paused ( false ), resized ( false )
 {
   try
   {
 
     // timer instantiation
-    timer = new (std::nothrow) Timer ();
+    timer = new (std::nothrow) Timer;
     if (!timer->isInitialized ())
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -53,6 +53,15 @@ TheCore::TheCore ( HINSTANCE& hInstance, GameWrapper* gameObj ) :
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Direct2D initialization failed!" );
+      return;
+    }
+
+    // Camera application instantiation
+    camera = new (std::nothrow) Camera;
+    if (!camera->isInitialized ())
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Camera initialization failed!" );
       return;
     }
 
@@ -107,16 +116,16 @@ const int& TheCore::getFPS ( void )
 };
 
 
-Direct3D* TheCore::getd3d ( void )
-{
-  return d3d;
-};
-
-
-Direct2D* TheCore::getd2d ( void )
-{
-  return d2d;
-};
+//Direct3D* TheCore::getd3d ( void )
+//{
+//  return d3d;
+//};
+//
+//
+//Direct2D* TheCore::getd2d ( void )
+//{
+//  return d2d;
+//};
 
 
 void TheCore::frameStatistics ( void )
@@ -241,10 +250,12 @@ void TheCore::resizeResources ( const bool& displayMode )
       //HRESULT hR;
 
       // free game resources
-      if (game->vertexBufferTriangle)
+      if (game->vertexBuffer [0] && game->indexBuffer [1])
       {
-        rC = game->vertexBufferLine.Reset ();
-        rC = game->vertexBufferTriangle.Reset ();
+        rC = game->vertexBuffer [0].Reset ();
+        rC = game->vertexBuffer [1].Reset ();
+        rC = game->indexBuffer [0].Reset ();
+        rC = game->indexBuffer [1].Reset ();
       }
 
       // free Direct2D resources
@@ -265,6 +276,7 @@ void TheCore::resizeResources ( const bool& displayMode )
       if (d3d->dSview && d3d->rTview && !rC)
       {
         d3d->device->ClearState ();
+        rC = d3d->matrixBuffer.Reset ();
         rC = d3d->inputLayout.Reset ();
         rC = d3d->pixelShader.Reset ();
         rC = d3d->vertexShader.Reset ();
@@ -350,6 +362,7 @@ void TheCore::shutdown ( void )
     {
       d3d->initialized = false;
       d3d->device->ClearState ();
+      rC = d3d->matrixBuffer.Reset ();
       rC = d3d->inputLayout.Reset ();
       rC = d3d->pixelShader.Reset ();
       rC = d3d->vertexShader.Reset ();
@@ -367,12 +380,15 @@ void TheCore::shutdown ( void )
 
       rC = d3d->device.Reset ();
       d3d->core = nullptr;
-      //xx d3d = nullptr;
-      //xx debug exception while freeing the dynamic memory.
+
       delete d3d;
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                                 L"Direct3D is successfully destructed." );
     }
+
+    // camera application destruction
+    if (camera)
+      delete camera;
 
     // application main window destruction
     if (appWindow)

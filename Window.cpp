@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -128,31 +128,31 @@ Window::Window ( TheCore* coreObject ) :
 };
 
 
-const bool& Window::isInitialized ()
+const bool& Window::isInitialized ( void )
 {
   return initialized;
 };
 
 
-const HWND& Window::getHandle ()
+const HWND& Window::getHandle ( void )
 {
   return handle;
 }
 
 
-unsigned int& Window::getWidth ()
+unsigned int& Window::getWidth ( void )
 {
   return clientWidth;
 };
 
 
-unsigned int& Window::getHeight ()
+unsigned int& Window::getHeight ( void )
 {
   return clientHeight;
 };
 
 
-bool& Window::isResized ()
+bool& Window::isResized ( void )
 {
   return resized;
 };
@@ -210,26 +210,37 @@ LRESULT CALLBACK Window::msgProc (
             core->timer->event ( "start" );
             core->paused = false;
           }
-        } else
-          if (wPrm == VK_PRIOR) // the page up key identification
-          {
-            if (!core->d3d->isFullscreen ())
-              core->setResolution ( true ); // switch to fullscreen mode and set to highest resolution
-          } else
-            if (wPrm == VK_NEXT) // the page down key identification
-            {
-              if (core->d3d->isFullscreen ())
-                core->setResolution ( false ); // switch to windowed mode and set the lowest resolution
-            }
           break;
+        }
+
+        if (wPrm == VK_PRIOR) // the page up key identification
+        {
+          if (!core->d3d->isFullscreen ())
+            core->setResolution ( true ); // switch to fullscreen mode and set to highest resolution
+          break;
+        }
+
+        if (wPrm == VK_NEXT) // the page down key identification
+        {
+          if (core->d3d->isFullscreen ())
+            core->setResolution ( false ); // switch to windowed mode and set the lowest resolution
+          break;
+        }
+
+        if (wPrm == VK_UP) // the up arrow key identification
+        {
+          core->camera->forwardBackward ( 0.05f );
+          break;
+        }
+
+        if (wPrm == VK_DOWN) // the down arrow key identification
+        {
+          core->camera->forwardBackward ( -0.05f );
+          break;
+        }
 
       case WM_CLOSE: // the user tries to somehow close the application
       //case WM_DESTROY: // window is flagged to be destroyed (the close button is clicked)
-        //if (core->fullscreen)
-        //{ // Todo make sure
-        //  core->fullscreen = false;
-        //  //core->resizeResources ( false );
-        //}
         core->paused = true;
         core->timer->event ( "pause" );
         if (MessageBoxA ( handle, "Exit the Game?", "Exit", MB_YESNO | MB_ICONQUESTION ) == IDYES)

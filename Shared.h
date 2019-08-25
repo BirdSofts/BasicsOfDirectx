@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef SHARED_H
@@ -38,9 +38,9 @@ public:
   // smart shared pointers point to exceptions, provide extended lifetime and are passable across threads:
   static std::exception_ptr exceptionPointer; // smart shared pointer-like type
 
-  static theException* getException (); // exception locator
-  static Configurations* getConfiguration (); // configuration locator
-  static Logger<toFile>* getFileLogger (); // file logger locator
+  static theException* getException ( void ); // exception locator
+  static Configurations* getConfiguration ( void ); // configuration locator
+  static Logger<toFile>* getFileLogger ( void ); // file logger locator
   static void exceptionProvider ( std::shared_ptr<theException> ); // exception provider
   static void configurationProvider ( std::shared_ptr<Configurations> ); // configuration provider
   static void fileLoggerProvider ( std::shared_ptr<Logger<toFile>> ); // file logger provider

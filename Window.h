@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #ifndef WINDOW_H
@@ -33,11 +33,11 @@ private:
   bool resized; // true when resized
 public:
   Window ( TheCore* ); // constructor and initializer
-  const bool& isInitialized (); // get the initialized state
-  const HWND& getHandle (); // get the handle to main window
-  unsigned int& getWidth (); // get/set current window width
-  unsigned int& getHeight (); // get/set current window height
-  bool& isResized (); // get/set the resized state
+  const bool& isInitialized ( void ); // get the initialized state
+  const HWND& getHandle ( void ); // get the handle to main window
+  unsigned int& getWidth ( void ); // get/set current window width
+  unsigned int& getHeight ( void ); // get/set current window height
+  bool& isResized ( void ); // get/set the resized state
   virtual LRESULT CALLBACK msgProc ( HWND, UINT, WPARAM, LPARAM ); // Windows callback procedure
 };
 

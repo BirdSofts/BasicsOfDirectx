@@ -42,6 +42,9 @@
     <ClCompile Include="Direct3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -71,6 +74,9 @@
     <ClInclude Include="Direct3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -87,7 +93,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="graphics\PixelShader.hlsl" />
-    <FxCompile Include="graphics\VertexShader.hlsl" />
+    <FxCompile Include="graphics\pixel.hlsl" />
+    <FxCompile Include="graphics\vertex.hlsl" />
   </ItemGroup>
 </Project>
