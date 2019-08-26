@@ -15,9 +15,10 @@ Camera::Camera ( void )
   try
   {
 
+    // initialize the camera to the origin of the scene.
     position.x = 0.0f;
     position.y = 0.0f;
-    position.z = -2.0f;
+    position.z = 0.0f;
     rotation.x = 0.0f;
     rotation.y = 0.0f;
     rotation.z = 0.0f;
@@ -39,7 +40,15 @@ const bool& Camera::isInitialized ( void )
 };
 
 
-void Camera::setPosition ( float& x, float& y, float& z )
+void Camera::setPosition ( DirectX::XMFLOAT3& pos )
+{
+  position.x = pos.x;
+  position.y = pos.y;
+  position.z = pos.z;
+};
+
+
+void Camera::setPosition ( float x, float y, float z )
 {
   position.x = x;
   position.y = y;

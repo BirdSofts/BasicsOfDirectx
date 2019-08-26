@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,25.08.2019</changed>
+/// <changed>ʆϒʅ,26.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
@@ -241,10 +241,10 @@ void Direct2D::debugInfos ( void )
       deviceCon->BeginDraw ();
       // drawing a fully formatted text
       if (textLayoutFPS)
-        deviceCon->DrawTextLayout ( D2D1::Point2F ( 2.0f, 5.0f ), textLayoutFPS.Get (),
+        deviceCon->DrawTextLayout ( D2D1::Point2F ( 3.0f, 3.0f ), textLayoutFPS.Get (),
                                     brushYellow.Get (), D2D1_DRAW_TEXT_OPTIONS_NONE );
       if (textLayoutLogs)
-        deviceCon->DrawTextLayout ( D2D1::Point2F ( 2.0f, 30.0f ), textLayoutLogs.Get (),
+        deviceCon->DrawTextLayout ( D2D1::Point2F ( 3.0f, 40.0f ), textLayoutLogs.Get (),
                                     brushYellow.Get (), D2D1_DRAW_TEXT_OPTIONS_NONE );
       if (FAILED ( deviceCon->EndDraw () ))
       {

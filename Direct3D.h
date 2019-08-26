@@ -11,19 +11,17 @@
 
 
 #include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
-#include <d3d10_1.h> // standard DirectX3D APIs
+#include <d3d10_1.h> // standard DirectX3D APIs (setting up and 3D drawing)
 #pragma comment (lib, "d3d10_1.lib") // linkage to the 'd3d10_1' library
-#include <dxgi.h> // standard DXGI APIs
+//#include <dxgi.h> // standard DXGI APIs (tools to interface with installed hardware)
 #pragma comment (lib, "dxgi.lib") // linkage to the 'dxgi' library
 #include <DirectXMath.h> // standard DirectX3D mathematics APIs
-#include <d3dcompiler.h> // standard DirectX3D compiler APIs
+#include <d3dcompiler.h> // standard DirectX3D compiler APIs (shader compiler)
 #pragma comment (lib, "d3dcompiler.lib") // linkage to the 'd3dcompiler' library
 
 
 #include "Core.h"
-#include "Direct2D.h"
 #include "Shared.h"
-#include "Game.h"
 
 
 // shader buffer
@@ -36,7 +34,7 @@ struct ShaderBuffer
 };
 
 
-// matrix buffer
+// matrix buffer (matching the global cbuffer type introduced in vertex shader)
 struct MatrixBuffer
 {
   DirectX::XMMATRIX world;
@@ -50,7 +48,8 @@ class Direct3D
 {
   friend class TheCore;
   friend class Direct2D;
-  friend class GameWrapper;
+  friend class Camera;
+  friend class Game;
 private:
   TheCore* core; // pointer to the framework core
 
@@ -94,20 +93,21 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D10RasterizerState> rasterizerState; // rasterizer state
 
-  DirectX::XMMATRIX matrixWorld; // game world matrix
-  DirectX::XMMATRIX matrixOrtho; // orthographic matrix (2D rendering)
-  DirectX::XMMATRIX matrixProjection; // projection matrix (3D rendering)
-  const float screenDepth { 1000.0f };
-  const float screenNear { 0.1f };
+  Camera* camera; // pointer to the camera application
+
+  DirectX::XMMATRIX matrixProjection; // projection matrix (translation of 3D scene into the 2D viewport space)
+  DirectX::XMMATRIX matrixWorld; // world matrix (to convert into 3D scenes' vertices)
+  DirectX::XMMATRIX matrixOrthographic; // orthographic matrix (2D rendering)
+  const float screenDepth { 1000.0f }; // depth settings
+  const float screenNear { 0.1f }; // depth settings
 
   Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
   Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
-  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout; // 
-
-  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer
+  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout; // layout of the vertex data
+  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer (to interface with shader)
 
   bool fullscreen; // application configuration
-  bool vSync; // application configuration
+  bool vSync; // application configuration (if true render according installed monitor refresh rate)
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful
 public:
@@ -119,8 +119,9 @@ public:
   void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
   void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
-  void initializePipeline ( void ); // rendering (GPU) pipeline initialization
+  void initializePipeline ( void ); // rendering pipeline (GPU) initialization
   void renderMatrices ( void ); // map matrix buffer and update
+  Camera* getCamera ( void ); // camera application access
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
 };
 

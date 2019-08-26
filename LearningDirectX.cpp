@@ -83,7 +83,7 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
     }
 
 
-    GameWrapper game ( hInstance );
+    Game game ( hInstance );
 
     if (!game.isReady ())
     {

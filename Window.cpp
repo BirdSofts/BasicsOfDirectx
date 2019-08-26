@@ -229,13 +229,14 @@ LRESULT CALLBACK Window::msgProc (
 
         if (wPrm == VK_UP) // the up arrow key identification
         {
-          core->camera->forwardBackward ( 0.05f );
+          // for the time being till introduction of DirectInput
+          core->d3d->getCamera ()->forwardBackward ( 0.05f );
           break;
         }
 
         if (wPrm == VK_DOWN) // the down arrow key identification
         {
-          core->camera->forwardBackward ( -0.05f );
+          core->d3d->getCamera ()->forwardBackward ( -0.05f );
           break;
         }
 

@@ -27,7 +27,7 @@ class Direct2D
 {
   friend class TheCore;
   friend class Direct3D;
-  friend class GameWrapper;
+  friend class Game;
 private:
   TheCore* core; // pointer to the framework core
 

@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,27.08.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
 #include "Shared.h"
 
 
-GameWrapper::GameWrapper ( HINSTANCE& h_instance ) : vertexCountTriangle ( 0 ), vertexCountLine ( 0 ),
+Game::Game ( HINSTANCE& h_instance ) : vertexCountTriangle ( 0 ), vertexCountLine ( 0 ),
 initialized ( false ), allocated ( false )
 {
   try
@@ -47,7 +47,7 @@ initialized ( false ), allocated ( false )
 };
 
 
-void GameWrapper::allocateResources ( void )
+void Game::allocateResources ( void )
 {
   try
   {
@@ -171,141 +171,13 @@ void GameWrapper::allocateResources ( void )
 };
 
 
-const bool& GameWrapper::isReady ( void )
+const bool& Game::isReady ( void )
 {
   return initialized;
 };
 
 
-void GameWrapper::render ( void )
-{
-  try
-  {
-
-    core->d3d->clearBuffers ();
-
-    core->camera->render ();
-    core->d3d->renderMatrices ();
-
-    if (core->d2d && core->debug)
-      core->d2d->debugInfos (); // -- fps on screen representation
-
-    // set the active vertex and index buffers (binds an array of vertex/index buffers to input-assembler stage)
-    // basically, which vertices to put to graphics pipeline when rendering
-    unsigned int strides = sizeof ( Vertex );
-    unsigned int offset = 0;
-    // fourth parameter: constant array of stride values (one stride for each buffer in the vertex-buffer array)
-    // fifth parameter: number of bytes between the first element and the element to use (usually zero)
-    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer [0].GetAddressOf (), &strides, &offset );
-    // set the active corresponding index buffer in the input assembler
-    core->d3d->device->IASetIndexBuffer ( indexBuffer [0].Get (), DXGI_FORMAT_R32_UINT, 0 );
-
-    // set primitive topology (Direct3D has no idea about the mathematical conventions to use)
-    // basically how to render the resource (vertex data) to screen
-    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
-
-    // draw indexed vertices, starting from vertex 0
-    core->d3d->device->DrawIndexed ( vertexCountTriangle, 0, 0 );
-
-    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer [1].GetAddressOf (), &strides, &offset );
-    core->d3d->device->IASetIndexBuffer ( indexBuffer [1].Get (), DXGI_FORMAT_R32_UINT, 0 );
-    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_LINELIST );
-    core->d3d->device->DrawIndexed ( vertexCountLine, 0, 0 );
-
-  }
-  catch (const std::exception& ex)
-  {
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                              Converter::strConverter ( ex.what () ) );
-  }
-};
-
-
-void GameWrapper::update ( void )
-{
-  try
-  {
-
-    // update line vertex buffer
-    HRESULT hR;
-    char modeX_1 { 0 };
-    char modeY_1 { 0 };
-    char modeX_2 { 0 };
-    char modeY_2 { 0 };
-
-    // map the data back to system memory using a sub-resource
-    // second parameter: what CPU does when GPU is busy
-    // note that in Direct3D11 a resource may contain sub-resources (additional parameters of device context method)
-    // after the resource is mapped, any change to it is reflected to the vertex buffer.
-    hR = vertexBuffer [1]->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
-    if (FAILED ( hR ))
-    {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Mapping the resource data failed!" );
-    }
-
-    // update the sub-resource:
-
-    // turn the line clockwise
-    Vertex* vertexData = reinterpret_cast<Vertex*>(mappedLine.pData);
-
-    static float temp { vertexData->position.x };
-
-    if (vertexData->position.x < (vertexData + 1)->position.x)
-    {
-      modeX_1 = 1 ;
-      modeY_1 = 1 ;
-      modeX_2 = -1 ;
-      modeY_2 = -1 ;
-    } else
-      if (vertexData->position.x > ( vertexData + 1 )->position.x)
-      {
-        modeX_1 = 1;
-        modeY_1 = -1;
-        modeX_2 = -1;
-        modeY_2 = 1;
-      }
-
-    if ((vertexData + 1)->position.x < temp)
-    {
-      temp = vertexData->position.x;
-      vertexData->position.x = (vertexData + 1)->position.x;
-      (vertexData + 1)->position.x = temp;
-      temp = vertexData->position.y;
-      vertexData->position.y = (vertexData + 1)->position.y;
-      (vertexData + 1)->position.y = temp;
-      temp = vertexData->position.x;
-    }
-
-    vertexData->position.x += modeX_1 * 0.0001f;
-    vertexData->position.y += modeY_1 * 0.0001f;
-    (vertexData + 1)->position.x += modeX_2 * 0.0001f;
-    (vertexData + 1)->position.y += modeY_2 * 0.0001f;
-
-    // randomize the colour vertices
-    float rnd_1 { 0.0f };
-    float rnd_2 { 0.0f };
-    float rnd_3 { 0.0f };
-    rnd_1 = ((rand () % 100) / static_cast<float>(100));
-    rnd_2 = ((rand () % 100) / static_cast<float>(100));
-    rnd_3 = ((rand () % 100) / static_cast<float>(100));
-    vertexData->color.x = (vertexData + 1)->color.x = rnd_1; // red
-    vertexData->color.y = (vertexData + 1)->color.y = rnd_2; // green
-    vertexData->color.z = rnd_1 = (vertexData + 1)->color.z = rnd_3; // blue
-
-    // validates the pointer of the vertex buffer's resource and enables the GPU's read access upon.
-    vertexBuffer [1]->Unmap ();
-
-  }
-  catch (const std::exception& ex)
-  {
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                              Converter::strConverter ( ex.what () ) );
-  }
-};
-
-
-const bool GameWrapper::run ( void )
+const bool Game::run ( void )
 {
   try
   {
@@ -315,6 +187,7 @@ const bool GameWrapper::run ( void )
 
     core->timer->event ( "reset" ); // reset (start)
 
+    core->d3d->camera->setPosition ( 0.0f, 0.0f, -2.0f ); // set the start view
 
 
     // main part (game engine)
@@ -413,7 +286,135 @@ const bool GameWrapper::run ( void )
 };
 
 
-void GameWrapper::shutdown ( void )
+void Game::render ( void )
+{
+  try
+  {
+
+    core->d3d->clearBuffers ();
+
+    core->d3d->camera->render ();
+    core->d3d->renderMatrices ();
+
+    if (core->d2d && core->debug)
+      core->d2d->debugInfos (); // -- fps on screen representation
+
+    // set the active vertex and index buffers (binds an array of vertex/index buffers to input-assembler stage)
+    // basically, which vertices to put to graphics pipeline when rendering
+    unsigned int strides = sizeof ( Vertex );
+    unsigned int offset = 0;
+    // fourth parameter: constant array of stride values (one stride for each buffer in the vertex-buffer array)
+    // fifth parameter: number of bytes between the first element and the element to use (usually zero)
+    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer [0].GetAddressOf (), &strides, &offset );
+    // set the active corresponding index buffer in the input assembler
+    core->d3d->device->IASetIndexBuffer ( indexBuffer [0].Get (), DXGI_FORMAT_R32_UINT, 0 );
+
+    // set primitive topology (Direct3D has no idea about the mathematical conventions to use)
+    // basically how to render the resource (vertex data) to screen
+    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+    // draw indexed vertices, starting from vertex 0
+    core->d3d->device->DrawIndexed ( vertexCountTriangle, 0, 0 );
+
+    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer [1].GetAddressOf (), &strides, &offset );
+    core->d3d->device->IASetIndexBuffer ( indexBuffer [1].Get (), DXGI_FORMAT_R32_UINT, 0 );
+    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_LINELIST );
+    core->d3d->device->DrawIndexed ( vertexCountLine, 0, 0 );
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+void Game::update ( void )
+{
+  try
+  {
+
+    // update line vertex buffer
+    HRESULT hR;
+    char modeX_1 { 0 };
+    char modeY_1 { 0 };
+    char modeX_2 { 0 };
+    char modeY_2 { 0 };
+
+    // map the data back to system memory using a sub-resource
+    // second parameter: what CPU does when GPU is busy
+    // note that in Direct3D11 a resource may contain sub-resources (additional parameters of device context method)
+    // after the resource is mapped, any change to it is reflected to the vertex buffer.
+    hR = vertexBuffer [1]->Map ( D3D10_MAP_WRITE_NO_OVERWRITE, 0, &mappedLine.pData );
+    if (FAILED ( hR ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Mapping the resource data failed!" );
+    }
+
+    // update the sub-resource:
+
+    // turn the line clockwise
+    Vertex* vertexData = reinterpret_cast<Vertex*>(mappedLine.pData);
+
+    static float temp { vertexData->position.x };
+
+    if (vertexData->position.x < (vertexData + 1)->position.x)
+    {
+      modeX_1 = 1 ;
+      modeY_1 = 1 ;
+      modeX_2 = -1 ;
+      modeY_2 = -1 ;
+    } else
+      if (vertexData->position.x > ( vertexData + 1 )->position.x)
+      {
+        modeX_1 = 1;
+        modeY_1 = -1;
+        modeX_2 = -1;
+        modeY_2 = 1;
+      }
+
+    if ((vertexData + 1)->position.x < temp)
+    {
+      temp = vertexData->position.x;
+      vertexData->position.x = (vertexData + 1)->position.x;
+      (vertexData + 1)->position.x = temp;
+      temp = vertexData->position.y;
+      vertexData->position.y = (vertexData + 1)->position.y;
+      (vertexData + 1)->position.y = temp;
+      temp = vertexData->position.x;
+    }
+
+    vertexData->position.x += modeX_1 * 0.0001f;
+    vertexData->position.y += modeY_1 * 0.0001f;
+    (vertexData + 1)->position.x += modeX_2 * 0.0001f;
+    (vertexData + 1)->position.y += modeY_2 * 0.0001f;
+
+    // randomize the colour vertices
+    float rnd_1 { 0.0f };
+    float rnd_2 { 0.0f };
+    float rnd_3 { 0.0f };
+    rnd_1 = ((rand () % 100) / static_cast<float>(100));
+    rnd_2 = ((rand () % 100) / static_cast<float>(100));
+    rnd_3 = ((rand () % 100) / static_cast<float>(100));
+    vertexData->color.x = (vertexData + 1)->color.x = rnd_1; // red
+    vertexData->color.y = (vertexData + 1)->color.y = rnd_2; // green
+    vertexData->color.z = rnd_1 = (vertexData + 1)->color.z = rnd_3; // blue
+
+    // validates the pointer of the vertex buffer's resource and enables the GPU's read access upon.
+    vertexBuffer [1]->Unmap ();
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+void Game::shutdown ( void )
 {
   try
   {

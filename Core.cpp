@@ -10,10 +10,10 @@
 #include "Shared.h"
 
 
-TheCore::TheCore ( HINSTANCE& hInstance, GameWrapper* gameObj ) :
+TheCore::TheCore ( HINSTANCE& hInstance, Game* gameObj ) :
   appInstance ( hInstance ), timer ( nullptr ), fps ( 0 ), mspf ( 0 ),
   appWindow ( nullptr ), appHandle ( NULL ),
-  d3d ( nullptr ), d2d ( nullptr ), camera ( nullptr ), game ( gameObj ),
+  d3d ( nullptr ), d2d ( nullptr ), game ( gameObj ),
   debug ( false ), initialized ( false ), paused ( false ), resized ( false )
 {
   try
@@ -53,15 +53,6 @@ TheCore::TheCore ( HINSTANCE& hInstance, GameWrapper* gameObj ) :
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Direct2D initialization failed!" );
-      return;
-    }
-
-    // Camera application instantiation
-    camera = new (std::nothrow) Camera;
-    if (!camera->isInitialized ())
-    {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Camera initialization failed!" );
       return;
     }
 
@@ -159,11 +150,12 @@ void TheCore::frameStatistics ( void )
         // FPS information text layouts
         std::wostringstream outFPS;
         outFPS.precision ( 6 );
-        outFPS << "Resolution: " << d3d->displayMode.Width << " x " << d3d->displayMode.Height;
-        outFPS << " - Display mode #" << d3d->displayModeIndex + 1 << " of " << d3d->displayModesCount << " @ ";
-        outFPS << d3d->displayMode.RefreshRate.Numerator / d3d->displayMode.RefreshRate.Denominator << " Hz - ";
-        outFPS << d3d->videoCardDescription << std::endl;
-        outFPS << "^_^ - FPS: " << fps << L" - mSPF: " << mspf << std::endl;
+        outFPS << "Resolution: " << d3d->displayMode.Width << " x " << d3d->displayMode.Height
+          << " - Display mode #" << d3d->displayModeIndex + 1 << " of " << d3d->displayModesCount << " @ "
+          << d3d->displayMode.RefreshRate.Numerator / d3d->displayMode.RefreshRate.Denominator << " Hz" << std::endl
+          << "Display Adapter: " << d3d->videoCardDescription
+          << " - Dedicated memory: " << d3d->videoCardMemory << "MB" << std::endl
+          << "^_^ - FPS: " << fps << L" - mSPF: " << mspf << std::endl;
 
         // before rendering a text to a bitmap: the creation of the text layout
         hR = d2d->writeFac->CreateTextLayout ( outFPS.str ().c_str (), ( UINT32) outFPS.str ().size (),
@@ -339,6 +331,7 @@ void TheCore::shutdown ( void )
     initialized = false;
 
     if (d3d)
+      // to prevent exceptions, switch back to windowed mode
       d3d->swapChain->SetFullscreenState ( false, nullptr );
 
     // Direct2D application destruction
@@ -381,14 +374,14 @@ void TheCore::shutdown ( void )
       rC = d3d->device.Reset ();
       d3d->core = nullptr;
 
+      // camera application destruction
+      if (d3d->camera)
+        delete d3d->camera;
+
       delete d3d;
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                                 L"Direct3D is successfully destructed." );
     }
-
-    // camera application destruction
-    if (camera)
-      delete camera;
 
     // application main window destruction
     if (appWindow)

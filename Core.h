@@ -24,8 +24,7 @@ class TheCore
   friend class Window;
   friend class Direct3D;
   friend class Direct2D;
-  friend class Camera;
-  friend class GameWrapper;
+  friend class Game;
 private:
   HINSTANCE appInstance; // handle to the application instance
 
@@ -38,16 +37,15 @@ private:
 
   Direct3D* d3d; // pointer to Direct3D application
   Direct2D* d2d; // pointer to Direct2D application
-  Camera* camera; // pointer to the camera application
 
-  GameWrapper* game; // pointer to the game wrapper class
+  Game* game; // pointer to the game wrapper class
 
   bool debug; // if true FPS to screen (true in debug mode)
   bool initialized; // true if the initialization was successful
   bool paused; // true if the game is paused
   bool resized; // true if the resizing was successful
 public:
-  TheCore ( HINSTANCE&, GameWrapper* ); // constructor and initializer
+  TheCore ( HINSTANCE&, Game* ); // constructor and initializer
   const bool& isInitialized ( void ); // get the initialized state
   const HINSTANCE& getInstance ( void ); // get the handle to application instance
   const HWND& getHandle ( void ); // get the handle to main window

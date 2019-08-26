@@ -28,6 +28,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) : core ( coreObj ),
 // reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
 colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
 displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ),
+camera ( nullptr ),
 fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false )
 {
   try
@@ -96,7 +97,6 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
       return;
     }
 
-    unsigned int numerator { 0 }, denominator { 0 };
     for (unsigned int i = 0; i < displayModesCount; i++)
     {
       // support check for current resolution of the client window (input streamed from setting file)
@@ -105,8 +105,6 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
         {
           displayMode = displayModes [i];
           displayModeIndex = i;
-          numerator = displayModes [i].RefreshRate.Numerator;
-          denominator = displayModes [i].RefreshRate.Denominator;
           break;
         } else
         {
@@ -128,16 +126,16 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
     rC = dxgiOutput->Release ();
 
     // acquiring the video card description
-    DXGI_ADAPTER_DESC1 descDxgiAdapter;
-    hR = dxgiAdapter->GetDesc1 ( &descDxgiAdapter );
+    DXGI_ADAPTER_DESC1 dxgiAdapterDesc;
+    hR = dxgiAdapter->GetDesc1 ( &dxgiAdapterDesc );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Acquiring the description of video card failed!" );
       return;
     }
-    videoCardMemory = ( unsigned int) (descDxgiAdapter.DedicatedVideoMemory / 1024 / 1024);
-    videoCardDescription = descDxgiAdapter.Description;
+    videoCardMemory = ( unsigned int) (dxgiAdapterDesc.DedicatedVideoMemory / 1024 / 1024);
+    videoCardDescription = dxgiAdapterDesc.Description;
     rC = dxgiAdapter->Release ();
 
     // flag: needed to get Direct2D interoperability with Direct3D resources
@@ -174,34 +172,37 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
 #endif // !_NOT_DEBUGGING
 
     // filling a swap chain description structure (the type of swap chain)
-    DXGI_SWAP_CHAIN_DESC descSwapC;
-    descSwapC.BufferDesc.Width = 0; // back buffer size, 0: automatic adjustment
-    descSwapC.BufferDesc.Height = 0; // the same
-    if (vSync)
+    DXGI_SWAP_CHAIN_DESC swapChainDesc;
+    swapChainDesc.BufferDesc.Width = 0; // back buffer size, 0: automatic adjustment from already calculated client window area
+    swapChainDesc.BufferDesc.Height = 0; // the same
+    if (vSync) // lock to system settings 60Hz
     {
-      descSwapC.BufferDesc.RefreshRate.Numerator = numerator;
-      descSwapC.BufferDesc.RefreshRate.Denominator = denominator;
-    } else
+      // back buffer to front buffer (screen) draw rate
+      swapChainDesc.BufferDesc.RefreshRate.Numerator = displayMode.RefreshRate.Numerator;
+      swapChainDesc.BufferDesc.RefreshRate.Denominator = displayMode.RefreshRate.Denominator;
+    } else // draw as many times as possible (may cause some visual artefacts)
     {
-      descSwapC.BufferDesc.RefreshRate.Numerator = 0;
-      descSwapC.BufferDesc.RefreshRate.Denominator = 1;
+      // note that not supported values may cause the DirectX to perform a blit instead of a buffer flip,
+      // ending in degraded performance and unknown errors when debugging.
+      swapChainDesc.BufferDesc.RefreshRate.Numerator = 0;
+      swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     }
-    descSwapC.BufferDesc.Format = colourFormat; // display format
-    descSwapC.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // scan-line drawing
-    descSwapC.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED; // image size adjustment to back buffer resolution
+    swapChainDesc.BufferDesc.Format = colourFormat; // display format
+    swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // scan-line drawing
+    swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED; // image size adjustment to back buffer resolution
     // number of multi samplings per pixel and image quality (1 and 0: disable multi sampling (no anti-aliasing))
-    descSwapC.SampleDesc.Count = 1;
-    descSwapC.SampleDesc.Quality = 0;
-    descSwapC.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // back buffer as render output target
-    descSwapC.BufferCount = 3; // including the front buffer (one front buffer and two back buffers)
-    descSwapC.OutputWindow = core->getHandle (); // handle to main window
-    descSwapC.Windowed = true; // recommendation: windowed creation and switch to full screen
+    swapChainDesc.SampleDesc.Count = 1;
+    swapChainDesc.SampleDesc.Quality = 0;
+    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // back buffer as render output target
+    swapChainDesc.BufferCount = 3; // including the front buffer (one front buffer and two back buffers)
+    swapChainDesc.OutputWindow = core->getHandle (); // handle to main window
+    swapChainDesc.Windowed = true; // recommendation: windowed creation and switch to full screen
     // flip (in windowed mode: blit) and discard the content of back buffer after presentation
-    descSwapC.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-    descSwapC.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // allow switching the display mode (advanced)
+    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH; // allow switching the display mode (advanced)
 
     // swap chain creation
-    hR = dxgiFactory->CreateSwapChain ( device.Get (), &descSwapC, &swapChain );
+    hR = dxgiFactory->CreateSwapChain ( device.Get (), &swapChainDesc, &swapChain );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -209,6 +210,15 @@ fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false 
       return;
     }
     rC = dxgiFactory->Release ();
+
+    // Camera application instantiation
+    camera = new (std::nothrow) Camera;
+    if (!camera->isInitialized ())
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Camera initialization failed!" );
+      return;
+    }
 
     initialized = true;
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
@@ -330,7 +340,7 @@ void Direct3D::allocateResources ( void )
       return;
     }
 
-    // render target view creation
+    // render target view creation (attach the obtained back buffer to swap chain)
     // first parameter: the resource for which the render target is created for
     // second parameter describes data type of the specified resource (mipmap but 0 for now)
     // the last parameter returns a pointer to the created render target view
@@ -343,22 +353,26 @@ void Direct3D::allocateResources ( void )
     }
 
     // depth-stencil buffer creation
-    CD3D10_TEXTURE2D_DESC descDepthBuffer;
-    rtBuffer->GetDesc ( &descDepthBuffer ); // retrieves the description of the back buffer and fill! :)
+    // depth buffer purpose: to render polygons properly in 3D space
+    // stencil buffer purpose: to achieve effects such as motion blur, volumetric shadows etc.
+    CD3D10_TEXTURE2D_DESC depthBufferDesc;
+    rtBuffer->GetDesc ( &depthBufferDesc ); // retrieves the back buffer description and fill
     //descDepth.Width = ;
     //descDepth.Height = ;
     //descDepth.MipLevels = 1;
     //descDepth.ArraySize = 1;
-    descDepthBuffer.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24 bits for depth and 8 bits for stencil
+    depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // 24 bits for depth and 8 bits for stencil
     //descDepth.SampleDesc.Count = 1; // multi-sampling (anti-aliasing) match to settings of render target
     //descDepth.SampleDesc.Quality = 0;
-    descDepthBuffer.Usage = D3D10_USAGE_DEFAULT; // value: only GPU will be reading and writing to the resource
-    descDepthBuffer.BindFlags = D3D10_BIND_DEPTH_STENCIL; // how to bind to the different pipeline stages
-    descDepthBuffer.CPUAccessFlags = 0;
-    descDepthBuffer.MiscFlags = 0;
+    depthBufferDesc.Usage = D3D10_USAGE_DEFAULT; // value: only GPU will be reading and writing to the resource
+    depthBufferDesc.BindFlags = D3D10_BIND_DEPTH_STENCIL; // how to bind to the different pipeline stages
+    depthBufferDesc.CPUAccessFlags = 0;
+    depthBufferDesc.MiscFlags = 0;
+    rC = rtBuffer->Release ();
     // texture creation:
     // the second parameter: pointer to initial data (zero for any data, since depth-stencil buffer)
-    hR = device->CreateTexture2D ( &descDepthBuffer, nullptr, &dSbuffer );
+    // note texture 2d function: sorted and rasterized polygons are just coloured pixels in 2d representation
+    hR = device->CreateTexture2D ( &depthBufferDesc, nullptr, &dSbuffer );
     //hR = dsBuffer->QueryInterface ( __uuidof(IDXGISurface1), &dsSurface );
     if (FAILED ( hR ))
     {
@@ -366,29 +380,29 @@ void Direct3D::allocateResources ( void )
                                                 L"Creation of depth-stencil buffer failed!" );
       return;
     }
-    rC = rtBuffer->Release ();
 
     // depth-stencil state description
-    D3D10_DEPTH_STENCIL_DESC descDepthStencil;
-    descDepthStencil.DepthEnable = true;
-    descDepthStencil.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
-    descDepthStencil.DepthFunc = D3D10_COMPARISON_LESS;
-    descDepthStencil.StencilEnable = true;
-    descDepthStencil.StencilReadMask = 0xFF;
-    descDepthStencil.StencilWriteMask = 0xFF;
+    // to control the depth test and its type, that Direct3D performs for each pixel
+    D3D10_DEPTH_STENCIL_DESC depthStencilDesc;
+    depthStencilDesc.DepthEnable = true;
+    depthStencilDesc.DepthWriteMask = D3D10_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D10_COMPARISON_LESS;
+    depthStencilDesc.StencilEnable = true;
+    depthStencilDesc.StencilReadMask = 0xFF;
+    depthStencilDesc.StencilWriteMask = 0xFF;
     // stencil operations (if pixel is front facing)
-    descDepthStencil.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-    descDepthStencil.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
-    descDepthStencil.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-    descDepthStencil.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+    depthStencilDesc.FrontFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilDepthFailOp = D3D10_STENCIL_OP_INCR;
+    depthStencilDesc.FrontFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+    depthStencilDesc.FrontFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
     // stencil operations (if pixel is front facing)
-    descDepthStencil.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
-    descDepthStencil.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
-    descDepthStencil.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
-    descDepthStencil.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
+    depthStencilDesc.BackFace.StencilFailOp = D3D10_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilDepthFailOp = D3D10_STENCIL_OP_DECR;
+    depthStencilDesc.BackFace.StencilPassOp = D3D10_STENCIL_OP_KEEP;
+    depthStencilDesc.BackFace.StencilFunc = D3D10_COMPARISON_ALWAYS;
 
     // depth stencil state creation
-    hR = device->CreateDepthStencilState ( &descDepthStencil, &dSstate );
+    hR = device->CreateDepthStencilState ( &depthStencilDesc, &dSstate );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -399,13 +413,14 @@ void Direct3D::allocateResources ( void )
     device->OMSetDepthStencilState ( dSstate.Get (), 1 );
 
     // depth-stencil view description
-    D3D10_DEPTH_STENCIL_VIEW_DESC descDepthStencilView;
-    descDepthStencilView.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    descDepthStencilView.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
-    descDepthStencilView.Texture2D.MipSlice = 0;
+    // purpose: so the Direct3D use the depth buffer as a depth stencil texture.
+    D3D10_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+    depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthStencilViewDesc.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.Texture2D.MipSlice = 0;
     // depth-stencil view creation
     // the second parameter: zero to access the mipmap level 0
-    hR = device->CreateDepthStencilView ( dSbuffer.Get (), &descDepthStencilView, &dSview );
+    hR = device->CreateDepthStencilView ( dSbuffer.Get (), &depthStencilViewDesc, &dSview );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -414,23 +429,26 @@ void Direct3D::allocateResources ( void )
     }
 
     // binding render target view and depth-stencil view to output render pipeline (for now one render target view)
+    // purpose: rendered graphics by the pipeline will be drawn to the back buffer.
     // second parameter: pointer to first element of a list of render target view pointers
     device->OMSetRenderTargets ( 1, rTview.GetAddressOf (), dSview.Get () );
 
-    // rasterizer description (determines how and what polygons will be drawn)
-    D3D10_RASTERIZER_DESC descRasterizer;
-    descRasterizer.AntialiasedLineEnable = false;
-    descRasterizer.CullMode = D3D10_CULL_BACK;
-    descRasterizer.DepthBias = 0;
-    descRasterizer.DepthBiasClamp = 0.0f;
-    descRasterizer.DepthClipEnable = true;
-    descRasterizer.FillMode = D3D10_FILL_SOLID;
-    descRasterizer.FrontCounterClockwise = false;
-    descRasterizer.MultisampleEnable = false;
-    descRasterizer.ScissorEnable = false;
-    descRasterizer.SlopeScaledDepthBias = 0.0f;
+    // rasterizer description (determines how and which polygons is to be rendered)
+    // for example: render scenes in wireframe mode, draw both front and back faces of polygons
+    // note that by default DirectX creates one rasterizer the same as below, on which developers have no control.
+    D3D10_RASTERIZER_DESC rasterizerDesc;
+    rasterizerDesc.AntialiasedLineEnable = false;
+    rasterizerDesc.CullMode = D3D10_CULL_BACK;
+    rasterizerDesc.DepthBias = 0;
+    rasterizerDesc.DepthBiasClamp = 0.0f;
+    rasterizerDesc.DepthClipEnable = true;
+    rasterizerDesc.FillMode = D3D10_FILL_SOLID;
+    rasterizerDesc.FrontCounterClockwise = false;
+    rasterizerDesc.MultisampleEnable = false;
+    rasterizerDesc.ScissorEnable = false;
+    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
     // rasterizer creation
-    hR = device->CreateRasterizerState ( &descRasterizer, &rasterizerState );
+    hR = device->CreateRasterizerState ( &rasterizerDesc, &rasterizerState );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -441,9 +459,10 @@ void Direct3D::allocateResources ( void )
     device->RSSetState ( rasterizerState.Get () );
 
     // viewport structure: set the viewport to entire back buffer (what area should be rendered to)
+    // with other words: so Direct3D can map clip space coordinates to the render target space
     D3D10_VIEWPORT viewPort;
-    viewPort.Width = descDepthBuffer.Width;
-    viewPort.Height = descDepthBuffer.Height;
+    viewPort.Width = depthBufferDesc.Width;
+    viewPort.Height = depthBufferDesc.Height;
     viewPort.MinDepth = 0.0f; // minimum and maximum depth buffer values
     viewPort.MaxDepth = 1.0f;
     viewPort.TopLeftX = 0; // first four integers: viewport rectangle (relative to client window rectangle)
@@ -452,15 +471,23 @@ void Direct3D::allocateResources ( void )
     // the second parameter is a pointer to an array of viewports
     device->RSSetViewports ( 1, &viewPort );
 
-    // projection matrix setup
+    // projection matrix setup (usable for shaders)
+    // purpose: translates 3D scene into the 2D viewport space
     float viewField { DirectX::XM_PI / 4.0f };
-    float screenAspect { ( float) viewPort.Width / ( float) viewPort.Height };
+    float screenAspect { ( float) depthBufferDesc.Width / ( float) depthBufferDesc.Height };
     // projection matrix creation for 3D rendering
     matrixProjection = DirectX::XMMatrixPerspectiveFovLH ( viewField, screenAspect, screenNear, screenDepth );
-    // word matrix initialization using identity matrix
+
+    // word matrix initialization using identity matrix (usable for shaders)
+    // purpose: converts objects' vertices into vertices in the 3D scene,
+    // additionally to rotate, translate and scale our objects in 3D space
     matrixWorld = DirectX::XMMatrixIdentity ();
-    // orthographic projection matrix creation for 2D rendering
-    matrixOrtho = DirectX::XMMatrixOrthographicLH ( ( float) viewPort.Width, ( float) viewPort.Height, screenNear, screenDepth );
+
+    // generally a view matrix representing the camera is initialized in this section (camera class)
+
+    // orthographic projection matrix creation
+    // purpose: to render 2D elements like user interface directly and skipping 3D rendering
+    matrixOrthographic = DirectX::XMMatrixOrthographicLH ( ( float) viewPort.Width, ( float) viewPort.Height, screenNear, screenDepth );
 
     clearBuffers ();
     initializePipeline ();
@@ -542,6 +569,8 @@ void Direct3D::initializePipeline ( void )
     // load and encapsulate .cso shaders into usable shader objects
 
     HRESULT hR;
+    ID3D10Blob* errorMsg; // HLSL compilation errors container
+
     //std::string fileName { "" };
 
     //ShaderBuffer vertexShaderBuffer; // vertex shader buffer
@@ -556,6 +585,7 @@ void Direct3D::initializePipeline ( void )
     // note that shaders are written in HLSL (High Level Shader Language),
     // Visual Studio is able to create HLSL programs, and after compiling,
     // the HLSL file is compiled into CSO (Compiled Shader Objects), usable by the running program.
+    // note that it is essential to write high efficient vertex shaders: http://www.rastertek.com/dx10s2tut04.html
 
     // Direct3D interface for vertex shaders: vertex shader creation
 
@@ -563,17 +593,24 @@ void Direct3D::initializePipeline ( void )
     //loadShader ( fileName, &vertexBuffer ); // load process
 
     ID3D10Blob* vertexShaderBuffer;
-    ID3D10Blob* error;
+    // directly compile the shader into buffer
     hR = D3DCompileFromFile ( L"./graphics/vertex.hlsl", nullptr, nullptr,
                               "main", "vs_4_1", D3D10_SHADER_ENABLE_STRICTNESS,
-                              0, &vertexShaderBuffer, &error );
+                              0, &vertexShaderBuffer, &errorMsg );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Compilation of vertex shader file failed!" );
+      if (errorMsg)
+      {
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  Converter::strConverter ( ( char*) errorMsg->GetBufferPointer () ) );
+        errorMsg->Release ();
+      }
       return;
     }
 
+    // purpose: invoking the HLSL shaders for drawing the 3D models already on the GPU
     hR = device->CreateVertexShader ( vertexShaderBuffer->GetBufferPointer (),
                                       vertexShaderBuffer->GetBufferSize (), &vertexShader );
     if (FAILED ( hR ))
@@ -591,11 +628,17 @@ void Direct3D::initializePipeline ( void )
     ID3D10Blob* pixelShaderBuffer;
     hR = D3DCompileFromFile ( L"./graphics/pixel.hlsl", nullptr, nullptr,
                               "main", "ps_4_1", D3D10_SHADER_ENABLE_STRICTNESS,
-                              0, &pixelShaderBuffer, &error );
+                              0, &pixelShaderBuffer, &errorMsg );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Compilation of pixel shader file failed!" );
+      if (errorMsg)
+      {
+        PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                  Converter::strConverter ( ( char*) errorMsg->GetBufferPointer () ) );
+        errorMsg->Release ();
+      }
       return;
     }
 
@@ -617,26 +660,26 @@ void Direct3D::initializePipeline ( void )
     // teaching the GPU how to read a custom vertex structure.
     // note that to improve the rendering speed,
     // the GPU can be told what information with each vertex needs to be stored.
-    // note flag D3D10_APPEND_ALIGNED_ELEMENT: introduce the elements one after each other including any packing if necessary,
-    // thus no need to define the offset
-    D3D10_INPUT_ELEMENT_DESC polygonLayout [2];
-    polygonLayout->SemanticName = "POSITION"; // what a certain value is used for
-    polygonLayout->SemanticIndex = 0; // modifies the semantic with an integer index (multiple elements with same semantic)
-    polygonLayout->Format = DXGI_FORMAT_R32G32B32_FLOAT; // 32 bits for each x, y and z
-    polygonLayout->InputSlot = 0; // imput - assembler or input slot through which data is fed to GPU ( Direct3D supports sixteen input slots )
-    polygonLayout->AlignedByteOffset = 0; // the offset between each element in the structure
-    polygonLayout->InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA; // input data class for a single input slot
-    polygonLayout->InstanceDataStepRate = 0; // for now
+    // note flag D3D10_APPEND_ALIGNED_ELEMENT: the elements are one after each other,
+    // therefore automatically figure the spacing out. (no need to define the offset)
+    D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2];
+    polygonLayoutDesc->SemanticName = "POSITION"; // what a certain value is used for
+    polygonLayoutDesc->SemanticIndex = 0; // modifies the semantic with an integer index (multiple elements with same semantic)
+    polygonLayoutDesc->Format = DXGI_FORMAT_R32G32B32_FLOAT; // 32 bits for each x, y and z
+    polygonLayoutDesc->InputSlot = 0; // imput - assembler or input slot through which data is fed to GPU ( Direct3D supports sixteen input slots )
+    polygonLayoutDesc->AlignedByteOffset = 0; // the offset between each element in the structure
+    polygonLayoutDesc->InputSlotClass = D3D10_INPUT_PER_VERTEX_DATA; // input data class for a single input slot
+    polygonLayoutDesc->InstanceDataStepRate = 0; // for now
 
-    polygonLayout [1] = D3D10_INPUT_ELEMENT_DESC
+    polygonLayoutDesc [1] = D3D10_INPUT_ELEMENT_DESC
     { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
       D3D10_APPEND_ALIGNED_ELEMENT, // offset: 3*4 byte of float type
       D3D10_INPUT_PER_VERTEX_DATA, 0 };
 
     // input layout creation (how to handle the defined vertices)
     // the interface holds definition of how to feed vertex data into the input-assembler stage of the graphics rendering pipeline
-    unsigned int numElements { sizeof ( polygonLayout ) / sizeof ( polygonLayout [0] ) };
-    hR = device->CreateInputLayout ( polygonLayout, numElements,
+    unsigned int numElements { sizeof ( polygonLayoutDesc ) / sizeof ( polygonLayoutDesc [0] ) };
+    hR = device->CreateInputLayout ( polygonLayoutDesc, numElements,
                                      vertexShaderBuffer->GetBufferPointer (),
                                      vertexShaderBuffer->GetBufferSize (), &inputLayout );
     if (FAILED ( hR ))
@@ -651,10 +694,9 @@ void Direct3D::initializePipeline ( void )
 
     vertexShaderBuffer->Release ();
     pixelShaderBuffer->Release ();
-    if (error)
-      error->Release ();
 
-    // dynamic matrix constant buffer description (introduced in vertex shader)
+    // dynamic matrix constant buffer description
+    // purpose: to access internal variables introduced in vertex shader
     D3D10_BUFFER_DESC matrixBufferDesc;
     matrixBufferDesc.Usage = D3D10_USAGE_DYNAMIC;
     matrixBufferDesc.ByteWidth = sizeof ( MatrixBuffer );
@@ -692,10 +734,10 @@ void Direct3D::renderMatrices ( void )
     void* mappedResource;
     MatrixBuffer* dataPtr;
 
-    // transpose process (preparation for shader)
+    // transpose process (preparation for shader) (DirectX 10 requirement)
     DirectX::XMMATRIX world, view, projection;
     world = DirectX::XMMatrixTranspose ( matrixWorld );
-    view = DirectX::XMMatrixTranspose ( core->camera->matrixView );
+    view = DirectX::XMMatrixTranspose ( camera->matrixView );
     projection = DirectX::XMMatrixTranspose ( matrixProjection );
 
     // prepare for write (lock the constant buffer)
@@ -728,6 +770,12 @@ void Direct3D::renderMatrices ( void )
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
   }
+};
+
+
+Camera* Direct3D::getCamera ( void )
+{
+  return camera;
 };
 
 

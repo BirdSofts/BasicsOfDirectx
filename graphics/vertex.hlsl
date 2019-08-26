@@ -3,12 +3,12 @@
 /// 
 /// </summary>
 /// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,25.08.2019</changed>
+/// <changed>}Y{,26.08.2019</changed>
 // ********************************************************************************
 
 
 // global declarations
-// matrix type
+// buffer object type, containing three matrices, updated on each execution
 cbuffer MatrixBuffer
 {
   matrix worldMatrix;
@@ -21,19 +21,20 @@ cbuffer MatrixBuffer
 // vertex input
 struct Vertex
 {
-  float4 position : POSITION;
+  float4 position : POSITION; // vertex shaders
   float4 colour : COLOR;
+  // note that using numbers more semantics of the same type is definable
 };
 // pixel output type
 struct Pixel
 {
-  float4 position : SV_POSITION;
+  float4 position : SV_POSITION; // pixel shaders
   float4 colour : COLOR;
 };
 
 
 // vertex shader
-Pixel main ( Vertex input )
+Pixel main ( Vertex input ) // called by GPU when processing data from vertex buffer
 {
   
   // input: vertex position and colour defined by seven floats
@@ -56,6 +57,8 @@ Pixel main ( Vertex input )
   //output.colour = outputCol;
   
   // change the position vector to 4 units (proper matrix calculation)
+  // with other words manipulation of input vertex through world, view and projection matrices,
+  // resulting to the correct vertex location for 3D rendering, and then onto the 2D screen
   input.position.w = 1.0f;
   output.position = mul(input.position, worldMatrix);
   output.position = mul(output.position, viewMatrix);
