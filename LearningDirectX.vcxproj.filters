@@ -45,6 +45,12 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -77,14 +83,20 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
     <None Include="README.md" />
     <None Include="settings.lua" />
-    <None Include="graphics\vertex.hlsl" />
-    <None Include="graphics\pixel.hlsl" />
+    <None Include="graphics\pixelT.hlsl" />
+    <None Include="graphics\vertexT.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
@@ -93,5 +105,12 @@
     <ResourceCompile Include="LearningDirectX.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="graphics\vertex.hlsl" />
+    <FxCompile Include="graphics\pixel.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\clouds.tga" />
   </ItemGroup>
 </Project>

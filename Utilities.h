@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,29.08.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -126,7 +126,7 @@ public:
   template<class tType>
   friend void loggerEngine ( Logger<tType>* ); // write engine
 };
-void problemSolver ( void ); // don't call this function: solution for linker error, when using templates.
+void LoggerClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
 
 
 // configurations container

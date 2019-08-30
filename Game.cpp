@@ -3,15 +3,16 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,27.08.2019</changed>
+/// <changed>ʆϒʅ,31.08.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
 #include "Shared.h"
 
 
-Game::Game ( HINSTANCE& h_instance ) : vertexCountTriangle ( 0 ), vertexCountLine ( 0 ),
-initialized ( false ), allocated ( false )
+Game::Game ( HINSTANCE& h_instance ) :
+  vertexCountTriangles_A ( 0 ), vertexCountLine ( 0 ), vertexCountTriangles_B ( 0 ),
+  initialized ( false ), allocated ( false )
 {
   try
   {
@@ -54,10 +55,10 @@ void Game::allocateResources ( void )
 
     allocated = false;
 
-    vertexCountTriangle = 9;
+    vertexCountTriangles_A = 9;
 
-    // three triangle
-    Vertex triangles [] {
+    // three triangles
+    Vertex triangles_A [] {
       DirectX::XMFLOAT3{-0.95f, 0.0f, 0.0f}, DirectX::XMFLOAT4{0.13f, 0.13f, 0.13f, 1.0f}, // bottom left
       DirectX::XMFLOAT3{-0.9f, -0.12f, 0.0f}, DirectX::XMFLOAT4{0.53f, 0.53f, 0.53f, 1.0f}, // top middle
       DirectX::XMFLOAT3{-1.0f, -0.12f, 0.0f}, DirectX::XMFLOAT4{0.93f, 0.93f, 0.93f, 1.0f}, // bottom right
@@ -70,45 +71,45 @@ void Game::allocateResources ( void )
       DirectX::XMFLOAT3{-0.5f, -0.12f, 0.0f}, DirectX::XMFLOAT4{00.53f, 0.53f, 0.53f, 1.0f},
       DirectX::XMFLOAT3{-0.6f, -0.12f, 0.0f}, DirectX::XMFLOAT4{0.93f, 0.93f, 0.93f, 1.0f}
     };
-    unsigned long trianglesIndices [] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    unsigned long trianglesIndices_A [] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
     // buffer description
-    D3D10_BUFFER_DESC vertexBufferDescT;
-    vertexBufferDescT.ByteWidth = sizeof ( Vertex ) * ARRAYSIZE ( triangles ); // buffer size
-    vertexBufferDescT.Usage = D3D10_USAGE_DEFAULT; // default: only GPC can read and write
-    vertexBufferDescT.BindFlags = D3D10_BIND_VERTEX_BUFFER; // how to bound to graphics pipeline
-    vertexBufferDescT.CPUAccessFlags = 0; // CPU access
+    D3D10_BUFFER_DESC vertexBufferDescT_A;
+    vertexBufferDescT_A.ByteWidth = sizeof ( Vertex ) * ARRAYSIZE ( triangles_A ); // buffer size
+    vertexBufferDescT_A.Usage = D3D10_USAGE_DEFAULT; // default: only GPC can read and write
+    vertexBufferDescT_A.BindFlags = D3D10_BIND_VERTEX_BUFFER; // how to bound to graphics pipeline
+    vertexBufferDescT_A.CPUAccessFlags = 0; // CPU access
     //descBufferTriangle.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
-    vertexBufferDescT.MiscFlags = 0; // for now
+    vertexBufferDescT_A.MiscFlags = 0; // for now
     //descBufferTriangle.StructureByteStride = 0; // Direct3D 11: structured buffer (the size of each element)
 
     // data, with which the buffer is initialized
-    D3D10_SUBRESOURCE_DATA vertexDateTriangle = {
-      triangles, // pointer to data in system memory (copy to GPU)
+    D3D10_SUBRESOURCE_DATA vertexDataTriangles_A = {
+      triangles_A, // pointer to data in system memory (copy to GPU)
       0, // distance between the lines of the texture in bytes (not needed for vertex buffer)
       0 }; // distance between the depth levels in bytes (not needed for vertex buffer)
 
     // vertex buffer: purpose: maintain system and video memory
     // note E_OUTOFMEMORY: self-explanatory
-    if (FAILED ( core->d3d->device->CreateBuffer ( &vertexBufferDescT, &vertexDateTriangle, &vertexBuffer [0] ) ))
+    if (FAILED ( core->d3d->device->CreateBuffer ( &vertexBufferDescT_A, &vertexDataTriangles_A, &vertexBuffer [0] ) ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of triangle vertex buffer failed!" );
       return;
     }
 
-    D3D10_BUFFER_DESC indexBufferDescT;
-    indexBufferDescT.ByteWidth = sizeof ( Vertex ) * vertexCountTriangle;
-    indexBufferDescT.Usage = D3D10_USAGE_DEFAULT;
-    indexBufferDescT.BindFlags = D3D10_BIND_INDEX_BUFFER;
-    indexBufferDescT.CPUAccessFlags = 0;
+    D3D10_BUFFER_DESC indexBufferDescT_A;
+    indexBufferDescT_A.ByteWidth = sizeof ( long ) * vertexCountTriangles_A;
+    indexBufferDescT_A.Usage = D3D10_USAGE_DEFAULT;
+    indexBufferDescT_A.BindFlags = D3D10_BIND_INDEX_BUFFER;
+    indexBufferDescT_A.CPUAccessFlags = 0;
     //descIndexBufferTriangle.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
-    indexBufferDescT.MiscFlags = 0;
+    indexBufferDescT_A.MiscFlags = 0;
     //descIndexBufferTriangle.StructureByteStride = 0;
 
-    D3D10_SUBRESOURCE_DATA indexDateTriangle = { trianglesIndices, 0, 0 };
+    D3D10_SUBRESOURCE_DATA indexDateTriangles_A = { trianglesIndices_A, 0, 0 };
 
-    if (FAILED ( core->d3d->device->CreateBuffer ( &indexBufferDescT, &indexDateTriangle, &indexBuffer [0] ) ))
+    if (FAILED ( core->d3d->device->CreateBuffer ( &indexBufferDescT_A, &indexDateTriangles_A, &indexBuffer [0] ) ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of triangle vertex buffer failed!" );
@@ -117,7 +118,7 @@ void Game::allocateResources ( void )
 
 
 
-    vertexCountLine = 3;
+    vertexCountLine = 2;
 
     // a line
     Vertex line [] {
@@ -144,7 +145,7 @@ void Game::allocateResources ( void )
     }
 
     D3D10_BUFFER_DESC indexBufferDescL;
-    indexBufferDescL.ByteWidth = sizeof ( Vertex ) * vertexCountLine;
+    indexBufferDescL.ByteWidth = sizeof ( long ) * vertexCountLine;
     indexBufferDescL.Usage = D3D10_USAGE_DYNAMIC;
     indexBufferDescL.BindFlags = D3D10_BIND_INDEX_BUFFER;
     indexBufferDescL.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
@@ -158,6 +159,67 @@ void Game::allocateResources ( void )
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Creation of line vertex buffer failed!" );
+    }
+
+
+
+    texture = new (std::nothrow) Texture<TargaHeader>
+      ( core->d3d->device.Get (), "./textures/clouds.tga" ); // a texture file
+
+    if (!texture)
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Instantiation of texture failed!" );
+      return;
+    }
+
+    vertexCountTriangles_B = 6;
+
+    VertexT triangles_B [] {
+      DirectX::XMFLOAT3{-0.4f, -0.4f, 0.0f}, DirectX::XMFLOAT2{0.0f, 1.0f},
+      DirectX::XMFLOAT3{-0.4f, 0.0f, 0.0f}, DirectX::XMFLOAT2{0.0f, 0.0f},
+      DirectX::XMFLOAT3{0.0f, -0.4f, 0.0f}, DirectX::XMFLOAT2{1.0f, 1.0f},
+
+      DirectX::XMFLOAT3{-0.4f, 0.0f, 0.0f}, DirectX::XMFLOAT2{0.0f, 0.0f},
+      DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f}, DirectX::XMFLOAT2{1.0f, 0.0f},
+      DirectX::XMFLOAT3{0.0f, -0.4f, 0.0f}, DirectX::XMFLOAT2{1.0f, 1.0f}
+    };
+    unsigned long trianglesIndices_B [] { 0, 1, 2, 3, 4, 5 };
+
+    D3D10_BUFFER_DESC vertexBufferDescT_B;
+    vertexBufferDescT_B.ByteWidth = sizeof ( VertexT ) * vertexCountTriangles_B;
+    vertexBufferDescT_B.Usage = D3D10_USAGE_DEFAULT;
+    vertexBufferDescT_B.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+    vertexBufferDescT_B.CPUAccessFlags = 0;
+    //descBufferTriangle.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+    vertexBufferDescT_B.MiscFlags = 0;
+    //descBufferTriangle.StructureByteStride = 0; // Direct3D 11: structured buffer (the size of each element)
+
+    D3D10_SUBRESOURCE_DATA vertexDataTriangles_B = { triangles_B, 0, 0 };
+
+    if (FAILED ( core->d3d->device->CreateBuffer ( &vertexBufferDescT_B, &vertexDataTriangles_B, &vertexBufferT ) ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Creation of triangle vertex buffer failed!" );
+      return;
+    }
+
+    D3D10_BUFFER_DESC indexBufferDescT_B;
+    indexBufferDescT_B.ByteWidth = sizeof ( long ) * vertexCountTriangles_B;
+    indexBufferDescT_B.Usage = D3D10_USAGE_DEFAULT;
+    indexBufferDescT_B.BindFlags = D3D10_BIND_INDEX_BUFFER;
+    indexBufferDescT_B.CPUAccessFlags = 0;
+    //descIndexBufferTriangle.MiscFlags = D3D10_RESOURCE_MISC_GDI_COMPATIBLE;
+    indexBufferDescT_B.MiscFlags = 0;
+    //descIndexBufferTriangle.StructureByteStride = 0;
+
+    D3D10_SUBRESOURCE_DATA indexDateTriangle_B = { trianglesIndices_B, 0, 0 };
+
+    if (FAILED ( core->d3d->device->CreateBuffer ( &indexBufferDescT_B, &indexDateTriangle_B, &indexBufferT ) ))
+    {
+      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                                L"Creation of triangle vertex buffer failed!" );
+      return;
     }
 
     allocated = true;
@@ -293,11 +355,22 @@ void Game::render ( void )
 
     core->d3d->clearBuffers ();
 
+
     core->d3d->camera->render ();
     core->d3d->renderMatrices ();
 
+
     if (core->d2d && core->debug)
       core->d2d->debugInfos (); // -- fps on screen representation
+
+
+
+    // setting the active vertex/pixel shaders (active shader technique)
+    core->d3d->device->VSSetShader ( core->d3d->shader->vertexShader.Get () );
+    core->d3d->device->PSSetShader ( core->d3d->shader->pixelShader.Get () );
+
+    // setting the active input layout
+    core->d3d->device->IASetInputLayout ( core->d3d->shader->inputLayout.Get () );
 
     // set the active vertex and index buffers (binds an array of vertex/index buffers to input-assembler stage)
     // basically, which vertices to put to graphics pipeline when rendering
@@ -314,12 +387,37 @@ void Game::render ( void )
     core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
 
     // draw indexed vertices, starting from vertex 0
-    core->d3d->device->DrawIndexed ( vertexCountTriangle, 0, 0 );
+    core->d3d->device->DrawIndexed ( vertexCountTriangles_A, 0, 0 );
+
+
 
     core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBuffer [1].GetAddressOf (), &strides, &offset );
     core->d3d->device->IASetIndexBuffer ( indexBuffer [1].Get (), DXGI_FORMAT_R32_UINT, 0 );
     core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_LINELIST );
     core->d3d->device->DrawIndexed ( vertexCountLine, 0, 0 );
+
+
+
+    //// setting the active texture
+    //core->d3d->device->PSSetShaderResources ( 0, 1, texture->getTexture () );
+
+    core->d3d->device->VSSetShader ( core->d3d->shader->vertexShaderT.Get () );
+    core->d3d->device->PSSetShader ( core->d3d->shader->pixelShaderT.Get () );
+
+    core->d3d->device->IASetInputLayout ( core->d3d->shader->inputLayoutT.Get () );
+
+    // setting the active sampler
+    core->d3d->device->PSSetSamplers ( 0, 1, core->d3d->shader->samplerState.GetAddressOf () );
+
+    strides = sizeof ( VertexT );
+
+    core->d3d->device->IASetVertexBuffers ( 0, 1, vertexBufferT.GetAddressOf (), &strides, &offset );
+    core->d3d->device->IASetIndexBuffer ( indexBufferT.Get (), DXGI_FORMAT_R32_UINT, 0 );
+
+    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+    // draw indexed vertices, starting from vertex 0
+    core->d3d->device->DrawIndexed ( vertexCountTriangles_B, 0, 0 );
 
   }
   catch (const std::exception& ex)
@@ -422,10 +520,13 @@ void Game::shutdown ( void )
     initialized = false;
     unsigned long rC { 0 };
     //HRESULT hR;
-    rC = vertexBuffer [0].Reset ();
-    rC = vertexBuffer [1].Reset ();
     rC = indexBuffer [0].Reset ();
     rC = indexBuffer [1].Reset ();
+    rC = vertexBuffer [0].Reset ();
+    rC = vertexBuffer [1].Reset ();
+    texture->Release ();
+    rC = indexBufferT.Reset ();
+    rC = vertexBufferT.Reset ();
     if (core)
     {
       core->shutdown ();

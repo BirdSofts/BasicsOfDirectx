@@ -7,7 +7,7 @@
 // ********************************************************************************
 
 
-// vertex input type
+// vertex (input type)
 struct Vertex
 {
   float4 position : SV_POSITION;
@@ -16,7 +16,7 @@ struct Vertex
 
 
 // pixel shader: draws each pixel on the polygons that will be rendered to the screen.
-float4 main ( Vertex input ) : SV_TARGET // called by GPU when the output of vertex shader is ready
+float4 main( Vertex input ) : SV_TARGET // called by GPU when the output of vertex shader is ready
 //float4 main ( float4 pos : SV_POSITION, float4 col : COLOR  ) : SV_TARGET
 {
   

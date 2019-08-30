@@ -3,10 +3,12 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,27.08.2019</changed>
+/// <changed>ʆϒʅ,30.08.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
+#include "Texture.h"
+
 
 #ifndef GAME_H
 #define GAME_H
@@ -17,6 +19,13 @@ struct Vertex
 {
   DirectX::XMFLOAT3 position;
   DirectX::XMFLOAT4 color;
+};
+
+
+struct VertexT
+{
+  DirectX::XMFLOAT3 position;
+  DirectX::XMFLOAT2 texture;
 };
 
 
@@ -33,10 +42,16 @@ private:
   // Note index buffers purposes: record the location of each vertex introduced in vertex buffer,
   // achieving much hider speed, and helps to cache the vertices data in faster locations of video memory.
   Microsoft::WRL::ComPtr<ID3D10Buffer> indexBuffer [2]; // triangle, line index buffer
-  unsigned int vertexCountTriangle; // triangles' vertices count
+  unsigned int vertexCountTriangles_A; // triangles' vertices count
   unsigned int vertexCountLine; // line's vertices count
 
   D3D10_MAPPED_TEXTURE2D mappedLine; // mapped structure to update the resource (D3D11_MAPPED_SUBRESOURCE)
+
+  Microsoft::WRL::ComPtr<ID3D10Buffer> vertexBufferT; // textured triangle vertex buffer
+  Microsoft::WRL::ComPtr<ID3D10Buffer> indexBufferT; // textured triangle index buffer
+  unsigned int vertexCountTriangles_B; // textured triangle vertices count
+
+  Texture<TargaHeader>* texture; // texture resource
 
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful

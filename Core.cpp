@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,31.08.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -244,10 +244,12 @@ void TheCore::resizeResources ( const bool& displayMode )
       // free game resources
       if (game->vertexBuffer [0] && game->indexBuffer [1])
       {
-        rC = game->vertexBuffer [0].Reset ();
-        rC = game->vertexBuffer [1].Reset ();
         rC = game->indexBuffer [0].Reset ();
         rC = game->indexBuffer [1].Reset ();
+        rC = game->vertexBuffer [0].Reset ();
+        rC = game->vertexBuffer [1].Reset ();
+        rC = game->indexBufferT.Reset ();
+        rC = game->vertexBufferT.Reset ();
       }
 
       // free Direct2D resources
@@ -268,10 +270,14 @@ void TheCore::resizeResources ( const bool& displayMode )
       if (d3d->dSview && d3d->rTview && !rC)
       {
         d3d->device->ClearState ();
-        rC = d3d->matrixBuffer.Reset ();
-        rC = d3d->inputLayout.Reset ();
-        rC = d3d->pixelShader.Reset ();
-        rC = d3d->vertexShader.Reset ();
+        rC = d3d->shader->samplerState.Reset ();
+        rC = d3d->shader->matrixBuffer.Reset ();
+        rC = d3d->shader->inputLayoutT.Reset ();
+        rC = d3d->shader->pixelShaderT.Reset ();
+        rC = d3d->shader->vertexShaderT.Reset ();
+        rC = d3d->shader->inputLayout.Reset ();
+        rC = d3d->shader->pixelShader.Reset ();
+        rC = d3d->shader->vertexShader.Reset ();
         rC = d3d->rasterizerState.Reset ();
         d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
         rC = d3d->dSview.Reset ();
@@ -355,10 +361,14 @@ void TheCore::shutdown ( void )
     {
       d3d->initialized = false;
       d3d->device->ClearState ();
-      rC = d3d->matrixBuffer.Reset ();
-      rC = d3d->inputLayout.Reset ();
-      rC = d3d->pixelShader.Reset ();
-      rC = d3d->vertexShader.Reset ();
+      rC = d3d->shader->samplerState.Reset ();
+      rC = d3d->shader->matrixBuffer.Reset ();
+      rC = d3d->shader->inputLayoutT.Reset ();
+      rC = d3d->shader->pixelShaderT.Reset ();
+      rC = d3d->shader->vertexShaderT.Reset ();
+      rC = d3d->shader->inputLayout.Reset ();
+      rC = d3d->shader->pixelShader.Reset ();
+      rC = d3d->shader->vertexShader.Reset ();
       rC = d3d->rasterizerState.Reset ();
       d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
       rC = d3d->dSview.Reset ();

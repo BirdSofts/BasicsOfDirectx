@@ -2,8 +2,8 @@
 /// <summary>
 /// 
 /// </summary>
-/// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,27.08.2019</changed>
+/// <created>}Y{,29.08.2019</created>
+/// <changed>}Y{,29.08.2019</changed>
 // ********************************************************************************
 
 
@@ -18,45 +18,40 @@ cbuffer MatrixBuffer
 
 
 // type declarations
-// vertex (input type)
+// texture vertex/pixel (input type)
 struct Vertex
 {
   float4 position : POSITION; // vertex shaders
-  float4 colour : COLOR;
-  // note that using numbers, more semantics of the same type is definable
+  float2 tex : TEXCOORD0;
 };
 
 
-// pixel (output type)
+// texture vertex/pixel (output type)
 struct Pixel
 {
   float4 position : SV_POSITION; // pixel shaders
-  float4 colour : COLOR;
+  float2 tex : TEXCOORD0;
 };
 
 
-// vertex shader: calculate the vertex location by matrices and prepare the output for pixel shader
+// texture vertex shader: calculate the vertex location by matrices and prepare the output for texture pixel shader
 Pixel main( Vertex input ) // called by GPU when processing data from vertex buffer
 {
   
-  // input: vertex position and colour defined by seven floats
-  // indicated by the POSITION and COLOR semantic
-  
-  ////xx process:
-  //-- transformation of position into homogenous coordinates (projective geometry),
+  // input: vertex position and texture coordinate defined by six floats
+  // indicated by the POSITION and TEXCOORD0 semantic
+
+  // TEXCOORD0 semantic: texture coordinate: float U (width) and float V (height) (texture dimension, each from 0.0f to 1.0f)
+  // note that since multiple texture coordinates are allowed,
+  // the possibility is there to change the zero to any number, indicating the set of coordinates.
   
   // process:
   // vertex position calculation: (against world, view, and projection matrices)
   
   // output:
-  //-- passing the colour of each position to pixel shader
+  //-- passing the texture coordinate of each position to pixel shader
   
   Pixel output; // output vertex structure
-  
-  //float4 outputPos = { input.position.x, input.position.y, input.position.z, input.position.w };
-  //output.position = outputPos;
-  //float4 outputCol = { input.colour.x, input.colour.y, input.colour.z, input.colour.w };
-  //output.colour = outputCol;
   
   // change the position vector to 4 units (proper matrix calculation)
   input.position.w = 1.0f;
@@ -65,8 +60,8 @@ Pixel main( Vertex input ) // called by GPU when processing data from vertex buf
   output.position = mul(input.position, worldMatrix);
   output.position = mul(output.position, viewMatrix);
   output.position = mul(output.position, projectionMatrix);
-  // additionally store input colour (for pixel shader)
-  output.colour = input.colour;
+  // additionally store input texture coordinate (for pixel shader)
+  output.tex = input.tex;
 
   return output;
   

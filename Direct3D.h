@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,27.08.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -24,16 +24,6 @@
 #include "Shared.h"
 
 
-// shader buffer
-struct ShaderBuffer
-{
-  byte* buffer;
-  long long size;
-  ShaderBuffer ( void );
-  ~ShaderBuffer ( void );
-};
-
-
 // matrix buffer (matching the global cbuffer type introduced in vertex shader)
 struct MatrixBuffer
 {
@@ -48,6 +38,7 @@ class Direct3D
 {
   friend class TheCore;
   friend class Direct2D;
+  friend class Shader;
   friend class Camera;
   friend class Game;
 private:
@@ -93,6 +84,8 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D10RasterizerState> rasterizerState; // rasterizer state
 
+  Shader* shader; // pointer to shaders container
+
   Camera* camera; // pointer to the camera application
 
   DirectX::XMMATRIX matrixProjection; // projection matrix (translation of 3D scene into the 2D viewport space)
@@ -100,11 +93,6 @@ private:
   DirectX::XMMATRIX matrixOrthographic; // orthographic matrix (2D rendering)
   const float screenDepth { 1000.0f }; // depth settings
   const float screenNear { 0.1f }; // depth settings
-
-  Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
-  Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
-  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout; // layout of the vertex data
-  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer (to interface with shader)
 
   bool fullscreen; // application configuration
   bool vSync; // application configuration (if true render according installed monitor refresh rate)
@@ -118,10 +106,8 @@ public:
   void displayModeSetter ( void ); // Direct3D display mode change/adjust
   void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
-  void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
-  void initializePipeline ( void ); // rendering pipeline (GPU) initialization
   void renderMatrices ( void ); // map matrix buffer and update
-  Camera* getCamera ( void ); // camera application access
+  Camera* getCamera ( void ); // get the pointer to camera application
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
 };
 
