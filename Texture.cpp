@@ -49,9 +49,6 @@ Texture<fileType>::Texture ( ID3D10Device1* device, const char* path ) :
     textureDesc.CPUAccessFlags = 0;
     textureDesc.MiscFlags = D3D10_RESOURCE_MISC_GENERATE_MIPS;
 
-    //cc* ccData = reinterpret_cast<cc*>(data);
-    //D3D10_SUBRESOURCE_DATA sub = { data, 0, 0 };
-
     // empty texture creation
     hR = device->CreateTexture2D ( &textureDesc, nullptr, &texture );
     if (FAILED ( hR ))

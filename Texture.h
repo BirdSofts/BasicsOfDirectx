@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.08.2019</created>
-/// <changed>ʆϒʅ,30.08.2019</changed>
+/// <changed>ʆϒʅ,01.09.2019</changed>
 // ********************************************************************************
 
 #ifndef TEXTURE_H
@@ -44,7 +44,7 @@ public:
   ID3D10ShaderResourceView** const getTexture ( void ); // get texture data (unsuccessful texture file loading: nullptr)
   void Release ( void ); // resource releaser
 };
-void TextureClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
+void O2DmodelClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
 
 
 #endif // !TEXTURE_H

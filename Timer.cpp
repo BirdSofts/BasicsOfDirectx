@@ -3,16 +3,17 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,31.08.2019</changed>
 // ********************************************************************************
 
 #include "Timer.h"
 #include "Shared.h"
 
 
-Timer::Timer ( void ) : initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ), timePreviousFrame ( 0 ),
-timeLastStopped ( 0 ), timeTotalIdle ( 0 ),
-secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
+Timer::Timer ( void ) :
+  initialized ( false ), timeStart ( 0 ), timeCurrentFrame ( 0 ),
+  timePreviousFrame ( 0 ), timeLastStopped ( 0 ), timeTotalIdle ( 0 ),
+  secondsPerCount ( 0.0 ), timeDelta ( 0.0 ), paused ( false )
 {
   try
   {

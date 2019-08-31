@@ -3,18 +3,18 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,31.08.2019</changed>
+/// <changed>ʆϒʅ,01.09.2019</changed>
 // ********************************************************************************
 
 #include "Direct3D.h"
 
 
-Direct3D::Direct3D ( TheCore* coreObj ) : core ( coreObj ),
-// reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
-colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
-displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ),
-shader ( nullptr ), camera ( nullptr ),
-fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false )
+Direct3D::Direct3D ( TheCore* coreObj ) :
+  core ( coreObj ), colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
+  // reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
+  displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ),
+  shader ( nullptr ), camera ( nullptr ),
+  fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false )
 {
   try
   {
@@ -558,9 +558,6 @@ void Direct3D::renderMatrices ( void )
     // activate the updated constant matrix buffer in the vertex shader
     // first parameter: position of the constant buffer in the vertex shader
     device->VSSetConstantBuffers ( 0, 1, shader->matrixBuffer.GetAddressOf () );
-
-    // setting the active texture
-    core->d3d->device->PSSetShaderResources ( 0, 1, core->game->texture->getTexture () );
 
   }
   catch (const std::exception& ex)

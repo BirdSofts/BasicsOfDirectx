@@ -3,15 +3,16 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,31.08.2019</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
 #include "Shared.h"
 
 
-Direct2D::Direct2D ( TheCore* coreObj ) : core ( coreObj ), textLayoutsDebug ( false ),
-initialized ( false ), allocated ( false )
+Direct2D::Direct2D ( TheCore* coreObj ) :
+  core ( coreObj ), textLayoutsDebug ( false ),
+  initialized ( false ), allocated ( false )
 {
   try
   {

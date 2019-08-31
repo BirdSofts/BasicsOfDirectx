@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,31.08.2019</changed>
+/// <changed>ʆϒʅ,01.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -242,15 +242,9 @@ void TheCore::resizeResources ( const bool& displayMode )
       //HRESULT hR;
 
       // free game resources
-      if (game->vertexBuffer [0] && game->indexBuffer [1])
-      {
-        rC = game->indexBuffer [0].Reset ();
-        rC = game->indexBuffer [1].Reset ();
-        rC = game->vertexBuffer [0].Reset ();
-        rC = game->vertexBuffer [1].Reset ();
-        rC = game->indexBufferT.Reset ();
-        rC = game->vertexBufferT.Reset ();
-      }
+      //if (game->vertexBuffer [0] && game->indexBuffer [1])
+      //{
+      //}
 
       // free Direct2D resources
       if (d2d && !rC)

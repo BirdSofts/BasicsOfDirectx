@@ -3,30 +3,16 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,30.08.2019</changed>
+/// <changed>ʆϒʅ,01.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
 #include "Texture.h"
+#include "2Dmodels.h"
 
 
 #ifndef GAME_H
 #define GAME_H
-
-
-// vertex data
-struct Vertex
-{
-  DirectX::XMFLOAT3 position;
-  DirectX::XMFLOAT4 color;
-};
-
-
-struct VertexT
-{
-  DirectX::XMFLOAT3 position;
-  DirectX::XMFLOAT2 texture;
-};
 
 
 class Game
@@ -37,27 +23,19 @@ class Game
 private:
   TheCore* core; // pointer to the framework core
 
-  // 3D models buffer containers, drawn by invoked shaders that are compiled into vertex/pixel shaders
-  Microsoft::WRL::ComPtr<ID3D10Buffer> vertexBuffer [2]; // triangle, line vertex buffer
-  // Note index buffers purposes: record the location of each vertex introduced in vertex buffer,
-  // achieving much hider speed, and helps to cache the vertices data in faster locations of video memory.
-  Microsoft::WRL::ComPtr<ID3D10Buffer> indexBuffer [2]; // triangle, line index buffer
-  unsigned int vertexCountTriangles_A; // triangles' vertices count
-  unsigned int vertexCountLine; // line's vertices count
+  Triangles* trianglesObj; // three triangles
 
-  D3D10_MAPPED_TEXTURE2D mappedLine; // mapped structure to update the resource (D3D11_MAPPED_SUBRESOURCE)
-
-  Microsoft::WRL::ComPtr<ID3D10Buffer> vertexBufferT; // textured triangle vertex buffer
-  Microsoft::WRL::ComPtr<ID3D10Buffer> indexBufferT; // textured triangle index buffer
-  unsigned int vertexCountTriangles_B; // textured triangle vertices count
+  Line* lineObj; // a line (clockwise turn, dynamic rewrite)
 
   Texture<TargaHeader>* texture; // texture resource
+  TexturedTriangles* texturedTrianglesObj; // two textured triangles
 
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful
 public:
   Game ( HINSTANCE& ); // game initialization
   void allocateResources ( void ); // resources creation
+  //void validate ( void ); // validate the allocation of game resources
   const bool& isReady ( void ); // get the initialized state
   const bool run ( void ); // game engine loop
   void render ( void ); // render the scene

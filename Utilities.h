@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,29.08.2019</changed>
+/// <changed>ʆϒʅ,01.09.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
 
-#include <string.h> // C++ standard string class
+#include <string> // C++ standard string class
 #include <locale> // C++ standard locals (facets of the below header is declared here)
 #include <codecvt> // C++ standard Unicode conversion facets
 

@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="2Dmodels.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Direct2D.cpp" />
     <ClCompile Include="Direct3D.cpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="2Dmodels.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Direct2D.h" />
     <ClInclude Include="Direct3D.h" />
