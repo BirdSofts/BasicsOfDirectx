@@ -157,6 +157,7 @@
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="LearningDirectX.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shared.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shared.h" />
     <ClInclude Include="Texture.h" />
@@ -192,6 +194,13 @@
     <ResourceCompile Include="LearningDirectX.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="graphics\light.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="graphics\pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.08.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #ifndef TEXTURE_H
@@ -33,6 +33,8 @@ template <typename fileType>
 class Texture
 {
 private:
+  ID3D10Device1* device;
+
   fileType file; // different file formats
   unsigned char* data; // raw file data holder
   ID3D10Texture2D* texture; // structured texture data, rendered by DirectX
@@ -42,9 +44,9 @@ private:
 public:
   Texture ( ID3D10Device1*, const char* );
   ID3D10ShaderResourceView** const getTexture ( void ); // get texture data (unsuccessful texture file loading: nullptr)
-  void Release ( void ); // resource releaser
+  void release ( void ); // resource releaser
 };
-void O2DmodelClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
+void TextureClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
 
 
 #endif // !TEXTURE_H

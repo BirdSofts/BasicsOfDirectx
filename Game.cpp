@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
@@ -50,6 +50,10 @@ void Game::allocateResources ( void )
   {
 
     allocated = false;
+
+    shaderColour = new (std::nothrow) ShaderColour ( core->d3d->device.Get () );
+
+    shaderTexture = new (std::nothrow) ShaderTexture ( core->d3d->device.Get () );
 
     trianglesObj = new (std::nothrow) Triangles ( core->d3d->device.Get () );
 
@@ -209,11 +213,11 @@ void Game::render ( void )
 
 
     // setting the active vertex/pixel shaders (active shader technique)
-    core->d3d->device->VSSetShader ( core->d3d->shader->vertexShader.Get () );
-    core->d3d->device->PSSetShader ( core->d3d->shader->pixelShader.Get () );
+    core->d3d->device->VSSetShader ( shaderColour->getVertexShader () );
+    core->d3d->device->PSSetShader ( shaderColour->getPixelShader () );
 
     // setting the active input layout
-    core->d3d->device->IASetInputLayout ( core->d3d->shader->inputLayout.Get () );
+    core->d3d->device->IASetInputLayout ( shaderColour->getInputLayout () );
 
     // set the active vertex and index buffers (binds an array of vertex/index buffers to input-assembler stage)
     // basically, which vertices to put to graphics pipeline when rendering
@@ -244,13 +248,13 @@ void Game::render ( void )
     // setting the active texture
     core->d3d->device->PSSetShaderResources ( 0, 1, texture->getTexture () );
 
-    core->d3d->device->VSSetShader ( core->d3d->shader->vertexShaderT.Get () );
-    core->d3d->device->PSSetShader ( core->d3d->shader->pixelShaderT.Get () );
+    core->d3d->device->VSSetShader ( shaderTexture->getVertexShader () );
+    core->d3d->device->PSSetShader ( shaderTexture->getPixelShader () );
 
-    core->d3d->device->IASetInputLayout ( core->d3d->shader->inputLayoutT.Get () );
+    core->d3d->device->IASetInputLayout ( shaderTexture->getInputLayout () );
 
     // setting the active sampler
-    core->d3d->device->PSSetSamplers ( 0, 1, core->d3d->shader->samplerState.GetAddressOf () );
+    core->d3d->device->PSSetSamplers ( 0, 1, shaderTexture->getSamplerState () );
 
     strides = sizeof ( VertexT );
 
@@ -302,8 +306,12 @@ void Game::shutdown ( void )
     delete lineObj;
     texturedTrianglesObj->release ();
     delete texturedTrianglesObj;
-    texture->Release ();
+    texture->release ();
     delete texture;
+    shaderTexture->release ();
+    delete shaderTexture;
+    shaderColour->release ();
+    delete shaderColour;
     if (core)
     {
       core->shutdown ();

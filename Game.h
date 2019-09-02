@@ -3,10 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
+#include "Shader.h"
 #include "Texture.h"
 #include "2Dmodels.h"
 
@@ -22,6 +23,9 @@ class Game
   friend class Direct2D;
 private:
   TheCore* core; // pointer to the framework core
+
+  ShaderColour* shaderColour;
+  ShaderTexture* shaderTexture;
 
   Triangles* trianglesObj; // three triangles
 

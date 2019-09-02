@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 
@@ -13,7 +13,7 @@
 
 template <class tType>
 O2Dmodel<tType>::O2Dmodel ( ID3D10Device1* dev, std::wstring entry, bool rewrite ) :
-  device ( dev ), entryPoint ( entry ),
+  entryPoint ( entry ), dynamic ( rewrite ), device ( dev ),
   vertexBuffer ( nullptr ), indexBuffer ( nullptr )
 {
   subResourceDate.pSysMem = nullptr;
@@ -113,12 +113,26 @@ ID3D10Buffer* const O2Dmodel<tType>::getIndexBuffer ( void )
 template <class tType>
 void O2Dmodel<tType>::release ( void )
 {
-  if (indexBuffer)
-    indexBuffer->Release ();
-  if (vertexBuffer)
-    vertexBuffer->Release ();
+  try
+  {
+    if (indexBuffer)
+    {
+      indexBuffer->Release ();
+      indexBuffer = nullptr;
+    }
+    if (vertexBuffer)
+    {
+      vertexBuffer->Release ();
+      vertexBuffer = nullptr;
+    }
 
-  device = nullptr;
+    device = nullptr;
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
 };
 
 
@@ -134,7 +148,6 @@ void O2DmodelClassLinker ( void ) // don't call this function: solution for link
   tempVertexT.getIndexBuffer ();
   tempVertexT.getVertexBuffer ();
   tempVertexT.release ();
-
 }
 
 
@@ -329,7 +342,7 @@ TexturedTriangles::TexturedTriangles ( ID3D10Device1* dev ) :
     verticesData [5].texture = DirectX::XMFLOAT2 { 1.0f, 1.0f };
 
     // triangles' vertices indices
-    for (unsigned short i = 0; i < 7; i++)
+    for (unsigned short i = 0; i < 6; i++)
       verticesIndex [i] = i;
 
     if (allocate ( verticesData, verticesIndex, verticesCount ))

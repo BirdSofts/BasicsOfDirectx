@@ -3,55 +3,93 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,27.08.2019</created>
-/// <changed>ʆϒʅ,29.08.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #ifndef SHADER_H
 #define SHADER_H
 
 
-#include "Core.h"
-#include "Shared.h"
+#include <d3d10_1.h>
+#include <d3dcompiler.h> // standard DirectX3D compiler APIs (shader compiler)
+#pragma comment (lib, "d3dcompiler.lib") // linkage to the 'd3dcompiler' library
+#include <string>
 
 
 // shader buffer
-struct ShaderBuffer
+class Shader
 {
-  byte* buffer;
-  long long size;
-  ShaderBuffer ( void );
-  ~ShaderBuffer ( void );
-  void Release ( void );
+  //friend class TheCore;
+  //friend class Direct3D;
+  //friend class Game;
+private:
+  struct Buffer // shader buffer
+  {
+    byte* buffer;
+    long long size;
+    Buffer ( void );
+    ~Buffer ( void );
+    void release ( void );
+  };
+protected:
+  ID3D10Device1* device; // pointer to Direct3D device
+
+  ID3D10VertexShader* vertexShader; // standard vertex shader
+  ID3D10PixelShader* pixelShader; // standard pixel shader
+  ID3D10InputLayout* inputLayout; // standard input layout
+  ID3D10SamplerState* samplerState; // standard sampler state (textured shaders)
+
+  std::wstring entryPoint;
+public:
+  Shader ( ID3D10Device1*, std::wstring );
+  void loadShader ( std::string&, Buffer* ); // read shader data (compiled .cso files)
+  bool initialize ( D3D10_INPUT_ELEMENT_DESC*,
+                    D3D10_SAMPLER_DESC*, bool, bool ); // rendering pipeline (GPU initialization)
+  ID3D10VertexShader* const getVertexShader ( void );
+  ID3D10PixelShader* const getPixelShader ( void );
+  ID3D10InputLayout* const getInputLayout ( void );
+  ID3D10SamplerState** const getSamplerState ( void );
+  void release ( void ); // release the shaders resources
 };
 
 
-// shaders wrapper
-class Shader
+class ShaderColour : public Shader
 {
-  friend class TheCore;
-  friend class Direct3D;
-  friend class Game;
 private:
-  Direct3D* d3d; // pointer to Direct3D application
-
-  // indices: 0 color shader, 1 texture shader
-  Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader; // standard vertex shader
-  Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader; // standard pixel shader
-  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout; // layout of the vertex data
-
-  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer (to interface with shader)
-
-  Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShaderT; // texture vertex shader
-  Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShaderT; // texture pixel shader
-  Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayoutT; // layout of the texture vertex data
-  Microsoft::WRL::ComPtr<ID3D10SamplerState> samplerState; // to interface with texture shader
+  D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2]; // input layout description
+  unsigned int elementsCount;
 
   bool initialized; // true if initialization was successful
 public:
-  Shader ( Direct3D* );
+  ShaderColour ( ID3D10Device1* );
   const bool& isInitialized ( void ); // get the initialized state
-  void initializePipeline ( void ); // rendering pipeline (GPU) initialization
-  void loadShader ( std::string&, ShaderBuffer* ); // read shader data (compiled .cso files)
+};
+
+
+class ShaderTexture : public Shader
+{
+private:
+  D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2]; // input layout description
+  unsigned int elementsCount;
+  D3D10_SAMPLER_DESC samplerDesc; // tecture sampler state description
+
+  bool initialized; // true if initialization was successful
+public:
+  ShaderTexture ( ID3D10Device1* );
+  const bool& isInitialized ( void ); // get the initialized state
+};
+
+
+class ShaderLight : public Shader
+{
+private:
+  //D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [3]; // input layout description
+  //unsigned int elementsCount;
+
+  bool initialized; // true if initialization was successful
+public:
+  ShaderLight ( ID3D10Device1* );
+  const bool& isInitialized ( void ); // get the initialized state
 };
 
 

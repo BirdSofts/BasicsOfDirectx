@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #ifndef _2D_MODELS_H
@@ -33,8 +33,11 @@ struct VertexT
 template <class tType>
 class O2Dmodel
 {
+private:
+  std::wstring entryPoint;
+  bool dynamic; // true: dynamic usage + write access for CPU
 protected:
-  ID3D10Device1* device;
+  ID3D10Device1* device; // pointer to Direct3D device
 
   D3D10_BUFFER_DESC vertexBufferDesc;
   // 2D/3D models buffer containers, drawn by invoked shaders that are compiled into vertex/pixel shaders
@@ -47,8 +50,6 @@ protected:
   // Note index buffers purposes: record the location of each vertex introduced in vertex buffer,
   // achieving much hider speed, and helps to cache the vertices data in faster locations of video memory.
 
-  std::wstring entryPoint;
-  bool dynamic; // true: dynamic usage + write access for CPU
   bool allocate ( tType*, unsigned long*, unsigned long& ); // object model resources allocation
 public:
   O2Dmodel ( ID3D10Device1*, std::wstring, bool );
@@ -56,7 +57,7 @@ public:
   ID3D10Buffer* const getIndexBuffer ( void ); // index buffer
   void release ( void ); // release the object model
 };
-void TextureClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
+void O2DmodelClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
 
 
 class Triangles : public O2Dmodel<Vertex>

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.08.2019</created>
-/// <changed>ʆϒʅ,31.08.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 
@@ -12,8 +12,8 @@
 
 
 template <typename fileType>
-Texture<fileType>::Texture ( ID3D10Device1* device, const char* path ) :
-  data ( nullptr ), texture ( nullptr ), textureView ( nullptr )
+Texture<fileType>::Texture ( ID3D10Device1* dev, const char* path ) :
+  device ( dev ), data ( nullptr ), texture ( nullptr ), textureView ( nullptr )
 {
   try
   {
@@ -228,14 +228,30 @@ ID3D10ShaderResourceView** const Texture<fileType>::getTexture ()
 
 
 template<typename fileType>
-void Texture<fileType>::Release ()
+void Texture<fileType>::release ()
 {
-  if (data)
-    delete [] data;
-  if (texture)
-    texture->Release ();
-  if (textureView)
-    textureView->Release ();
+  try
+  {
+    if (data)
+      delete [] data;
+    if (texture)
+    {
+      texture->Release ();
+      texture = nullptr;
+    }
+    if (textureView)
+    {
+      textureView->Release ();
+      textureView = nullptr;
+    }
+
+    device = nullptr;
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
 };
 
 
@@ -245,6 +261,6 @@ void TextureClassLinker ( void ) // don't call this function: solution for linke
   ID3D10Device1* temp { nullptr };
   Texture<TargaHeader> tempTex ( temp, "" );
   tempTex.getTexture ();
-  tempTex.Release ();
+  tempTex.release ();
 
 }

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -264,14 +264,7 @@ void TheCore::resizeResources ( const bool& displayMode )
       if (d3d->dSview && d3d->rTview && !rC)
       {
         d3d->device->ClearState ();
-        rC = d3d->shader->samplerState.Reset ();
-        rC = d3d->shader->matrixBuffer.Reset ();
-        rC = d3d->shader->inputLayoutT.Reset ();
-        rC = d3d->shader->pixelShaderT.Reset ();
-        rC = d3d->shader->vertexShaderT.Reset ();
-        rC = d3d->shader->inputLayout.Reset ();
-        rC = d3d->shader->pixelShader.Reset ();
-        rC = d3d->shader->vertexShader.Reset ();
+        rC = d3d->matrixBuffer.Reset ();
         rC = d3d->rasterizerState.Reset ();
         d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
         rC = d3d->dSview.Reset ();
@@ -355,14 +348,7 @@ void TheCore::shutdown ( void )
     {
       d3d->initialized = false;
       d3d->device->ClearState ();
-      rC = d3d->shader->samplerState.Reset ();
-      rC = d3d->shader->matrixBuffer.Reset ();
-      rC = d3d->shader->inputLayoutT.Reset ();
-      rC = d3d->shader->pixelShaderT.Reset ();
-      rC = d3d->shader->vertexShaderT.Reset ();
-      rC = d3d->shader->inputLayout.Reset ();
-      rC = d3d->shader->pixelShader.Reset ();
-      rC = d3d->shader->vertexShader.Reset ();
+      rC = d3d->matrixBuffer.Reset ();
       rC = d3d->rasterizerState.Reset ();
       d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
       rC = d3d->dSview.Reset ();

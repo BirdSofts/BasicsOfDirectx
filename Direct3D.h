@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,27.08.2019</changed>
+/// <changed>ʆϒʅ,03.09.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -16,8 +16,6 @@
 //#include <dxgi.h> // standard DXGI APIs (tools to interface with installed hardware)
 #pragma comment (lib, "dxgi.lib") // linkage to the 'dxgi' library
 #include <DirectXMath.h> // standard DirectX3D mathematics APIs
-#include <d3dcompiler.h> // standard DirectX3D compiler APIs (shader compiler)
-#pragma comment (lib, "d3dcompiler.lib") // linkage to the 'd3dcompiler' library
 
 
 #include "Core.h"
@@ -38,7 +36,7 @@ class Direct3D
 {
   friend class TheCore;
   friend class Direct2D;
-  friend class Shader;
+  //friend class Shader;
   friend class Camera;
   friend class Game;
 private:
@@ -84,7 +82,7 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D10RasterizerState> rasterizerState; // rasterizer state
 
-  Shader* shader; // pointer to shaders container
+  //Shader* shader; // pointer to shaders container
 
   Camera* camera; // pointer to the camera application
 
@@ -93,6 +91,7 @@ private:
   DirectX::XMMATRIX matrixOrthographic; // orthographic matrix (2D rendering)
   const float screenDepth { 1000.0f }; // depth settings
   const float screenNear { 0.1f }; // depth settings
+  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer (to interface with shader)
 
   bool fullscreen; // application configuration
   bool vSync; // application configuration (if true render according installed monitor refresh rate)
