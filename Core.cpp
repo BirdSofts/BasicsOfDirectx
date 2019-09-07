@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -264,7 +264,6 @@ void TheCore::resizeResources ( const bool& displayMode )
       if (d3d->dSview && d3d->rTview && !rC)
       {
         d3d->device->ClearState ();
-        rC = d3d->matrixBuffer.Reset ();
         rC = d3d->rasterizerState.Reset ();
         d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
         rC = d3d->dSview.Reset ();
@@ -293,7 +292,7 @@ void TheCore::resizeResources ( const bool& displayMode )
         {
           d2d->allocateResources ();
         }
-        game->allocateResources ();
+        //game->allocateResources ();
         appWindow->isResized () = false;
         resized = true;
 
@@ -348,7 +347,6 @@ void TheCore::shutdown ( void )
     {
       d3d->initialized = false;
       d3d->device->ClearState ();
-      rC = d3d->matrixBuffer.Reset ();
       rC = d3d->rasterizerState.Reset ();
       d3d->device->OMSetRenderTargets ( 0, nullptr, nullptr );
       rC = d3d->dSview.Reset ();
@@ -363,10 +361,6 @@ void TheCore::shutdown ( void )
 
       rC = d3d->device.Reset ();
       d3d->core = nullptr;
-
-      // camera application destruction
-      if (d3d->camera)
-        delete d3d->camera;
 
       delete d3d;
       PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",

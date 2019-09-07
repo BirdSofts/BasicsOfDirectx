@@ -3,11 +3,11 @@
 /// 
 /// </summary>
 /// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,27.08.2019</changed>
+/// <changed>}Y{,04.09.2019</changed>
 // ********************************************************************************
 
 
-// vertex (input type)
+// pixel (input type)
 struct Vertex
 {
   float4 position : SV_POSITION;

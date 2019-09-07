@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #ifndef _2D_MODELS_H
@@ -29,9 +29,17 @@ struct VertexT
 };
 
 
+struct VertexL
+{
+  DirectX::XMFLOAT3 position;
+  DirectX::XMFLOAT2 texture;
+  DirectX::XMFLOAT3 normal; // normal light
+};
+
+
 // 2D object model base class
 template <class tType>
-class O2Dmodel
+class Model
 {
 private:
   std::wstring entryPoint;
@@ -52,7 +60,7 @@ protected:
 
   bool allocate ( tType*, unsigned long*, unsigned long& ); // object model resources allocation
 public:
-  O2Dmodel ( ID3D10Device1*, std::wstring, bool );
+  Model ( ID3D10Device1*, std::wstring, bool );
   ID3D10Buffer** const getVertexBuffer ( void ); // vertex buffer
   ID3D10Buffer* const getIndexBuffer ( void ); // index buffer
   void release ( void ); // release the object model
@@ -60,7 +68,7 @@ public:
 void O2DmodelClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
 
 
-class Triangles : public O2Dmodel<Vertex>
+class Triangles : public Model<Vertex>
 {
 private:
   Vertex verticesData [9]; // 2D object model vertices data
@@ -73,7 +81,7 @@ public:
 };
 
 
-class Line : public O2Dmodel<Vertex>
+class Line : public Model<Vertex>
 {
 private:
   Vertex verticesData [2]; // 2D object model vertices data
@@ -90,7 +98,7 @@ public:
 };
 
 
-class TexturedTriangles : public O2Dmodel<VertexT>
+class TexturedTriangles : public Model<VertexT>
 {
 private:
   VertexT verticesData [6]; // 2D object model vertices data
@@ -100,6 +108,19 @@ public:
   bool allocated; // true after successful resource allocation
 
   TexturedTriangles ( ID3D10Device1* );
+};
+
+
+class LightedTriangle : public Model<VertexL>
+{
+private:
+  VertexL verticesData [3]; // 2D object model vertices data
+  unsigned long verticesIndex [3]; // 2D object model vertices indices
+public:
+  unsigned long verticesCount; // 2D object model vertices count
+  bool allocated; // true after successful resource allocation
+
+  LightedTriangle ( ID3D10Device1* );
 };
 
 

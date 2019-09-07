@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -14,7 +14,6 @@
 #include "Timer.h"
 #include "Direct3D.h"
 #include "Direct2D.h"
-#include "Camera.h"
 #include "Game.h"
 
 

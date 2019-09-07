@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,31.08.2019</changed>
+/// <changed>ʆϒʅ,06.09.2019</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
@@ -68,6 +68,7 @@ Direct2D::Direct2D ( TheCore* coreObj ) :
       return;
     }
     rC = dxgiDevice->Release ();
+    dxgiDevice = nullptr;
 
     initialized = true;
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",

@@ -57,6 +57,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Universe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -101,6 +104,9 @@
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Universe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -109,7 +115,8 @@
     <None Include="settings.lua" />
     <None Include="graphics\pixelT.hlsl" />
     <None Include="graphics\vertexT.hlsl" />
-    <None Include="graphics\light.hlsl" />
+    <None Include="graphics\pixelL.hlsl" />
+    <None Include="graphics\vertexL.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

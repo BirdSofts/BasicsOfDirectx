@@ -3,10 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
+#include "Universe.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "2Dmodels.h"
@@ -24,15 +25,17 @@ class Game
 private:
   TheCore* core; // pointer to the framework core
 
+  Universe* universe; // world, camera, lights...
+
   ShaderColour* shaderColour;
   ShaderTexture* shaderTexture;
-
-  Triangles* trianglesObj; // three triangles
-
-  Line* lineObj; // a line (clockwise turn, dynamic rewrite)
-
   Texture<TargaHeader>* texture; // texture resource
-  TexturedTriangles* texturedTrianglesObj; // two textured triangles
+  ShaderDiffuseLight* shaderDiffuseLight;
+
+  Triangles* _2Dtriangles; // three triangles
+  Line* _2Dline; // a line (clockwise turn, dynamic rewrite)
+  TexturedTriangles* _2DtexturedTriangles; // two textured triangles
+  LightedTriangle* _2DlightedTriangle; // one triangle illuminated by diffuse light
 
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful
@@ -44,6 +47,7 @@ public:
   const bool run ( void ); // game engine loop
   void render ( void ); // render the scene
   void update ( void ); // updating the game world
+  Universe* getUniverse ( void ); // get the pointer to game universe
   void shutdown ( void ); // destruction preparations
 };
 

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,02.08.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,05.09.2019</changed>
 // ********************************************************************************
 
 #ifndef DIRECT3D_H
@@ -22,22 +22,11 @@
 #include "Shared.h"
 
 
-// matrix buffer (matching the global cbuffer type introduced in vertex shader)
-struct MatrixBuffer
-{
-  DirectX::XMMATRIX world;
-  DirectX::XMMATRIX view;
-  DirectX::XMMATRIX projection;
-};
-
-
 // Direct3D wrapper
 class Direct3D
 {
   friend class TheCore;
   friend class Direct2D;
-  //friend class Shader;
-  friend class Camera;
   friend class Game;
 private:
   TheCore* core; // pointer to the framework core
@@ -82,17 +71,6 @@ private:
 
   Microsoft::WRL::ComPtr<ID3D10RasterizerState> rasterizerState; // rasterizer state
 
-  //Shader* shader; // pointer to shaders container
-
-  Camera* camera; // pointer to the camera application
-
-  DirectX::XMMATRIX matrixProjection; // projection matrix (translation of 3D scene into the 2D viewport space)
-  DirectX::XMMATRIX matrixWorld; // world matrix (to convert into 3D scenes' vertices)
-  DirectX::XMMATRIX matrixOrthographic; // orthographic matrix (2D rendering)
-  const float screenDepth { 1000.0f }; // depth settings
-  const float screenNear { 0.1f }; // depth settings
-  Microsoft::WRL::ComPtr<ID3D10Buffer> matrixBuffer; // constant matrix buffer (to interface with shader)
-
   bool fullscreen; // application configuration
   bool vSync; // application configuration (if true render according installed monitor refresh rate)
   bool initialized; // true if initialization was successful
@@ -105,8 +83,6 @@ public:
   void displayModeSetter ( void ); // Direct3D display mode change/adjust
   void allocateResources ( void ); // Direct3D resources resize/creation
   void clearBuffers ( void ); // clear depth-stencil buffers
-  void renderMatrices ( void ); // map matrix buffer and update
-  Camera* getCamera ( void ); // get the pointer to camera application
   void present ( void ); // swapping: present the buffer chain by flipping the buffers
 };
 

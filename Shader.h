@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,27.08.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #ifndef SHADER_H
@@ -15,15 +15,14 @@
 #pragma comment (lib, "d3dcompiler.lib") // linkage to the 'd3dcompiler' library
 #include <string>
 
+#include "Universe.h"
+
 
 // shader buffer
 class Shader
 {
-  //friend class TheCore;
-  //friend class Direct3D;
-  //friend class Game;
 private:
-  struct Buffer // shader buffer
+  struct Buffer // shader buffer (compiled .cso files holder)
   {
     byte* buffer;
     long long size;
@@ -34,6 +33,10 @@ private:
 protected:
   ID3D10Device1* device; // pointer to Direct3D device
 
+  ID3D10Blob* vertexBuffer; // texture buffer
+  ID3D10Blob* pixelBuffer; // pixel buffer
+  ID3D10Blob* errorMsg; // HLSL compilation errors
+
   ID3D10VertexShader* vertexShader; // standard vertex shader
   ID3D10PixelShader* pixelShader; // standard pixel shader
   ID3D10InputLayout* inputLayout; // standard input layout
@@ -42,9 +45,12 @@ protected:
   std::wstring entryPoint;
 public:
   Shader ( ID3D10Device1*, std::wstring );
-  void loadShader ( std::string&, Buffer* ); // read shader data (compiled .cso files)
-  bool initialize ( D3D10_INPUT_ELEMENT_DESC*,
-                    D3D10_SAMPLER_DESC*, bool, bool ); // rendering pipeline (GPU initialization)
+  void loadCompiled ( std::string&, Buffer* ); // read shader data (compiled .cso files)
+  bool initializeCompiled ( std::string*,
+                            D3D10_INPUT_ELEMENT_DESC*, unsigned short ); // rendering pipeline (GPU initialization)
+  bool compile ( LPCWSTR* ); // compile HLSL using DirectX APIs
+  bool initialize ( D3D10_INPUT_ELEMENT_DESC*, unsigned short,
+                    D3D10_SAMPLER_DESC* ); // rendering pipeline (GPU initialization)
   ID3D10VertexShader* const getVertexShader ( void );
   ID3D10PixelShader* const getPixelShader ( void );
   ID3D10InputLayout* const getInputLayout ( void );
@@ -57,7 +63,9 @@ class ShaderColour : public Shader
 {
 private:
   D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2]; // input layout description
-  unsigned int elementsCount;
+  unsigned short elementsCount;
+  std::string files [2];
+  //unsigned short filesCount;
 
   bool initialized; // true if initialization was successful
 public:
@@ -69,9 +77,11 @@ public:
 class ShaderTexture : public Shader
 {
 private:
-  D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2]; // input layout description
-  unsigned int elementsCount;
+  D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [2];
+  unsigned short elementsCount;
   D3D10_SAMPLER_DESC samplerDesc; // tecture sampler state description
+  LPCWSTR files [2];
+  //unsigned short filesCount;
 
   bool initialized; // true if initialization was successful
 public:
@@ -80,15 +90,18 @@ public:
 };
 
 
-class ShaderLight : public Shader
+class ShaderDiffuseLight : public Shader
 {
 private:
-  //D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [3]; // input layout description
-  //unsigned int elementsCount;
+  D3D10_INPUT_ELEMENT_DESC polygonLayoutDesc [3];
+  unsigned int elementsCount;
+  D3D10_SAMPLER_DESC samplerDesc;
+  LPCWSTR files [2];
+  //unsigned short filesCount;
 
   bool initialized; // true if initialization was successful
 public:
-  ShaderLight ( ID3D10Device1* );
+  ShaderDiffuseLight ( ID3D10Device1* );
   const bool& isInitialized ( void ); // get the initialized state
 };
 

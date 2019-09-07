@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 #include "Direct3D.h"
@@ -12,7 +12,7 @@
 Direct3D::Direct3D ( TheCore* coreObj ) :
   core ( coreObj ), colourFormat ( DXGI_FORMAT_B8G8R8A8_UNORM ),
   // reserve 8 bits for red, green, blue and transparency each in unsigned normalized integer
-  displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ), camera ( nullptr ),
+  displayModesCount ( 0 ), displayModeIndex ( 0 ), videoCardMemory ( 0 ), videoCardDescription ( L"" ),
   fullscreen ( false ), vSync ( false ), initialized ( false ), allocated ( false )
 {
   try
@@ -108,6 +108,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) :
         }
     }
     rC = dxgiOutput->Release ();
+    dxgiOutput = nullptr;
 
     // acquiring the video card description
     DXGI_ADAPTER_DESC1 dxgiAdapterDesc;
@@ -121,6 +122,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) :
     videoCardMemory = ( unsigned int) (dxgiAdapterDesc.DedicatedVideoMemory / 1024 / 1024);
     videoCardDescription = dxgiAdapterDesc.Description;
     rC = dxgiAdapter->Release ();
+    dxgiAdapter = nullptr;
 
     // flag: needed to get Direct2D interoperability with Direct3D resources
     unsigned int deviceFlags = D3D10_CREATE_DEVICE_BGRA_SUPPORT;
@@ -194,24 +196,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) :
       return;
     }
     rC = dxgiFactory->Release ();
-
-    // shader container instantiation
-    //shader = new (std::nothrow) Shader ( this );
-    //if (!shader->isInitialized ())
-    //{
-    //  PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-    //                                            L"Camera initialization failed!" );
-    //  return;
-    //}
-
-    // Camera application instantiation
-    camera = new (std::nothrow) Camera;
-    if (!camera->isInitialized ())
-    {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Camera initialization failed!" );
-      return;
-    }
+    dxgiFactory = nullptr;
 
     initialized = true;
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
@@ -362,6 +347,8 @@ void Direct3D::allocateResources ( void )
     depthBufferDesc.CPUAccessFlags = 0;
     depthBufferDesc.MiscFlags = 0;
     rC = rtBuffer->Release ();
+    rtBuffer = nullptr;
+
     // texture creation:
     // the second parameter: pointer to initial data (zero for any data, since depth-stencil buffer)
     // note texture 2d function: sorted and rasterized polygons are just coloured pixels in 2d representation
@@ -464,44 +451,6 @@ void Direct3D::allocateResources ( void )
     // the second parameter is a pointer to an array of viewports
     device->RSSetViewports ( 1, &viewPort );
 
-    // projection matrix setup (usable for shaders)
-    // purpose: translates 3D scene into the 2D viewport space
-    float viewField { DirectX::XM_PI / 4.0f };
-    float screenAspect { ( float) depthBufferDesc.Width / ( float) depthBufferDesc.Height };
-    // projection matrix creation for 3D rendering
-    matrixProjection = DirectX::XMMatrixPerspectiveFovLH ( viewField, screenAspect, screenNear, screenDepth );
-
-    // word matrix initialization using identity matrix (usable for shaders)
-    // purpose: converts objects' vertices into vertices in the 3D scene,
-    // additionally to rotate, translate and scale our objects in 3D space
-    matrixWorld = DirectX::XMMatrixIdentity ();
-
-    // generally a view matrix representing the camera is initialized in this section (camera class)
-
-    // orthographic projection matrix creation
-    // purpose: to render 2D elements like user interface directly and skipping 3D rendering
-    matrixOrthographic = DirectX::XMMatrixOrthographicLH ( ( float) viewPort.Width, ( float) viewPort.Height, screenNear, screenDepth );
-
-    //shader->initializePipeline ();
-
-    // dynamic matrix constant buffer description
-    // purpose: to access internal variables introduced in vertex shader
-    D3D10_BUFFER_DESC matrixBufferDesc;
-    matrixBufferDesc.Usage = D3D10_USAGE_DYNAMIC;
-    matrixBufferDesc.ByteWidth = sizeof ( MatrixBuffer );
-    matrixBufferDesc.BindFlags = D3D10_BIND_CONSTANT_BUFFER;
-    matrixBufferDesc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
-    matrixBufferDesc.MiscFlags = 0;
-
-    // matrix constant buffer creation (usable to access vertex shader constant buffer)
-    hR = device->CreateBuffer ( &matrixBufferDesc, nullptr, &matrixBuffer );
-    if (FAILED ( hR ))
-    {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Creation of matrix buffer failed!" );
-      return;
-    }
-
     clearBuffers ();
 
     allocated = true;
@@ -534,61 +483,6 @@ void Direct3D::clearBuffers ( void )
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
   }
-};
-
-
-void Direct3D::renderMatrices ( void )
-{
-  try
-  {
-
-    HRESULT hR;
-
-    void* mappedResource;
-    MatrixBuffer* dataPtr;
-
-    // transpose process (preparation for shader) (DirectX 10 requirement)
-    DirectX::XMMATRIX world, view, projection;
-    world = DirectX::XMMatrixTranspose ( matrixWorld );
-    view = DirectX::XMMatrixTranspose ( camera->matrixView );
-    projection = DirectX::XMMatrixTranspose ( matrixProjection );
-
-    // prepare for write (lock the constant buffer)
-    hR = matrixBuffer->Map ( D3D10_MAP_WRITE_DISCARD, 0, &mappedResource );
-    if (FAILED ( hR ))
-    {
-      PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                                L"Mapping the matrix buffer failed!" );
-      return;
-    }
-
-    // initialize the pointer to the data already in the constant buffer
-    dataPtr = ( MatrixBuffer*) mappedResource;
-
-    // copy the matrices to the constant buffer
-    dataPtr->world = world;
-    dataPtr->view = view;
-    dataPtr->projection = projection;
-
-    // unlock and make the buffer usable
-    matrixBuffer->Unmap ();
-
-    // activate the updated constant matrix buffer in the vertex shader
-    // first parameter: position of the constant buffer in the vertex shader
-    device->VSSetConstantBuffers ( 0, 1, matrixBuffer.GetAddressOf () );
-
-  }
-  catch (const std::exception& ex)
-  {
-    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
-                                              Converter::strConverter ( ex.what () ) );
-  }
-};
-
-
-Camera* Direct3D::getCamera ( void )
-{
-  return camera;
 };
 
 

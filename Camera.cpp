@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,25.08.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,05.09.2019</changed>
 // ********************************************************************************
 
 #include "Camera.h"
@@ -62,7 +62,7 @@ void Camera::forwardBackward ( float z )
 };
 
 
-void Camera::render ( void )
+void Camera::renderCamera ( void )
 {
   try
   {
@@ -121,7 +121,7 @@ void Camera::render ( void )
 };
 
 
-//const DirectX::XMMATRIX& Camera::getView ( void )
-//{
-//  return matrixView;
-//};
+const DirectX::XMMATRIX& Camera::getView ( void )
+{
+  return matrixView;
+};

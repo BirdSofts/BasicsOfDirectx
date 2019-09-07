@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,07.08.2019</changed>
 // ********************************************************************************
 
 #include "Window.h"
@@ -230,13 +230,13 @@ LRESULT CALLBACK Window::msgProc (
         if (wPrm == VK_UP) // the up arrow key identification
         {
           // for the time being till introduction of DirectInput
-          core->d3d->getCamera ()->forwardBackward ( 0.05f );
+          core->game->getUniverse ()->getCamera ()->forwardBackward ( 0.05f );
           break;
         }
 
         if (wPrm == VK_DOWN) // the down arrow key identification
         {
-          core->d3d->getCamera ()->forwardBackward ( -0.05f );
+          core->game->getUniverse ()->getCamera ()->forwardBackward ( -0.05f );
           break;
         }
 

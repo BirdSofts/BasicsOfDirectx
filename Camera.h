@@ -3,20 +3,19 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,25.08.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
+/// <changed>ʆϒʅ,05.09.2019</changed>
 // ********************************************************************************
 
 #ifndef CAMERA_H
 #define CAMERA_H
 
 
-#include "Core.h"
+#include <DirectXMath.h>
 
 
 // camera wrapper
 class Camera
 {
-  friend class Direct3D;
 private:
   DirectX::XMFLOAT3 position; // camera position data
   DirectX::XMFLOAT3 rotation; // camera rotation data
@@ -32,8 +31,8 @@ public:
   void setPosition ( DirectX::XMFLOAT3& ); // set camera position
   void setPosition ( float, float, float ); // set camera position
   void forwardBackward ( float ); // set position forward/backward
-  void render ( void ); // view matrix generation/update based on the camera position
-  //const DirectX::XMMATRIX& getView ( void ); // get view matrix
+  void renderCamera ( void ); // view matrix generation/update based on the camera position
+  const DirectX::XMMATRIX& getView ( void ); // get view matrix
 };
 
 

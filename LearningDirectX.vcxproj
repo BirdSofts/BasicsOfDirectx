@@ -160,6 +160,7 @@
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shared.cpp" />
+    <ClCompile Include="Universe.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Utilities.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Shared.h" />
+    <ClInclude Include="Universe.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
@@ -194,13 +196,6 @@
     <ResourceCompile Include="LearningDirectX.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="graphics\light.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <FileType>Document</FileType>
-    </None>
     <FxCompile Include="graphics\pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -208,6 +203,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
       <FileType>Document</FileType>
     </FxCompile>
+    <None Include="graphics\pixelL.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="graphics\pixelT.hlsl">
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="graphics\vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
@@ -215,16 +216,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <FileType>Document</FileType>
     </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="graphics\pixelT.hlsl">
+    <None Include="graphics\vertexL.hlsl">
       <FileType>Document</FileType>
     </None>
     <None Include="graphics\vertexT.hlsl">
       <FileType>Document</FileType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="textures\clouds.tga" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,07.09.2019</changed>
 // ********************************************************************************
 
 
@@ -12,7 +12,7 @@
 
 
 template <class tType>
-O2Dmodel<tType>::O2Dmodel ( ID3D10Device1* dev, std::wstring entry, bool rewrite ) :
+Model<tType>::Model ( ID3D10Device1* dev, std::wstring entry, bool rewrite ) :
   entryPoint ( entry ), dynamic ( rewrite ), device ( dev ),
   vertexBuffer ( nullptr ), indexBuffer ( nullptr )
 {
@@ -23,7 +23,7 @@ O2Dmodel<tType>::O2Dmodel ( ID3D10Device1* dev, std::wstring entry, bool rewrite
 
 
 template <class tType>
-bool O2Dmodel<tType>::allocate ( tType* data, unsigned long* index, unsigned long& count )
+bool Model<tType>::allocate ( tType* data, unsigned long* index, unsigned long& count )
 {
   try
   {
@@ -97,21 +97,21 @@ bool O2Dmodel<tType>::allocate ( tType* data, unsigned long* index, unsigned lon
 
 
 template <class tType>
-ID3D10Buffer** const O2Dmodel<tType>::getVertexBuffer ( void )
+ID3D10Buffer** const Model<tType>::getVertexBuffer ( void )
 {
   return &vertexBuffer;
 };
 
 
 template <class tType>
-ID3D10Buffer* const O2Dmodel<tType>::getIndexBuffer ( void )
+ID3D10Buffer* const Model<tType>::getIndexBuffer ( void )
 {
   return indexBuffer;
 };
 
 
 template <class tType>
-void O2Dmodel<tType>::release ( void )
+void Model<tType>::release ( void )
 {
   try
   {
@@ -140,19 +140,23 @@ void O2DmodelClassLinker ( void ) // don't call this function: solution for link
 {
 
   ID3D10Device1* temp { nullptr };
-  O2Dmodel<Vertex> tempVertex ( temp, L"", false );
+  Model<Vertex> tempVertex ( temp, L"", false );
   tempVertex.getIndexBuffer ();
   tempVertex.getVertexBuffer ();
   tempVertex.release ();
-  O2Dmodel<VertexT> tempVertexT ( temp, L"", false );
+  Model<VertexT> tempVertexT ( temp, L"", false );
   tempVertexT.getIndexBuffer ();
   tempVertexT.getVertexBuffer ();
   tempVertexT.release ();
+  Model<VertexL> tempVertexL ( temp, L"", false );
+  tempVertexL.getIndexBuffer ();
+  tempVertexL.getVertexBuffer ();
+  tempVertexL.release ();
 }
 
 
 Triangles::Triangles ( ID3D10Device1* dev ) :
-  O2Dmodel ( dev, L"\tThreeTriangles", false ),
+  Model ( dev, L"\tThreeTriangles", false ),
   verticesCount ( 0 ), allocated ( false )
 {
   try
@@ -200,7 +204,7 @@ Triangles::Triangles ( ID3D10Device1* dev ) :
 
 
 Line::Line ( ID3D10Device1* dev ) :
-  O2Dmodel ( dev, L"\tClockwiseLine", true ),
+  Model ( dev, L"\tClockwiseLine", true ),
   verticesCount ( 0 ), allocated ( false )
 {
   try
@@ -317,7 +321,7 @@ void Line::update ( void )
 
 
 TexturedTriangles::TexturedTriangles ( ID3D10Device1* dev ) :
-  O2Dmodel ( dev, L"\tTexturedTriangles", false ),
+  Model ( dev, L"\tTexturedTriangles", false ),
   verticesCount ( 0 ), allocated ( false )
 {
   try
@@ -327,22 +331,63 @@ TexturedTriangles::TexturedTriangles ( ID3D10Device1* dev ) :
     verticesCount = 6;
 
     // a rectangle built using two textured triangles
-    verticesData [0].position = DirectX::XMFLOAT3 { -0.4f, -0.4f, 0.0f };
+    verticesData [0].position = DirectX::XMFLOAT3 { -0.8f, -0.8f, 0.0f };
     verticesData [0].texture = DirectX::XMFLOAT2 { 0.0f, 1.0f };
-    verticesData [1].position = DirectX::XMFLOAT3 { -0.4f, 0.0f, 0.0f };
+    verticesData [1].position = DirectX::XMFLOAT3 { -0.8f, -0.6f, 0.0f };
     verticesData [1].texture = DirectX::XMFLOAT2 { 0.0f, 0.0f };
-    verticesData [2].position = DirectX::XMFLOAT3 { 0.0f, -0.4f, 0.0f };
+    verticesData [2].position = DirectX::XMFLOAT3 { -0.6f, -0.8f, 0.0f };
     verticesData [2].texture = DirectX::XMFLOAT2 { 1.0f, 1.0f };
 
-    verticesData [3].position = DirectX::XMFLOAT3 { -0.4f, 0.0f, 0.0f };
+    verticesData [3].position = DirectX::XMFLOAT3 { -0.8f, -0.6f, 0.0f };
     verticesData [3].texture = DirectX::XMFLOAT2 { 0.0f, 0.0f };
-    verticesData [4].position = DirectX::XMFLOAT3 { 0.0f, 0.0f, 0.0f };
+    verticesData [4].position = DirectX::XMFLOAT3 { -0.6f, -0.6f, 0.0f };
     verticesData [4].texture = DirectX::XMFLOAT2 { 1.0f, 0.0f };
-    verticesData [5].position = DirectX::XMFLOAT3 { 0.0f, -0.4f, 0.0f };
+    verticesData [5].position = DirectX::XMFLOAT3 { -0.6f, -0.8f, 0.0f };
     verticesData [5].texture = DirectX::XMFLOAT2 { 1.0f, 1.0f };
 
     // triangles' vertices indices
     for (unsigned short i = 0; i < 6; i++)
+      verticesIndex [i] = i;
+
+    if (allocate ( verticesData, verticesIndex, verticesCount ))
+      allocated = true;
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+LightedTriangle::LightedTriangle ( ID3D10Device1* dev ) :
+  Model ( dev, L"\tLightedTriangles", false ),
+  verticesCount ( 0 ), allocated ( false )
+{
+  try
+  {
+
+    // vertices count
+    verticesCount = 3;
+
+    // the lighted triangle
+    verticesData [0].position = DirectX::XMFLOAT3 { 0.0f, -0.8f, 0.0f };
+    verticesData [0].texture = DirectX::XMFLOAT2 { 0.0f, 1.0f };
+    verticesData [0].normal = DirectX::XMFLOAT3 { 0.0f, 0.0f, -1.0f };
+    // normal vector: perpendicular to the polygon's face,
+    // thus the exact direction the face is pointing is calculable.
+    // note: set along the Z axis (-1) so the normal point toward the viewer.
+
+    verticesData [1].position = DirectX::XMFLOAT3 { 0.4f, 0.0f, 0.0f };
+    verticesData [1].texture = DirectX::XMFLOAT2 { 0.5f, 0.0f };
+    verticesData [1].normal = DirectX::XMFLOAT3 { 0.0f, 0.0f, -1.0f };
+    verticesData [2].position = DirectX::XMFLOAT3 { 0.8f, -0.8f, 0.0f };
+    verticesData [2].texture = DirectX::XMFLOAT2 { 1.0f, 1.0f };
+    verticesData [2].normal = DirectX::XMFLOAT3 { 0.0f, 0.0f, -1.0f };
+
+    // triangles' vertices indices
+    for (unsigned short i = 0; i < 3; i++)
       verticesIndex [i] = i;
 
     if (allocate ( verticesData, verticesIndex, verticesCount ))
