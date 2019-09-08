@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,08.09.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
 #include "Universe.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "2Dmodels.h"
+#include "Polygons.h"
 
 
 #ifndef GAME_H
@@ -36,6 +36,8 @@ private:
   Line* _2Dline; // a line (clockwise turn, dynamic rewrite)
   TexturedTriangles* _2DtexturedTriangles; // two textured triangles
   LightedTriangle* _2DlightedTriangle; // one triangle illuminated by diffuse light
+
+  Cube* _3Dcube;
 
   bool initialized; // true if initialization was successful
   bool allocated; // true if resources allocation was successful

@@ -3,11 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,08.09.2019</changed>
 // ********************************************************************************
 
 
-#include "2Dmodels.h"
+#include "Polygons.h"
 #include "Shared.h"
 
 
@@ -136,7 +136,7 @@ void Model<tType>::release ( void )
 };
 
 
-void O2DmodelClassLinker ( void ) // don't call this function: solution for linker error, when using templates.
+void PolygonsClassLinker ( void ) // don't call this function: solution for linker error, when using templates.
 {
 
   ID3D10Device1* temp { nullptr };
@@ -188,7 +188,7 @@ Triangles::Triangles ( ID3D10Device1* dev ) :
     verticesData [8].color = DirectX::XMFLOAT4 { 0.93f, 0.93f, 0.93f, 1.0f };
 
     // triangles' vertices indices
-    for (unsigned short i = 0; i < verticesCount; i++)
+    for (unsigned long i = 0; i < verticesCount; i++)
       verticesIndices [i] = i;
 
     if (allocate ( verticesData, verticesIndices, verticesCount ))
@@ -346,7 +346,7 @@ TexturedTriangles::TexturedTriangles ( ID3D10Device1* dev ) :
     verticesData [5].texture = DirectX::XMFLOAT2 { 1.0f, 1.0f };
 
     // triangles' vertices indices
-    for (unsigned short i = 0; i < 6; i++)
+    for (unsigned long i = 0; i < 6; i++)
       verticesIndex [i] = i;
 
     if (allocate ( verticesData, verticesIndex, verticesCount ))
@@ -387,11 +387,49 @@ LightedTriangle::LightedTriangle ( ID3D10Device1* dev ) :
     verticesData [2].normal = DirectX::XMFLOAT3 { 0.0f, 0.0f, -1.0f };
 
     // triangles' vertices indices
-    for (unsigned short i = 0; i < 3; i++)
+    for (unsigned long i = 0; i < 3; i++)
       verticesIndex [i] = i;
 
     if (allocate ( verticesData, verticesIndex, verticesCount ))
       allocated = true;
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+Cube::Cube ( ID3D10Device1* dev ) :
+  Model ( dev, L"\tLightedTriangles", false ),
+  verticesCount ( 0 ), allocated ( false )
+{
+  try
+  {
+
+    // the cube and vertices count
+    const char* file { "./models/cube.txt" };
+    verticesCount = VertexTexDiffuseL::read ( file, &verticesData );
+
+    if (verticesCount)
+    {
+
+      // cube's vertices indices
+      verticesIndex = new (std::nothrow) unsigned long [verticesCount];
+      if (verticesIndex)
+      {
+        for (unsigned long i = 0; i < verticesCount; i++)
+          verticesIndex [i] = i;
+
+        if (allocate ( verticesData, verticesIndex, verticesCount ))
+          allocated = true;
+
+        delete verticesData;
+        delete verticesIndex;
+      }
+    }
 
   }
   catch (const std::exception& ex)

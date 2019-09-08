@@ -3,41 +3,21 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,31.08.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,08.09.2019</changed>
 // ********************************************************************************
 
-#ifndef _2D_MODELS_H
-#define _2D_MODELS_H
+#ifndef POLYGONS_H
+#define POLYGONS_H
 
 
 #include <d3d10_1.h>
 #include <DirectXMath.h>
 #include <string>
 
-
-struct Vertex
-{
-  DirectX::XMFLOAT3 position;
-  DirectX::XMFLOAT4 color;
-};
+#include "ModelFormats.h"
 
 
-struct VertexT
-{
-  DirectX::XMFLOAT3 position;
-  DirectX::XMFLOAT2 texture;
-};
-
-
-struct VertexL
-{
-  DirectX::XMFLOAT3 position;
-  DirectX::XMFLOAT2 texture;
-  DirectX::XMFLOAT3 normal; // normal light
-};
-
-
-// 2D object model base class
+// object models base class
 template <class tType>
 class Model
 {
@@ -71,10 +51,10 @@ void O2DmodelClassLinker ( void ); // don't call this function: solution for lin
 class Triangles : public Model<Vertex>
 {
 private:
-  Vertex verticesData [9]; // 2D object model vertices data
-  unsigned long verticesIndices [9]; // 2D object model vertices indices
+  Vertex verticesData [9]; // object model vertices dataobject model vertices data
+  unsigned long verticesIndices [9]; // object model vertices dataobject model vertices indices
 public:
-  unsigned long verticesCount; // 2D object model vertices count
+  unsigned long verticesCount; // object model vertices dataobject model vertices count
   bool allocated; // true after successful resource allocation
 
   Triangles ( ID3D10Device1* );
@@ -84,10 +64,10 @@ public:
 class Line : public Model<Vertex>
 {
 private:
-  Vertex verticesData [2]; // 2D object model vertices data
-  unsigned long verticesIndex [2]; // 2D object model vertices indices
+  Vertex verticesData [2]; // object model vertices dataobject model vertices data
+  unsigned long verticesIndex [2]; // object model vertices dataobject model vertices indices
 public:
-  unsigned long verticesCount; // 2D object model vertices count
+  unsigned long verticesCount; // object model vertices dataobject model vertices count
   bool allocated; // true after successful resource allocation
 
   D3D10_MAPPED_TEXTURE2D mappedRes; // updating the resource
@@ -101,10 +81,10 @@ public:
 class TexturedTriangles : public Model<VertexT>
 {
 private:
-  VertexT verticesData [6]; // 2D object model vertices data
-  unsigned long verticesIndex [6]; // 2D object model vertices indices
+  VertexT verticesData [6]; // object model vertices dataobject model vertices data
+  unsigned long verticesIndex [6]; // object model vertices dataobject model vertices indices
 public:
-  unsigned long verticesCount; // 2D object model vertices count
+  unsigned long verticesCount; // object model vertices dataobject model vertices count
   bool allocated; // true after successful resource allocation
 
   TexturedTriangles ( ID3D10Device1* );
@@ -114,14 +94,27 @@ public:
 class LightedTriangle : public Model<VertexL>
 {
 private:
-  VertexL verticesData [3]; // 2D object model vertices data
-  unsigned long verticesIndex [3]; // 2D object model vertices indices
+  VertexL verticesData [3]; // object model vertices dataobject model vertices data
+  unsigned long verticesIndex [3]; // object model vertices dataobject model vertices indices
 public:
-  unsigned long verticesCount; // 2D object model vertices count
+  unsigned long verticesCount; // object model vertices dataobject model vertices count
   bool allocated; // true after successful resource allocation
 
   LightedTriangle ( ID3D10Device1* );
 };
 
 
-#endif // !_2D_MODELS_H
+class Cube : public Model<VertexL>
+{
+private:
+  VertexL* verticesData; // object model vertices dataobject model vertices data
+  unsigned long* verticesIndex; // object model vertices dataobject model vertices indices
+public:
+  unsigned long verticesCount; // object model vertices dataobject model vertices count
+  bool allocated; // true after successful resource allocation
+
+  Cube ( ID3D10Device1* );
+};
+
+
+#endif // !POLYGONS_H

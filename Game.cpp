@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,08.09.2019</changed>
 // ********************************************************************************
 
 #include "Game.h"
@@ -92,6 +92,8 @@ void Game::allocateResources ( void )
     shaderDiffuseLight = new (std::nothrow) ShaderDiffuseLight ( core->d3d->device.Get () );
 
     _2DlightedTriangle = new (std::nothrow) LightedTriangle ( core->d3d->device.Get () );
+
+    _3Dcube = new (std::nothrow) Cube ( core->d3d->device.Get () );
 
     allocated = true;
 
@@ -231,7 +233,6 @@ void Game::render ( void )
 
     core->d3d->clearBuffers ();
 
-
     universe->renderResources ();
     universe->getCamera ()->renderCamera ();
 
@@ -293,8 +294,6 @@ void Game::render ( void )
 
 
 
-    //core->d3d->device->PSSetShaderResources ( 0, 1, texture->getTexture () );
-
     core->d3d->device->VSSetShader ( shaderDiffuseLight->getVertexShader () );
     core->d3d->device->PSSetShader ( shaderDiffuseLight->getPixelShader () );
     core->d3d->device->IASetInputLayout ( shaderDiffuseLight->getInputLayout () );
@@ -304,6 +303,13 @@ void Game::render ( void )
     core->d3d->device->IASetIndexBuffer ( _2DlightedTriangle->getIndexBuffer (), DXGI_FORMAT_R32_UINT, 0 );
     core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
     core->d3d->device->DrawIndexed ( _2DlightedTriangle->verticesCount, 0, 0 );
+
+
+
+    core->d3d->device->IASetVertexBuffers ( 0, 1, _3Dcube->getVertexBuffer (), &strides, &offset );
+    core->d3d->device->IASetIndexBuffer ( _3Dcube->getIndexBuffer (), DXGI_FORMAT_R32_UINT, 0 );
+    core->d3d->device->IASetPrimitiveTopology ( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+    core->d3d->device->DrawIndexed ( _3Dcube->verticesCount, 0, 0 );
 
   }
   catch (const std::exception& ex)
@@ -347,6 +353,12 @@ void Game::shutdown ( void )
 
     initialized = false;
 
+    if (_3Dcube)
+    {
+      _3Dcube->release ();
+      delete _3Dcube;
+      _3Dcube = nullptr;
+    }
     if (_2Dtriangles)
     {
       _2Dtriangles->release ();

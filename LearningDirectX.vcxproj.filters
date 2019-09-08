@@ -51,13 +51,16 @@
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="2Dmodels.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Universe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Polygons.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelFormats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,13 +101,16 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="2Dmodels.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Universe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Polygons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelFormats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,13 +119,14 @@
     <None Include=".gitignore" />
     <None Include="README.md" />
     <None Include="settings.lua" />
-    <None Include="graphics\pixelT.hlsl" />
-    <None Include="graphics\vertexT.hlsl" />
     <None Include="graphics\pixelL.hlsl" />
+    <None Include="graphics\pixelT.hlsl" />
     <None Include="graphics\vertexL.hlsl" />
+    <None Include="graphics\vertexT.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
+    <Text Include="models\cube.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="LearningDirectX.rc">
@@ -127,10 +134,13 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="graphics\vertex.hlsl" />
     <FxCompile Include="graphics\pixel.hlsl" />
+    <FxCompile Include="graphics\vertex.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\clouds.tga" />
+    <Image Include="ScreenShots\ScreenShot_01.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
