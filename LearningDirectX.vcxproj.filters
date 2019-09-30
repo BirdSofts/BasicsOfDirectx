@@ -123,6 +123,7 @@
     <None Include="graphics\pixelT.hlsl" />
     <None Include="graphics\vertexL.hlsl" />
     <None Include="graphics\vertexT.hlsl" />
+    <None Include="LICENSE.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

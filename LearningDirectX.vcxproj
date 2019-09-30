@@ -188,6 +188,7 @@
   <ItemGroup>
     <None Include=".gitattributes" />
     <None Include=".gitignore" />
+    <None Include="LICENSE.md" />
     <None Include="README.md" />
     <None Include="settings.lua" />
   </ItemGroup>

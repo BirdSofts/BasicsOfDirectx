@@ -87,4 +87,4 @@ I appreciate any contribution from anyone, who sees that the project deserves hi
 </table>
 
 # Copyright
-This is not a freeware, thus the ideas, the source code and the literature within is copyrighted. Most of the code is learned and inspired from online references and the addition to them can just be used as teaching materials. For any other uses the written acknowledgement and permission is needed.
+The literature and all the known and unknown ideas provided within the following learning resource is copyrighted. On the other hand, so far the source code is concerned, most of which is learned and inspired from online references and the addition to them can be used under the licence terms provided with the software itself.
