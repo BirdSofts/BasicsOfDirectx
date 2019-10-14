@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -111,8 +111,8 @@ const int& TheCore::getFPS ( void )
 //{
 //  return d3d;
 //};
-//
-//
+
+
 //Direct2D* TheCore::getd2d ( void )
 //{
 //  return d2d;

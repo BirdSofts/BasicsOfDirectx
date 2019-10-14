@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,08.09.2019</created>
-/// <changed>ʆϒʅ,08.09.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
-
 
 #include "ModelFormats.h"
 #include "Shared.h"

@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,05.09.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
-
 
 #include "Universe.h"
 #include "Shared.h"

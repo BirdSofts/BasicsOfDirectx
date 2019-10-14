@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>}Y{,29.08.2019</created>
-/// <changed>}Y{,04.09.2019</changed>
+/// <changed>}Y{,14.10.2019</changed>
 // ********************************************************************************
-
 
 // global declarations
 // buffer object type, containing three matrices, updated on each execution
@@ -24,7 +23,6 @@ struct Vertex
   float4 position : POSITION; // vertex shaders
   float2 tex : TEXCOORD0;
 };
-
 
 // texture pixel shader input type
 struct Pixel

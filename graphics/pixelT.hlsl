@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>}Y{,27.08.2019</created>
-/// <changed>}Y{,04.09.2019</changed>
+/// <changed>}Y{,14.10.2019</changed>
 // ********************************************************************************
-
 
 Texture2D shaderTexture; // texture resource
 SamplerState samplerType; // how the pixels are written on the polygon face

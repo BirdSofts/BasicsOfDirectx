@@ -1,107 +1,115 @@
 ﻿# *******************************************************************************************
 #/ <summary>
-#/ 
+#/
 #/ </summary>
 #/ <created>ʆϒʅ,19.07.2019</created>
-#/ <changed>ʆϒʅ,08.09.2019</changed>
+#/ <changed>ʆϒʅ,14.10.2019</changed>
 # *******************************************************************************************
 
-# CMakeList.txt : CMake project for LearningDirectX, include source and define
-# project specific logic here.
-#
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 set(TARGET_NAME LearningDirectX)
 
-set(PROJECT_NAME ${TARGET_NAME})
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_TOOLCHAIN_FILE "C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake")
+
+set(PROJECT_NAME ${TARGET_NAME})
 project(${PROJECT_NAME}
-          VERSION 1.0.0.0
-          DESCRIPTION "Learning DirectX Notes"
-          HOMEPAGE_URL "https://github.com/BirdSofts/LearningDirectX"
-          LANGUAGES CXX
-)
+  VERSION 1.0.0.0
+  DESCRIPTION "Learning DirectX Notes"
+  HOMEPAGE_URL "https://github.com/BirdSofts/LearningDirectX"
+  LANGUAGES CXX
+  )
+
+# Note: ISSUE: lua and sol libraries linkage
+
+find_package(lua REQUIRED)
+find_package(sol2 CONFIG REQUIRED)
 
 list(APPEND RESOURCES
-          ${TARGET_NAME}.rc
-          resource.h
-)
+  ${TARGET_NAME}.rc
+  resource.h
+  )
 
 list(APPEND HEADER_FILES
-          Camera.h
-          Core.h
-          Direct2D.h
-          Direct3D.h
-          Game.h
-          Light.h
-          ModelFormats.h
-          Polygons.h
-          Shader.h
-          Shared.h
-          Texture.h
-          Timer.h
-          Universe.h
-          Utilities.h
-          Window.h
-)
+  Camera.h
+  Core.h
+  Direct2D.h
+  Direct3D.h
+  Game.h
+  Light.h
+  ModelFormats.h
+  Polygons.h
+  Shader.h
+  Shared.h
+  Texture.h
+  Timer.h
+  Universe.h
+  Utilities.h
+  Window.h
+  )
 
 list(APPEND SOURCE_FILES
-          LearningDirectX.cpp
-          Camera.cpp
-          Core.cpp
-          Direct2D.cpp
-          Direct3D.cpp
-          Game.cpp
-          Light.cpp
-          ModelFormats.cpp
-          Polygons.cpp
-          Shader.cpp
-          Shared.cpp
-          Texture.cpp
-          Timer.cpp
-          Universe.cpp
-          Utilities.cpp
-          Window.cpp
-)
+  LearningDirectX.cpp
+  Camera.cpp
+  Core.cpp
+  Direct2D.cpp
+  Direct3D.cpp
+  Game.cpp
+  Light.cpp
+  ModelFormats.cpp
+  Polygons.cpp
+  Shader.cpp
+  Shared.cpp
+  Texture.cpp
+  Timer.cpp
+  Universe.cpp
+  Utilities.cpp
+  Window.cpp
+  )
 
 if(WIN32)
-          list(APPEND SOURCE_FILES ${HEADER_FILES})
+  list(APPEND SOURCE_FILES ${HEADER_FILES})
 endif()
 
 # Lua and Sol third party library inclusion and linkage
-set(LUA_ROOT_DIR "C:/Lua/x64")
-if(NOT LUA_ROOT_DIR)
-message(FATAL_ERROR "Lua root path couldn't be found!")
-endif()
-set(INCLUDE_DIRECTORY ${LUA_ROOT_DIR}/include)
-set(LIBRARY_DIRECTORY ${LUA_ROOT_DIR})
-message(${INCLUDE_DIRECTORY})
-message(${LIBRARY_DIRECTORY})
+#set(LUA_ROOT_DIR "C:/Lua/x64")
+#if(NOT LUA_ROOT_DIR)
+#  message(FATAL_ERROR "Lua root path couldn't be found!")
+#endif()
+#set(INCLUDE_DIRECTORY ${LUA_ROOT_DIR}/include)
+#set(LIBRARY_DIRECTORY ${LUA_ROOT_DIR})
+#message(${INCLUDE_DIRECTORY})
+#message(${LIBRARY_DIRECTORY})
 
-find_file(LUA_LIBRARY liblua53.a HINTS ${LIBRARY_DIRECTORY} PATH_SUFFIXES lib)
-if (NOT LUA_LIBRARY)
-message(FATAL_ERROR "liblua53.a couldn't be found!")
-endif()
+#find_file(LUA_LIBRARY liblua53.a HINTS ${LIBRARY_DIRECTORY} PATH_SUFFIXES lib)
+#if (NOT LUA_LIBRARY)
+#  message(FATAL_ERROR "liblua53.a couldn't be found!")
+#endif()
 
-# Add source to this project's executable.
 add_executable(${TARGET_NAME} ${SOURCE_FILES} ${RESOURCES})
 
-target_include_directories(${TARGET_NAME} BEFORE
-          PUBLIC ${INCLUDE_DIRECTORY}
-)
-
 target_link_libraries(${TARGET_NAME}
-          PUBLIC ${LUA_LIBRARY}
-)
+#  PUBLIC lua
+  PRIVATE sol2::sol2
+  )
+
+#target_include_directories(${TARGET_NAME} BEFORE
+#  PUBLIC ${INCLUDE_DIRECTORY}
+#  )
+
+#target_link_libraries(${TARGET_NAME}
+#  PUBLIC ${LUA_LIBRARY}
+#  )
 
 set_target_properties(${TARGET_NAME} PROPERTIES
-          LINK_FLAGS /SUBSYSTEM:WINDOWS
-)
+  LINK_FLAGS /SUBSYSTEM:WINDOWS
+  )
 
-add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
-          COMMAND cmake -E copy_if_different
-          ${LUA_ROOT_DIR}/lua53.dll
-          $<TARGET_FILE_DIR:${TARGET_NAME}>
-)
-
-# TODO: Add tests and install targets if needed.
+#add_custom_command(TARGET ${TARGET_NAME} PRE_BUILD
+#  COMMAND cmake -E copy_if_different
+#  ${LUA_ROOT_DIR}/lua53.dll
+#  $<TARGET_FILE_DIR:${TARGET_NAME}>
+#  )

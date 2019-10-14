@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,28.08.2019</created>
-/// <changed>ʆϒʅ,03.09.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
-
 
 #include "texture.h"
 #include "Shared.h"

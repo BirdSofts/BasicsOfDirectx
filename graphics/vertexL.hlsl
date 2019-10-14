@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>}Y{,02.09.2019</created>
-/// <changed>}Y{,07.09.2019</changed>
+/// <changed>}Y{,14.10.2019</changed>
 // ********************************************************************************
-
 
 // global declarations (modified externally)
 cbuffer MatrixBuffer // buffer object type (three matrices)

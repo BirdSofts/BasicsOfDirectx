@@ -3,9 +3,8 @@
 /// 
 /// </summary>
 /// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,27.08.2019</changed>
+/// <changed>}Y{,14.10.2019</changed>
 // ********************************************************************************
-
 
 // global declarations
 // buffer object type, containing three matrices, updated on each execution

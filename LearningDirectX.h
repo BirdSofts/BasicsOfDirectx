@@ -3,14 +3,14 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,05.08.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
 
 #ifndef LEARNINGDIRECTX_H
 #define LEARNINGDIRECTX_H
 
 
-// inclusion guide:
+// application includes (introduced in utilities.h):
 
 //#include <windows.h> // Windows standard APIs
 //#include <wrl/client.h> // Windows and COM wrappers (calls to DirectX)
@@ -37,7 +37,7 @@
 //#include <atomic> // C++ standard atomic objects (no data races)
 //#include <thread> // C++ standard threads
 //#include <mutex> // C++ standard lockable objects
-//
+
 //// Lua: a powerful, lightweight and embeddable scripting language engine,
 //// and additionally the most popular general-purpose one used in games nowadays.
 //// -- more information: http://luabinaries.sourceforge.net/download.html

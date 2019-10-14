@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,01.09.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -28,9 +28,9 @@
 
 #include <ShlObj.h> // Windows standard control APIs
 #include <Shlwapi.h> // Windows standard lightweight utility APIs
-#include <PathCch.h> // Windows standard shell APIs
+//#include <PathCch.h> // Windows standard shell APIs
 #pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "PathCch.lib")
+//#pragma comment(lib, "PathCch.lib")
 
 // Lua: a powerful, lightweight and embeddable scripting language engine,
 // and additionally the most popular general-purpose one used in games nowadays.
@@ -40,14 +40,14 @@
 // purposes: write and read configuration files, run scripts and to write code to drive the gameplay.
 // Sol: the go-to framework for high-performance binding between Lua and C++
 // -- more information: https://github.com/ThePhD/sol2/releases
-//#include <lua.hpp> // Lua scripting language engine header file
+//#include <lua.h> // Lua scripting language engine header file
 #define SOL_ALL_SAFETIES_ON 1
 //#pragma warning( push )
 //#pragma warning( disable : 4127 ) // constant warning
 //#pragma warning( disable : 4702 ) // unreachable code warning
-#include <sol.hpp> // Sol binding framework between Lua and C++
+#include <sol/sol/sol.hpp> // Sol binding framework between Lua and C++
 //#pragma warning( pop )
-#pragma comment (lib, "liblua53.a") // Lua scripting language engine library
+#pragma comment (lib, "lua.lib") // Lua scripting language engine library
 
 
 // special expansion to exception container

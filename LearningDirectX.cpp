@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,20.08.2019</changed>
+/// <changed>ʆϒʅ,14.10.2019</changed>
 // ********************************************************************************
 
 #include "Utilities.h" // string + s,f streams + exception + threads + list + Windows standards
@@ -19,7 +19,10 @@
 // https://en.cppreference.com/
 // https://www.braynzarsoft.net/
 
+
+// needed for application's exceptions handling check (simply copy to place to to throw)
 //long long* anArray = new long long [1000000000000000000]; // throwing a standard exception on memory allocation
+
 
 bool running { false };
 
