@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,14.10.2019</changed>
+/// <changed>ʆϒʅ,05.11.2021</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -45,7 +45,7 @@
 //#pragma warning( push )
 //#pragma warning( disable : 4127 ) // constant warning
 //#pragma warning( disable : 4702 ) // unreachable code warning
-#include <sol/sol/sol.hpp> // Sol binding framework between Lua and C++
+#include <sol/sol.hpp> // Sol binding framework between Lua and C++
 //#pragma warning( pop )
 #pragma comment (lib, "lua.lib") // Lua scripting language engine library
 

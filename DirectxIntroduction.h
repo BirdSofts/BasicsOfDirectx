@@ -3,11 +3,11 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,14.10.2019</changed>
+/// <changed>ʆϒʅ,05.11.2021</changed>
 // ********************************************************************************
 
-#ifndef LEARNINGDIRECTX_H
-#define LEARNINGDIRECTX_H
+#ifndef DIRECTXINTRODUCTION_H
+#define DIRECTXINTRODUCTION_H
 
 
 // application includes (introduced in utilities.h):
@@ -52,4 +52,4 @@
 //#include <sol.hpp> // Sol binding framework between Lua and C++
 
 
-#endif // !LEARNINGDIRECTX_H
+#endif // !DIRECTXINTRODUCTION_H

@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,29.08.2019</changed>
+/// <changed>ʆϒʅ,05.11.2021</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
@@ -350,7 +350,7 @@ Configurations::Configurations ( void )
 
 
     //!? temporary statement: development time path
-    path = { L"C:\\Users\\Mehrdad\\Source\\Repos\\LearningDirectX\\settings.lua" };
+    path = { L"C:\\Users\\Mehrdad\\source\\repos\\BirdSofts\\DirectxIntroduction\\settings.lua" };
 
 
     pathToSettings = path;

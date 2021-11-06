@@ -3,7 +3,7 @@
 #/
 #/ </summary>
 #/ <created>ʆϒʅ,19.07.2019</created>
-#/ <changed>ʆϒʅ,14.10.2019</changed>
+#/ <changed>ʆϒʅ,05.11.2021</changed>
 # *******************************************************************************************
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
@@ -18,8 +18,8 @@ set(CMAKE_TOOLCHAIN_FILE "C:/src/vcpkg/scripts/buildsystems/vcpkg.cmake")
 set(PROJECT_NAME ${TARGET_NAME})
 project(${PROJECT_NAME}
   VERSION 1.0.0.0
-  DESCRIPTION "Learning DirectX Notes"
-  HOMEPAGE_URL "https://github.com/BirdSofts/LearningDirectX"
+  DESCRIPTION "DirectX Introduction"
+  HOMEPAGE_URL "https://github.com/BirdSofts/DirectXIntroduction"
   LANGUAGES CXX
   )
 

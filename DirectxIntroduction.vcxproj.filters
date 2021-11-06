@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LearningDirectX.cpp">
+    <ClCompile Include="DirectxIntroduction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
@@ -130,7 +130,7 @@
     <Text Include="models\cube.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="LearningDirectX.rc">
+    <ResourceCompile Include="DirectxIntroduction.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

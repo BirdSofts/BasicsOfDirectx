@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by LearningDirectX.rc
+// Used by DirectxIntroduction.rc
 
 // Next default values for new objects
 // 

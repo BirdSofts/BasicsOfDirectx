@@ -22,7 +22,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{46B8F98B-5E5A-45A6-A150-661B125E6D36}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>LearningDirectX</RootNamespace>
+    <RootNamespace>DirectxIntroduction</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -141,7 +141,7 @@
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="LearningDirectX.cpp" />
+    <ClCompile Include="DirectxIntroduction.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Shared.cpp" />
@@ -181,7 +181,7 @@
     <Text Include="models\cube.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="LearningDirectX.rc" />
+    <ResourceCompile Include="DirectxIntroduction.rc" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="graphics\pixel.hlsl">
