@@ -3,7 +3,7 @@
 #/
 #/ </summary>
 #/ <created>ʆϒʅ,19.07.2019</created>
-#/ <changed>ʆϒʅ,05.11.2021</changed>
+#/ <changed>ʆϒʅ,06.05.2022</changed>
 # *******************************************************************************************
 
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
@@ -19,14 +19,14 @@ set(PROJECT_NAME ${TARGET_NAME})
 project(${PROJECT_NAME}
   VERSION 1.0.0.0
   DESCRIPTION "DirectX Introduction"
-  HOMEPAGE_URL "https://github.com/BirdSofts/DirectXIntroduction"
+  HOMEPAGE_URL "https://github.com/s-mehrdad/DirectXIntroduction"
   LANGUAGES CXX
   )
 
 # Note: ISSUE: lua and sol libraries linkage
 
 find_package(lua REQUIRED)
-find_package(sol2 CONFIG REQUIRED)
+find_package(sol CONFIG REQUIRED)
 
 list(APPEND RESOURCES
   ${TARGET_NAME}.rc

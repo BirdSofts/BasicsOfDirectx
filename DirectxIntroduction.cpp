@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,17.07.2019</created>
-/// <changed>ʆϒʅ,14.10.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Utilities.h" // string + s,f streams + exception + threads + list + Windows standards
@@ -84,6 +84,10 @@ int WINAPI WinMain ( _In_ HINSTANCE hInstance, // generated instance handle by W
       PointerProvider::getException ()->set ( "appDebug" );
       throw* PointerProvider::getException ();
     }
+
+
+    settings->isDebug () = true;
+    settings->initialize ();
 
 
     Game game ( hInstance );

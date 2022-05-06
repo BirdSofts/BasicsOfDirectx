@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,05.11.2021</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #ifndef UTILITIES_H
@@ -142,14 +142,17 @@ struct ConfigsContainer
 class Configurations
 {
 private:
-  std::wstring pathToMyDocuments;
+  std::wstring pathToDocuments;
   std::wstring pathToSettings;
   bool valid;
+  bool debug;
   ConfigsContainer defaults;
   ConfigsContainer currents;
 public:
   Configurations ( void );
+  void initialize ( void );
   const bool& isValid ( void );
+  bool& isDebug ( void );
   const ConfigsContainer& getDefaults ( void );
   const ConfigsContainer& getSettings ( void );
   void apply ( void ); // test

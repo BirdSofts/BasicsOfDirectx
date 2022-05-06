@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,04.08.2019</created>
-/// <changed>ʆϒʅ,06.09.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Direct2D.h"
@@ -50,7 +50,7 @@ Direct2D::Direct2D ( TheCore* coreObj ) :
 
     // acquiring the underlying DXGI factory used to create the Dirext3D device (resources needs)
     IDXGIDevice1* dxgiDevice;
-    hR = core->d3d->device->QueryInterface ( __uuidof(IDXGIDevice1), ( void**) & dxgiDevice );
+    hR = core->d3d->device->QueryInterface ( __uuidof(IDXGIDevice1), (void**) &dxgiDevice );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -237,7 +237,7 @@ void Direct2D::debugInfos ( void )
   try
   {
 
-    if (core->debug && (!core->appWindow->isResized ()) && textLayoutsDebug)
+    if (PointerProvider::getConfiguration ()->isDebug () && (!core->appWindow->isResized ()) && textLayoutsDebug)
     {
       // drawing operations must be issued between a BeginDraw and EndDraw calls
       deviceCon->BeginDraw ();

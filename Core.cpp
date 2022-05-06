@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,14.10.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Core.h"
@@ -14,7 +14,7 @@ TheCore::TheCore ( HINSTANCE& hInstance, Game* gameObj ) :
   appInstance ( hInstance ), timer ( nullptr ), fps ( 0 ), mspf ( 0 ),
   appWindow ( nullptr ), appHandle ( NULL ),
   d3d ( nullptr ), d2d ( nullptr ), game ( gameObj ),
-  debug ( false ), initialized ( false ), paused ( false ), resized ( false )
+  initialized ( false ), paused ( false ), resized ( false )
 {
   try
   {
@@ -59,8 +59,6 @@ TheCore::TheCore ( HINSTANCE& hInstance, Game* gameObj ) :
     initialized = true;
     PointerProvider::getFileLogger ()->push ( logType::info, std::this_thread::get_id (), L"mainThread",
                                               L"The framework is successfully initialized." );
-
-    debug = true; // Todo must be switched from within the application
 
   }
   catch (const std::exception& ex)
@@ -138,7 +136,7 @@ void TheCore::frameStatistics ( void )
       fps = frameCounter; // the number of counted frames in one second
       mspf = 1e3 / fps; // average taken time by a frame in milliseconds
 
-      if (!paused && debug && d2d)
+      if (!paused && PointerProvider::getConfiguration ()->isDebug () && d2d)
       {
         d2d->textLayoutsDebug = false;
         //// results to window caption
@@ -158,9 +156,9 @@ void TheCore::frameStatistics ( void )
           << "^_^ - FPS: " << fps << L" - mSPF: " << mspf << std::endl;
 
         // before rendering a text to a bitmap: the creation of the text layout
-        hR = d2d->writeFac->CreateTextLayout ( outFPS.str ().c_str (), ( UINT32) outFPS.str ().size (),
-                                               d2d->textFormatFPS.Get (), ( float) appWindow->clientWidth,
-                                               ( float) appWindow->clientHeight, &d2d->textLayoutFPS );
+        hR = d2d->writeFac->CreateTextLayout ( outFPS.str ().c_str (), (UINT32) outFPS.str ().size (),
+                                               d2d->textFormatFPS.Get (), (float) appWindow->clientWidth,
+                                               (float) appWindow->clientHeight, &d2d->textLayoutFPS );
         if (FAILED ( hR ))
         {
           PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -170,9 +168,9 @@ void TheCore::frameStatistics ( void )
 
         std::wstring out { L"Last event: " };
         out += PointerProvider::getFileLogger ()->getLogRawStr ();
-        hR = d2d->writeFac->CreateTextLayout ( out.c_str (), ( UINT32) ( UINT32) out.size (),
-                                               d2d->textFormatLogs.Get (), ( float) appWindow->clientWidth,
-                                               ( float) appWindow->clientHeight, &d2d->textLayoutLogs );
+        hR = d2d->writeFac->CreateTextLayout ( out.c_str (), (UINT32) (UINT32) out.size (),
+                                               d2d->textFormatLogs.Get (), (float) appWindow->clientWidth,
+                                               (float) appWindow->clientHeight, &d2d->textLayoutLogs );
         if (FAILED ( hR ))
         {
           PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",

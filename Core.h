@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #ifndef CORE_H
@@ -39,7 +39,6 @@ private:
 
   Game* game; // pointer to the game wrapper class
 
-  bool debug; // if true FPS to screen (true in debug mode)
   bool initialized; // true if the initialization was successful
   bool paused; // true if the game is paused
   bool resized; // true if the resizing was successful

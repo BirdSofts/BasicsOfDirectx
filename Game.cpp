@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,24.07.2019</created>
-/// <changed>ʆϒʅ,08.09.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Game.h"
@@ -236,7 +236,7 @@ void Game::render ( void )
     universe->renderResources ();
     universe->getCamera ()->renderCamera ();
 
-    if (core->d2d && core->debug)
+    if (core->d2d && PointerProvider::getConfiguration ()->isDebug ())
       core->d2d->debugInfos (); // -- fps on screen representation
 
 

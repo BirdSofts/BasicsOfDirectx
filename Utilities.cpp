@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,05.11.2021</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Utilities.h"
@@ -303,13 +303,10 @@ void LoggerClassLinker ( void ) // don't call this function: solution for linker
 }
 
 
-Configurations::Configurations ( void )
+Configurations::Configurations ( void ) : valid ( false ), debug ( false )
 {
   try
   {
-
-    valid = false;
-    std::this_thread::sleep_for ( std::chrono::milliseconds { 30 } );
 
     // defaults initialization:
     defaults.Width = 640;
@@ -320,6 +317,20 @@ Configurations::Configurations ( void )
     currents.Width = 0;
     currents.Height = 0;
     currents.fullscreen = false;
+
+  }
+  catch (const std::exception& ex)
+  {
+    PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
+                                              Converter::strConverter ( ex.what () ) );
+  }
+};
+
+
+void Configurations::initialize ( void )
+{
+  try
+  {
 
     PWSTR docPath { NULL };
     HRESULT hR = SHGetKnownFolderPath ( FOLDERID_Documents, NULL, NULL, &docPath );
@@ -332,7 +343,7 @@ Configurations::Configurations ( void )
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                                 L"Retrieving the path to document directory failed!" );
 
-      pathToMyDocuments = L"";
+      pathToDocuments = L"";
       path = L"C:\\TheGame";
       hR = SHCreateDirectory ( NULL, path.c_str () );
       if (FAILED ( hR ))
@@ -344,14 +355,40 @@ Configurations::Configurations ( void )
         path += L"\\settings.lua";
     } else
     {
-      pathToMyDocuments = docPath;
-      path = pathToMyDocuments + L"\\settings.lua";
+      pathToDocuments = docPath;
+
+      if (PointerProvider::getConfiguration ()->isDebug ())
+      {
+
+        //!? temporary statement: development time path
+        std::wstring modifiedPath = docPath;
+        bool flag { false };
+        unsigned char slashes { 0 };
+        wchar_t temp { '\\' };
+        do
+        {
+
+          modifiedPath.pop_back ();
+          if (modifiedPath.back () == temp)
+            slashes++;
+          if (slashes == 2)
+            flag = true;
+
+        } while (!flag);
+        /*for (int i = 0; i < pathToUsersDir.size () - 10; i++)
+        {
+          pathToUsersDir.pop_back ();
+        }*/
+        modifiedPath += L"source\\repos\\DirectxIntroduction\\settings.lua";
+
+        path = modifiedPath;
+      } else
+      {
+
+        path = pathToDocuments += L"\\settings.lua";
+
+      }
     }
-
-
-    //!? temporary statement: development time path
-    path = { L"C:\\Users\\Mehrdad\\source\\repos\\BirdSofts\\DirectxIntroduction\\settings.lua" };
-
 
     pathToSettings = path;
     // Lua accepts a string type as path
@@ -369,7 +406,8 @@ Configurations::Configurations ( void )
         currents.Width = configs ["configurations"]["resolution"]["width"].get_or ( currents.Width );
         // the sol state class is constructed like a table, thus nested variables are accessible like multidimensional arrays.
         currents.Height = configs ["configurations"]["resolution"]["height"].get_or ( currents.Height );
-        unsigned int temp = configs ["configurations"]["display"]["fullscreen"].get_or ( temp );
+        unsigned int temp { 0 };
+        temp = configs ["configurations"]["display"]["fullscreen"].get_or ( temp );
         currents.fullscreen = temp;
       }
       catch (const std::exception& ex)
@@ -408,12 +446,18 @@ Configurations::Configurations ( void )
     PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
                                               Converter::strConverter ( ex.what () ) );
   }
-};
+}
 
 
 const bool& Configurations::isValid ( void )
 {
   return valid;
+};
+
+
+bool& Configurations::isDebug ( void )
+{
+  return debug;
 };
 
 

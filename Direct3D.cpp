@@ -3,7 +3,7 @@
 /// 
 /// </summary>
 /// <created>ʆϒʅ,19.07.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
+/// <changed>ʆϒʅ,06.05.2022</changed>
 // ********************************************************************************
 
 #include "Direct3D.h"
@@ -27,7 +27,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) :
 
     // DXGI (DirectX graphics interface) factory creation
     IDXGIFactory1* dxgiFactory; // DXGI factory
-    hR = CreateDXGIFactory1 ( __uuidof(IDXGIFactory1), ( void**) & dxgiFactory );
+    hR = CreateDXGIFactory1 ( __uuidof(IDXGIFactory1), (void**) &dxgiFactory );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -119,7 +119,7 @@ Direct3D::Direct3D ( TheCore* coreObj ) :
                                                 L"Acquiring the description of video card failed!" );
       return;
     }
-    videoCardMemory = ( unsigned int) (dxgiAdapterDesc.DedicatedVideoMemory / 1024 / 1024);
+    videoCardMemory = (unsigned int) (dxgiAdapterDesc.DedicatedVideoMemory / 1024 / 1024);
     videoCardDescription = dxgiAdapterDesc.Description;
     rC = dxgiAdapter->Release ();
     dxgiAdapter = nullptr;
@@ -310,7 +310,7 @@ void Direct3D::allocateResources ( void )
     // second parameter: interface type (most cases 2D- texture)
     // the last parameter returns a pointer to the actual back buffer
     ID3D10Texture2D* rtBuffer; // render target view buffer
-    hR = swapChain->GetBuffer ( 0, __uuidof(ID3D10Texture2D), ( LPVOID*) & rtBuffer );
+    hR = swapChain->GetBuffer ( 0, __uuidof(ID3D10Texture2D), (LPVOID*) &rtBuffer );
     if (FAILED ( hR ))
     {
       PointerProvider::getFileLogger ()->push ( logType::error, std::this_thread::get_id (), L"mainThread",
@@ -504,7 +504,7 @@ void Direct3D::present ( void )
       hR = { swapChain->Present ( 0, DXGI_PRESENT_DO_NOT_WAIT ) }; // as fast as possible
 
     if ((FAILED ( hR )) &&
-      (hR != DXGI_ERROR_WAS_STILL_DRAWING)) // occurs, if the calling thread is blocked
+         (hR != DXGI_ERROR_WAS_STILL_DRAWING)) // occurs, if the calling thread is blocked
     {
       PointerProvider::getFileLogger ()->push ( logType::warning, std::this_thread::get_id (), L"mainThread",
                                                 L"The presentation of the scene failed!" );
