@@ -4,13 +4,13 @@
 
 The project is just learning materials, which tries very hard to bring learning instruction, the source code itself and the compilation results all together in coding environment in easy language which results in experiencing more joy while learning DirectX.
 
-<img href="https://github.com/s-mehrdad" src="https://github.com/s-mehrdad/DirectxIntroduction/blob/master/ScreenShots/ScreenShot_01.jpg" width="800" height="600" alt="ScreenShot">
+<img href="https://github.com/s-mehrdad" src="https://github.com/s-mehrdad/DirectXIntroduction/blob/master/ScreenShots/ScreenShot_01.jpg" width="800" height="600" alt="ScreenShot">
 
 <table>
 <tr>
 <td><b>Git:</b></td>
-<td>git clone git@github.com:s-mehrdad/DirectxIntroduction.git</td>
-<td>git clone git@ssh.dev.azure.com:v3/BirdSofts/DirectxIntroduction/DirectxIntroduction</td>
+<td>git clone git@github.com:s-mehrdad/DirectXIntroduction.git</td>
+<td>git clone git@ssh.dev.azure.com:v3/BirdSofts/DirectXIntroduction/DirectXIntroduction</td>
 </tr>
 </table>
 

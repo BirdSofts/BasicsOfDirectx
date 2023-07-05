@@ -1,37 +1,40 @@
-// ********************************************************************************
+
+// ===========================================================================
 /// <summary>
-/// 
+/// vertexL.hlsl
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 02.09.2019
 /// </summary>
-/// <created>}Y{,02.09.2019</created>
-/// <changed>}Y{,14.10.2019</changed>
-// ********************************************************************************
+/// <created>}Y{, 02.09.2019</created>
+/// <changed>}Y{, 04.07.2023</changed>
+// ===========================================================================
 
 // global declarations (modified externally)
 cbuffer MatrixBuffer // buffer object type (three matrices)
 {
-  matrix worldMatrix; // vertex position correction
-  matrix viewMatrix;
-  matrix projectionMatrix;
+    matrix worldMatrix; // vertex position correction
+    matrix viewMatrix;
+    matrix projectionMatrix;
 };
 
 
 // type declarations
 struct Vertex // vertex shader input type
 {
-  float4 position : POSITION; // vertex shaders
-  float2 tex : TEXCOORD0; // texture coordinates
-  float3 normal : NORMAL; // normal light direction
+    float4 position : POSITION; // vertex shaders
+    float2 tex : TEXCOORD0; // texture coordinates
+    float3 normal : NORMAL; // normal light direction
 };
 
 struct Pixel // pixel shader input type
 {
-  float4 position : SV_POSITION; // pixel shaders
-  float2 tex : TEXCOORD0; // sampled pixel from texture
-  float3 normal : NORMAL; // calculated amount of light
+    float4 position : SV_POSITION; // pixel shaders
+    float2 tex : TEXCOORD0; // sampled pixel from texture
+    float3 normal : NORMAL; // calculated amount of light
 };
 
 
-Pixel main( Vertex input ) // processes on vertex
+Pixel main(Vertex input) // processes on vertex
 {
   
   // TEXCOORD0 semantic: texture coordinate: float U (width) and float V (height) (texture dimension, each from 0.0f to 1.0f)
@@ -54,24 +57,24 @@ Pixel main( Vertex input ) // processes on vertex
   //-- passing the calculated and normalized light
   
   
-  Pixel output; // output vertex structure
+    Pixel output; // output vertex structure
   
   // change the position vector to 4 units (proper matrix calculation)
-  input.position.w = 1.0f;
+    input.position.w = 1.0f;
   // manipulation of input vertex through world, view and projection matrices,
   // resulting to the correct vertex location for 3D rendering, and then onto the 2D screen
-  output.position = mul(input.position, worldMatrix);
-  output.position = mul(output.position, viewMatrix);
-  output.position = mul(output.position, projectionMatrix);
+    output.position = mul(input.position, worldMatrix);
+    output.position = mul(output.position, viewMatrix);
+    output.position = mul(output.position, projectionMatrix);
 
   // additionally store input texture coordinate (for pixel shader)
-  output.tex = input.tex;
+    output.tex = input.tex;
   
   // normal vector calculation against world matrix
-  output.normal = mul(input.normal,(float3x3)worldMatrix);
+    output.normal = mul(input.normal, (float3x3) worldMatrix);
   
-  output.normal = normalize(output.normal); // normalization
+    output.normal = normalize(output.normal); // normalization
   
-  return output;
+    return output;
   
 };

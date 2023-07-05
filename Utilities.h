@@ -1,10 +1,13 @@
-﻿// ********************************************************************************
+﻿
+// ===========================================================================
 /// <summary>
-/// 
+/// Utilities.h
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 22.07.2019
 /// </summary>
-/// <created>ʆϒʅ,22.07.2019</created>
-/// <changed>ʆϒʅ,06.05.2022</changed>
-// ********************************************************************************
+/// <created>ʆϒʅ, 22.07.2019</created>
+/// <changed>ʆϒʅ, 04.07.2023</changed>
+// ===========================================================================
 
 #ifndef UTILITIES_H
 #define UTILITIES_H
@@ -54,11 +57,11 @@
 class theException : public std::exception
 {
 private:
-  const char* expected;
+    const char* expected;
 public:
-  theException ( void );
-  void set ( const char* );
-  const char* what ( void ) const throw();
+    theException (void);
+    void set (const char*);
+    const char* what (void) const throw();
 };
 
 
@@ -69,14 +72,14 @@ enum logType { info = 0, debug, warning, error };
 // log container structure
 struct LogEntity
 {
-  unsigned int id;
-  std::wstring arrivedAt;
-  logType type;
-  std::thread::id threadId;
-  std::wstring threadName;
-  std::wstring message;
-  LogEntity ( void );
-  LogEntity operator=( LogEntity& );
+    unsigned int id;
+    std::wstring arrivedAt;
+    logType type;
+    std::thread::id threadId;
+    std::wstring threadName;
+    std::wstring message;
+    LogEntity (void);
+    LogEntity operator=(LogEntity&);
 };
 
 
@@ -84,13 +87,13 @@ struct LogEntity
 class toFile
 {
 private:
-  std::ofstream fileStream;
-  bool ready;
+    std::ofstream fileStream;
+    bool ready;
 public:
-  toFile ( void );
-  ~toFile ( void );
-  const bool& state ( void );
-  bool write ( const std::wstring& );
+    toFile (void);
+    ~toFile (void);
+    const bool& state (void);
+    bool write (const std::wstring&);
 };
 
 
@@ -103,38 +106,38 @@ template<class tType>
 class Logger
 {
 private:
-  LogEntity theLog;
-  std::wstring theLogRawStr;
-  std::list<std::wstring> buffer; // buffer list container
-  tType filePolicy; // output stream policy
-  std::timed_mutex writeGuard; // write guard
-  std::thread commit; // write engine thread
-  // lock-free atomic flag (checking the running state) (standard initialization):
-  std::atomic_flag operating { ATOMIC_FLAG_INIT };
+    LogEntity theLog;
+    std::wstring theLogRawStr;
+    std::list<std::wstring> buffer; // buffer list container
+    tType filePolicy; // output stream policy
+    std::timed_mutex writeGuard; // write guard
+    std::thread commit; // write engine thread
+    // lock-free atomic flag (checking the running state) (standard initialization):
+    std::atomic_flag operating {ATOMIC_FLAG_INIT};
 
-  static unsigned int counter;
+    static unsigned int counter;
 public:
-  Logger ( void );
-  ~Logger ( void );
-  void push ( const logType&,
-              const std::thread::id&,
-              const std::wstring&,
-              const std::wstring& );
-  const LogEntity& getLog ( void );
-  const std::wstring& getLogRawStr ( void );
+    Logger (void);
+    ~Logger (void);
+    void push (const logType&,
+               const std::thread::id&,
+               const std::wstring&,
+               const std::wstring&);
+    const LogEntity& getLog (void);
+    const std::wstring& getLogRawStr (void);
 
-  template<class tType>
-  friend void loggerEngine ( Logger<tType>* ); // write engine
+    template<class tType>
+    friend void loggerEngine (Logger<tType>*); // write engine
 };
-void LoggerClassLinker ( void ); // don't call this function: solution for linker error, when using templates.
+void LoggerClassLinker (void); // don't call this function: solution for linker error, when using templates.
 
 
 // configurations container
 struct ConfigsContainer
 {
-  unsigned int Width;
-  unsigned int Height;
-  bool fullscreen;
+    unsigned int Width;
+    unsigned int Height;
+    bool fullscreen;
 };
 
 
@@ -142,21 +145,21 @@ struct ConfigsContainer
 class Configurations
 {
 private:
-  std::wstring pathToDocuments;
-  std::wstring pathToSettings;
-  bool valid;
-  bool debug;
-  ConfigsContainer defaults;
-  ConfigsContainer currents;
+    std::wstring pathToDocuments;
+    std::wstring pathToSettings;
+    bool valid;
+    bool debug;
+    ConfigsContainer defaults;
+    ConfigsContainer currents;
 public:
-  Configurations ( void );
-  void initialize ( void );
-  const bool& isValid ( void );
-  bool& isDebug ( void );
-  const ConfigsContainer& getDefaults ( void );
-  const ConfigsContainer& getSettings ( void );
-  void apply ( void ); // test
-  const bool apply ( const ConfigsContainer& ); // apply method
+    Configurations (void);
+    void initialize (void);
+    const bool& isValid (void);
+    bool& isDebug (void);
+    const ConfigsContainer& getDefaults (void);
+    const ConfigsContainer& getSettings (void);
+    void apply (void); // test
+    const bool apply (const ConfigsContainer&); // apply method
 };// application configurations container
 
 
@@ -165,10 +168,10 @@ class Converter
 {
 private:
 public:
-  // standard string types converters (Lua needs)
-  // Windows 10 builds upon Unicode natively, thus using wide strings is wise.
-  static std::wstring strConverter ( const std::string& );
-  static std::string strConverter ( const std::wstring& );
+    // standard string types converters (Lua needs)
+    // Windows 10 builds upon Unicode natively, thus using wide strings is wise.
+    static std::wstring strConverter (const std::string&);
+    static std::string strConverter (const std::wstring&);
 };
 
 

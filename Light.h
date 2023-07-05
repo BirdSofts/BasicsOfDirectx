@@ -1,10 +1,13 @@
-﻿// ********************************************************************************
+﻿
+// ===========================================================================
 /// <summary>
-/// 
+/// Light.h
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 01.09.2019
 /// </summary>
-/// <created>ʆϒʅ,01.09.2019</created>
-/// <changed>ʆϒʅ,07.09.2019</changed>
-// ********************************************************************************
+/// <created>ʆϒʅ, 01.09.2019</created>
+/// <changed>ʆϒʅ, 04.07.2023</changed>
+// ===========================================================================
 
 #ifndef LIGHT_H
 #define LIGHT_H
@@ -22,16 +25,16 @@
 class DiffuseLight
 {
 private:
-  DirectX::XMFLOAT4 diffuseColour;
-  DirectX::XMFLOAT3 diffuseDirection;
-  bool initialized; // true if initialization was successful
+    DirectX::XMFLOAT4 diffuseColour;
+    DirectX::XMFLOAT3 diffuseDirection;
+    bool initialized; // true if initialization was successful
 public:
-  DiffuseLight ( void );
-  const bool& isInitialized ( void ); // get the initialized state
-  void setColour ( float, float, float, float ); // set diffuse light colour
-  void setDirection ( float, float, float ); // set diffuse light direction
-  DirectX::XMFLOAT4 getColour ( void ); // get diffuse light colour
-  DirectX::XMFLOAT3 getDirection ( void ); // get diffuse light direction
+    DiffuseLight (void);
+    const bool& isInitialized (void); // get the initialized state
+    void setColour (float, float, float, float); // set diffuse light colour
+    void setDirection (float, float, float); // set diffuse light direction
+    DirectX::XMFLOAT4 getColour (void); // get diffuse light colour
+    DirectX::XMFLOAT3 getDirection (void); // get diffuse light direction
 };
 
 

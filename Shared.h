@@ -1,10 +1,13 @@
-﻿// ********************************************************************************
+﻿
+// ===========================================================================
 /// <summary>
-/// 
+/// Shared.h
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 30.07.2019
 /// </summary>
-/// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,14.10.2019</changed>
-// ********************************************************************************
+/// <created>ʆϒʅ, 30.07.2019</created>
+/// <changed>ʆϒʅ, 04.07.2023</changed>
+// ===========================================================================
 
 #ifndef SHARED_H
 #define SHARED_H
@@ -31,20 +34,20 @@ extern std::wstring gameState;
 class PointerProvider
 {
 private:
-  static std::shared_ptr<theException> exception; // shared pointer to exception class
-  static std::shared_ptr<Configurations> configuration; // shared pointer to configuration class
-  static std::shared_ptr<Logger<toFile>> fileLogger; // shared pointer to file logger class
+    static std::shared_ptr<theException> exception; // shared pointer to exception class
+    static std::shared_ptr<Configurations> configuration; // shared pointer to configuration class
+    static std::shared_ptr<Logger<toFile>> fileLogger; // shared pointer to file logger class
 public:
 
-  // smart shared pointers point to exceptions, provide extended lifetime and are passable across threads:
-  static std::exception_ptr exceptionPointer; // smart shared pointer-like type
+    // smart shared pointers point to exceptions, provide extended lifetime and are passable across threads:
+    static std::exception_ptr exceptionPointer; // smart shared pointer-like type
 
-  static theException* getException ( void ); // exception locator
-  static Configurations* getConfiguration ( void ); // configuration locator
-  static Logger<toFile>* getFileLogger ( void ); // file logger locator
-  static void exceptionProvider ( std::shared_ptr<theException> ); // exception provider
-  static void configurationProvider ( std::shared_ptr<Configurations> ); // configuration provider
-  static void fileLoggerProvider ( std::shared_ptr<Logger<toFile>> ); // file logger provider
+    static theException* getException (void); // exception locator
+    static Configurations* getConfiguration (void); // configuration locator
+    static Logger<toFile>* getFileLogger (void); // file logger locator
+    static void exceptionProvider (std::shared_ptr<theException>); // exception provider
+    static void configurationProvider (std::shared_ptr<Configurations>); // configuration provider
+    static void fileLoggerProvider (std::shared_ptr<Logger<toFile>>); // file logger provider
 };
 
 

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by DirectxIntroduction.rc
+// Used by DirectXIntroduction.rc
 
 // Next default values for new objects
 // 

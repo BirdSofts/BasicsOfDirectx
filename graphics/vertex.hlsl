@@ -1,18 +1,21 @@
-// ********************************************************************************
+
+// ===========================================================================
 /// <summary>
-/// 
+/// vertex.hlsl
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 11.08.2019
 /// </summary>
-/// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,14.10.2019</changed>
-// ********************************************************************************
+/// <created>}Y{, 11.08.2019</created>
+/// <changed>}Y{, 04.07.2023</changed>
+// ===========================================================================
 
 // global declarations
 // buffer object type, containing three matrices, updated on each execution
 cbuffer MatrixBuffer
 {
-  matrix worldMatrix;
-  matrix viewMatrix;
-  matrix projectionMatrix;
+    matrix worldMatrix;
+    matrix viewMatrix;
+    matrix projectionMatrix;
 };
 
 
@@ -20,8 +23,8 @@ cbuffer MatrixBuffer
 // vertex (input type)
 struct Vertex
 {
-  float4 position : POSITION; // vertex shaders
-  float4 colour : COLOR;
+    float4 position : POSITION; // vertex shaders
+    float4 colour : COLOR;
   // note that using numbers, more semantics of the same type is definable
 };
 
@@ -29,13 +32,13 @@ struct Vertex
 // pixel (output type)
 struct Pixel
 {
-  float4 position : SV_POSITION; // pixel shaders
-  float4 colour : COLOR;
+    float4 position : SV_POSITION; // pixel shaders
+    float4 colour : COLOR;
 };
 
 
 // vertex shader: calculate the vertex location by matrices and prepare the output for pixel shader
-Pixel main( Vertex input ) // called by GPU when processing data from vertex buffer
+Pixel main(Vertex input) // called by GPU when processing data from vertex buffer
 {
   
   // input: vertex position and colour defined by seven floats
@@ -50,7 +53,7 @@ Pixel main( Vertex input ) // called by GPU when processing data from vertex buf
   // output:
   //-- passing the colour of each position to pixel shader
   
-  Pixel output; // output vertex structure
+    Pixel output; // output vertex structure
   
   //float4 outputPos = { input.position.x, input.position.y, input.position.z, input.position.w };
   //output.position = outputPos;
@@ -58,15 +61,15 @@ Pixel main( Vertex input ) // called by GPU when processing data from vertex buf
   //output.colour = outputCol;
   
   // change the position vector to 4 units (proper matrix calculation)
-  input.position.w = 1.0f;
+    input.position.w = 1.0f;
   // manipulation of input vertex through world, view and projection matrices,
   // resulting to the correct vertex location for 3D rendering, and then onto the 2D screen
-  output.position = mul(input.position, worldMatrix);
-  output.position = mul(output.position, viewMatrix);
-  output.position = mul(output.position, projectionMatrix);
+    output.position = mul(input.position, worldMatrix);
+    output.position = mul(output.position, viewMatrix);
+    output.position = mul(output.position, projectionMatrix);
   // additionally store input colour (for pixel shader)
-  output.colour = input.colour;
+    output.colour = input.colour;
 
-  return output;
+    return output;
   
 };

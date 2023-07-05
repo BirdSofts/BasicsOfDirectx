@@ -1,10 +1,13 @@
-﻿// ********************************************************************************
+﻿
+// ===========================================================================
 /// <summary>
-/// 
+/// Shared.cpp
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 30.07.2019
 /// </summary>
-/// <created>ʆϒʅ,30.07.2019</created>
-/// <changed>ʆϒʅ,26.08.2019</changed>
-// ********************************************************************************
+/// <created>ʆϒʅ, 30.07.2019</created>
+/// <changed>ʆϒʅ, 04.07.2023</changed>
+// ===========================================================================
 
 #include "Shared.h"
 
@@ -33,37 +36,37 @@ std::shared_ptr<Logger<toFile>> PointerProvider::fileLogger = nullptr;
 std::exception_ptr PointerProvider::exceptionPointer = nullptr;
 
 
-theException* PointerProvider::getException ( void )
+theException* PointerProvider::getException (void)
 {
-  return exception.get ();
+    return exception.get ();
 };
 
 
-Configurations* PointerProvider::getConfiguration ( void )
+Configurations* PointerProvider::getConfiguration (void)
 {
-  return configuration.get ();
+    return configuration.get ();
 };
 
 
-Logger<toFile>* PointerProvider::getFileLogger ( void )
+Logger<toFile>* PointerProvider::getFileLogger (void)
 {
-  return fileLogger.get ();
+    return fileLogger.get ();
 };
 
 
-void PointerProvider::exceptionProvider ( std::shared_ptr<theException> object )
+void PointerProvider::exceptionProvider (std::shared_ptr<theException> object)
 {
-  exception = object;
+    exception = object;
 };
 
 
-void PointerProvider::configurationProvider ( std::shared_ptr<Configurations> object )
+void PointerProvider::configurationProvider (std::shared_ptr<Configurations> object)
 {
-  configuration = object;
+    configuration = object;
 };
 
 
-void PointerProvider::fileLoggerProvider ( std::shared_ptr<Logger<toFile>> object )
+void PointerProvider::fileLoggerProvider (std::shared_ptr<Logger<toFile>> object)
 {
-  fileLogger = object;
+    fileLogger = object;
 };

@@ -1,5 +1,5 @@
 configurations =
-	{
-		resolution = { width = 640 , height = 480 },
-		display = { fullscreen = 0 }
-	}
+    {
+        resolution = { width = 800 , height = 600 },
+        display = { fullscreen = 0 }
+    }

@@ -1,27 +1,30 @@
-// ********************************************************************************
+
+// ===========================================================================
 /// <summary>
-/// 
+/// pixel.hlsl
+/// DirectXIntroduction
+/// created by Mehrdad Soleimanimajd on 11.08.2019
 /// </summary>
-/// <created>}Y{,11.08.2019</created>
-/// <changed>}Y{,14.10.2019</changed>
-// ********************************************************************************
+/// <created>}Y{, 11.08.2019</created>
+/// <changed>}Y{, 04.07.2023</changed>
+// ===========================================================================
 
 // pixel (input type)
 struct Vertex
 {
-  float4 position : SV_POSITION;
-  float4 colour : COLOR;
+    float4 position : SV_POSITION;
+    float4 colour : COLOR;
 };
 
 
 // pixel shader: draws each pixel on the polygons that will be rendered to the screen.
-float4 main( Vertex input ) : SV_TARGET // called by GPU when the output of vertex shader is ready
+float4 main(Vertex input) : SV_TARGET // called by GPU when the output of vertex shader is ready
 //float4 main ( float4 pos : SV_POSITION, float4 col : COLOR  ) : SV_TARGET
 {
   
   // SV_TARGET: the semantic indicates that the return value of pixel shader should match the render target format
   
   //input.colour *= 0.5f; // output each pixel half bright
-  return input.colour; // colour
+    return input.colour; // colour
   
 }

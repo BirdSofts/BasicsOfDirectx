@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DirectxIntroduction.cpp">
+    <ClCompile Include="DirectXIntroduction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Window.cpp">
@@ -113,6 +113,9 @@
     <ClInclude Include="ModelFormats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DirectXIntroduction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -124,6 +127,8 @@
     <None Include="graphics\vertexL.hlsl" />
     <None Include="graphics\vertexT.hlsl" />
     <None Include="LICENSE.md" />
+    <None Include="DirectXIntroduction.rc.in" />
+    <None Include="DirectXIntroduction.aps" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
